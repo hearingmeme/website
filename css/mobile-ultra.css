@@ -1,0 +1,561 @@
+/* ========================================
+   MOBILE ULTRA-OPTIMIZED - PIXEL 8 READY
+   Version app-quality sans bugs
+   ======================================== */
+
+/* ==================== REMOVE GLOW & SEPARATORS (DESKTOP + MOBILE) ==================== */
+/* Retire TOUT le glow/shadow/color autour des emojis */
+.icon {
+  color: inherit !important;
+  text-shadow: none !important;
+  filter: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+.level-stars {
+  color: inherit !important;
+  text-shadow: none !important;
+  filter: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+
+/* Force aussi dans game-stats */
+.game-stats .icon {
+  color: inherit !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+.game-stats .level-stars {
+  color: inherit !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* Cache les séparateurs | */
+.stat-separator {
+  display: none !important;
+}
+/* ========================================================================= */
+
+@media (max-width: 768px) {
+  
+  /* ==================== GAME BOARD: 3x5 GRID (15 HOLES) ==================== */
+  .game-board {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-template-rows: repeat(5, 1fr) !important;
+    gap: 8px !important;
+    width: min(92vw, 300px) !important;
+    height: auto !important;
+    aspect-ratio: 3/5 !important;
+    margin: 10px auto 15px !important;
+    padding: 0 !important;
+  }
+
+  /* Cache le 16ème hole */
+  .hole:nth-child(16) {
+    display: none !important;
+  }
+
+  .hole {
+    width: 100% !important;
+    height: 100% !important;
+    border: 3px solid #000 !important;
+    box-shadow: 3px 3px 0 #000 !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .hole.popped {
+    transform: scale(0.8) rotate(10deg) !important;
+    box-shadow: 2px 2px 0 #000 !important;
+  }
+
+  .ear {
+    font-size: 3.2rem !important;
+  }
+
+  /* ==================== CONTAINER ==================== */
+  .game-container {
+    padding: 8px !important;
+    max-height: 100vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* ==================== TITLE ==================== */
+  .game-title {
+    font-size: clamp(22px, 5.5vw, 32px) !important;
+    margin: 6px auto 8px !important;
+    line-height: 1 !important;
+  }
+
+  /* ==================== STATS COMPACTS ==================== */
+  .game-stats {
+    font-size: 13px !important;
+    margin: 6px 0 !important;
+    padding: 4px !important;
+  }
+
+  .stat-row {
+    gap: 8px 12px !important;
+    justify-content: center !important;
+  }
+
+  .stat-item {
+    font-size: 13px !important;
+    gap: 3px !important;
+  }
+
+  .icon {
+    font-size: 1em !important;
+  }
+
+  .level-stars {
+    font-size: 0.9em !important;
+  }
+
+  /* ==================== SUPPRIME LE LEVEL NAME EN BAS ==================== */
+  .level-name-display {
+    display: none !important;
+  }
+
+  /* ==================== BOUTONS EN FOOTER ==================== */
+  .close-game-btn,
+  .mute-music-btn,
+  .sound-fx-btn,
+  .how-to-play-btn,
+  .leaderboard-btn {
+    position: fixed !important;
+    bottom: 8px !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    background: rgba(0, 0, 0, 0.92) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 20px !important;
+    border-radius: 50% !important;
+    width: 48px !important;
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 10000 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* Position de chaque bouton */
+  .mute-music-btn {
+    left: 8px !important;
+  }
+
+  .sound-fx-btn {
+    left: 64px !important;
+  }
+
+  .how-to-play-btn {
+    left: 120px !important;
+  }
+
+  .leaderboard-btn {
+    left: 176px !important;
+  }
+
+  .close-game-btn {
+    right: 8px !important;
+    left: auto !important;
+  }
+
+  /* ==================== FIX MESSAGES ROSES (RUMOR BUBBLE) ==================== */
+  .rumor-bubble {
+    position: fixed !important;
+    bottom: 80px !important;
+    left: 50% !important;
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    max-width: 90vw !important;
+    width: auto !important;
+    font-size: 16px !important;
+    padding: 8px 16px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    z-index: 9998 !important;
+    border-radius: 12px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ==================== FIX GAME MESSAGES (RECTANGLES ROSES) ==================== */
+  .game-message {
+    position: fixed !important;
+    top: 25% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    max-width: 88vw !important;
+    width: auto !important;
+    font-size: clamp(18px, 4.5vw, 28px) !important;
+    padding: 10px 16px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    z-index: 10001 !important;
+    line-height: 1.2 !important;
+    box-sizing: border-box !important;
+  }
+
+  .game-message-large {
+    font-size: clamp(20px, 5vw, 32px) !important;
+    max-width: 85vw !important;
+  }
+
+  .game-message-medium {
+    font-size: clamp(16px, 4vw, 26px) !important;
+    max-width: 85vw !important;
+  }
+
+  .game-message-small {
+    font-size: clamp(14px, 3.5vw, 22px) !important;
+    max-width: 85vw !important;
+  }
+
+  /* ==================== PROGRESSION PANEL ==================== */
+  .progression-panel {
+    top: 50px !important;
+    right: 4px !important;
+    width: 85px !important;
+    padding: 5px !important;
+  }
+
+  .progress-mini {
+    height: 14px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .progress-mini .progress-text {
+    font-size: 9px !important;
+  }
+
+  .streak-mini {
+    font-size: 11px !important;
+    padding: 2px !important;
+  }
+
+  /* ==================== GAME OVER SCREEN ==================== */
+  .game-over-screen {
+    padding: 12px !important;
+    overflow-y: auto !important;
+  }
+
+  .game-over-title {
+    font-size: clamp(1.8rem, 6vw, 3rem) !important;
+    margin-bottom: 15px !important;
+  }
+
+  .game-over-stats {
+    font-size: 15px !important;
+    max-width: 92% !important;
+    line-height: 1.4 !important;
+  }
+
+  .game-over-text {
+    font-size: clamp(1.1rem, 3.8vw, 1.6rem) !important;
+    margin-bottom: 18px !important;
+  }
+
+  .gameover-name-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-direction: row !important;
+    gap: 0 !important;
+  }
+
+  #playerNameInput {
+    font-size: 1.1rem !important;
+    padding: 10px 12px !important;
+    width: calc(100% - 50px) !important;
+    max-width: none !important;
+  }
+
+  .submit-score-btn {
+    font-size: 1.4rem !important;
+    padding: 10px !important;
+    width: 50px !important;
+    min-width: 50px !important;
+  }
+
+  .game-over-actions,
+  .button-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .try-again-btn,
+  .share-x-btn,
+  .exit-game-btn {
+    font-size: 1.1rem !important;
+    padding: 12px 20px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 280px !important;
+    margin: 0 auto !important;
+  }
+
+  /* ==================== MODALS ==================== */
+  .modal-content {
+    padding: 18px 12px !important;
+    max-width: 96vw !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+  }
+
+  .modal-content h2 {
+    font-size: 1.6rem !important;
+    margin-bottom: 18px !important;
+  }
+
+  .modal-content h3 {
+    font-size: 1.2rem !important;
+    margin: 15px 0 10px !important;
+  }
+
+  .htp-list {
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .htp-list li {
+    margin-bottom: 10px !important;
+  }
+
+  .bonus-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .bonus-item {
+    padding: 10px !important;
+  }
+
+  .bonus-emoji {
+    font-size: 1.8rem !important;
+  }
+
+  .bonus-desc {
+    font-size: 0.85rem !important;
+  }
+
+  .modal-close {
+    font-size: 1.3rem !important;
+    padding: 6px 12px !important;
+  }
+
+  /* ==================== LEADERBOARD ==================== */
+  .leaderboard-entry {
+    padding: 10px !important;
+    gap: 8px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .lb-rank {
+    font-size: 1.2rem !important;
+    min-width: 32px !important;
+  }
+
+  .lb-name {
+    font-size: 0.95rem !important;
+  }
+
+  .lb-score {
+    font-size: 1.2rem !important;
+  }
+
+  .lb-details {
+    font-size: 0.8rem !important;
+  }
+
+  /* ==================== INTRO SCREEN ==================== */
+  .intro-title {
+    font-size: 54px !important;
+  }
+
+  .intro-subtitle {
+    font-size: 24px !important;
+  }
+
+  .intro-ears {
+    font-size: 48px !important;
+    gap: 18px !important;
+  }
+
+  .intro-tagline {
+    font-size: 22px !important;
+  }
+
+  .intro-start-btn {
+    font-size: 30px !important;
+    padding: 18px 42px !important;
+  }
+
+  .intro-particle {
+    font-size: 28px !important;
+  }
+
+  /* ==================== ANIMATIONS OPTIMISÉES ==================== */
+  @keyframes earPop {
+    from {
+      transform: translate(-50%, -50%) scale(0.92) rotate(-6deg);
+    }
+    to {
+      transform: translate(-50%, -50%) scale(1.08) rotate(6deg);
+    }
+  }
+
+  /* Désactive les effets trop lourds pour mobile */
+  .lsd-psycho {
+    animation: none !important;
+    filter: hue-rotate(60deg) saturate(1.3) !important;
+  }
+
+  .shake-hard {
+    animation: shakeLight 0.2s ease-in-out !important;
+  }
+
+  @keyframes shakeLight {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(3px, -2px); }
+    50% { transform: translate(-3px, 2px); }
+    75% { transform: translate(2px, 2px); }
+  }
+
+  /* ==================== PARTICLES OPTIMISÉS ==================== */
+  .bonus-particle {
+    font-size: 1.4rem !important;
+  }
+
+  .dollar,
+  .particle {
+    font-size: 1.1rem !important;
+  }
+
+  /* ==================== EMPÊCHE LE SCROLL HORIZONTAL ==================== */
+  body,
+  html {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  .game-overlay,
+  .game-container,
+  .game-board,
+  .game-stats,
+  .rumor-bubble,
+  .game-message,
+  * {
+    max-width: 100vw !important;
+  }
+
+  /* ==================== TOUCH OPTIMIZATION ==================== */
+  .hole,
+  .ear,
+  button,
+  .modal-close {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+  }
+
+  /* Minimum touch target size */
+  .hole {
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  /* ==================== CONTINUE/GIVE UP OVERLAY ==================== */
+  #continueBtn,
+  #giveUpBtn {
+    font-size: 24px !important;
+    padding: 15px 35px !important;
+    margin: 8px !important;
+  }
+}
+
+/* ==================== TRÈS PETITS ÉCRANS (<400px) ==================== */
+@media (max-width: 400px) {
+  .game-board {
+    width: min(94vw, 270px) !important;
+    gap: 6px !important;
+  }
+
+  .ear {
+    font-size: 2.8rem !important;
+  }
+
+  .game-title {
+    font-size: clamp(18px, 5vw, 26px) !important;
+  }
+
+  .game-stats {
+    font-size: 11px !important;
+  }
+
+  .close-game-btn,
+  .mute-music-btn,
+  .sound-fx-btn,
+  .how-to-play-btn,
+  .leaderboard-btn {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 18px !important;
+  }
+
+  .sound-fx-btn {
+    left: 56px !important;
+  }
+
+  .how-to-play-btn {
+    left: 104px !important;
+  }
+
+  .leaderboard-btn {
+    left: 152px !important;
+  }
+
+  .rumor-bubble {
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+  }
+
+  .game-message {
+    font-size: clamp(16px, 4vw, 24px) !important;
+  }
+}
+
+/* ==================== LANDSCAPE MODE ==================== */
+@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+  .game-container {
+    padding: 5px !important;
+  }
+
+  .game-title {
+    font-size: 20px !important;
+    margin: 4px auto !important;
+  }
+
+  .game-stats {
+    font-size: 11px !important;
+    margin: 3px 0 !important;
+  }
+
+  .game-board {
+    width: min(45vh, 250px) !important;
+    margin: 5px auto !important;
+  }
+
+  .ear {
+    font-size: 2.5rem !important;
+  }
+}

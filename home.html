@@ -11,6 +11,10 @@
   <meta name="apple-mobile-web-app-title" content="Hearing Things">
   <link rel="manifest" href="manifest.json">
   
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  
   <!-- Meta Tags -->
   <meta name="description" content="Whack The Rumors – The official $HEARING game on Solana. Test your reflexes in this chaotic meme game!">
   <meta name="keywords" content="hearing, solana, meme, game, crypto, degen">
@@ -39,8 +43,10 @@
   <link rel="stylesheet" href="css/bundle.optimized.css">
   <!-- 🔥💀 DEGEN EFFECTS 💀🔥 -->
   <link rel="stylesheet" href="css/degen-effects.css">
-  <!-- 🔥 Mobile Fixes V17.4 🔥 -->
-  <link rel="stylesheet" href="css/mobile-fixes.css">
+  <!-- 📱 MOBILE ULTRA-OPTIMIZED (Pixel 8 Ready) -->
+  <link rel="stylesheet" href="css/mobile-ultra.css">
+  <!-- 🎨 HEADER ULTRA BANGER -->
+  <link rel="stylesheet" href="css/header-banger.css">
 </head>
 
 <body>
@@ -129,10 +135,10 @@ the character is usually drawn with a confident or suspicious expression, as if 
     
     <!-- Boutons regroupés en haut à droite -->
     <div class="game-header-controls">
-      <button class="header-btn" id="howToPlayBtn" aria-label="How to Play" title="How to Play">?</button>
-      <button class="header-btn" id="muteMusicBtn" aria-label="Toggle Music" title="Music">🔊</button>
-      <button class="header-btn" id="soundFxBtn" aria-label="Toggle Sound FX" title="Sound FX">🔔</button>
-      <button class="header-btn" id="leaderboardBtn" aria-label="Leaderboard" title="Leaderboard">🏆</button>
+      <button class="header-btn btn-help" id="howToPlayBtn" aria-label="How to Play" title="How to Play">📖</button>
+      <button class="header-btn btn-music" id="muteMusicBtn" aria-label="Toggle Music" title="Music">🎶</button>
+      <button class="header-btn btn-sound" id="soundFxBtn" aria-label="Toggle Sound FX" title="Sound FX">📢</button>
+      <button class="header-btn btn-leader" id="leaderboardBtn" aria-label="Leaderboard" title="Leaderboard">🏅</button>
       <button class="header-btn header-btn-close" id="closeGameBtn" aria-label="Close Game" title="Close">✕</button>
     </div>
 
@@ -234,7 +240,19 @@ the character is usually drawn with a confident or suspicious expression, as if 
       
       <div class="htp-section">
         <h3>🎯 Objective</h3>
-        <p>Whack the 👂 ears as fast as you can! Don't let them escape or you'll get a strike!</p>
+        <p><strong>Whack the 👂 ears as fast as you can!</strong></p>
+        <p>Click or tap on the ears when they pop up. Don't let them escape or you'll lose a life!</p>
+        <p>💀 You have <strong>1 life</strong> to start. Lose it and it's GAME OVER!</p>
+      </div>
+
+      <div class="htp-section">
+        <h3>⚡ Game Rules</h3>
+        <ul class="htp-list">
+          <li><strong>Lives:</strong> Start with 1 life. Each missed ear = 1 strike. 7 strikes = death!</li>
+          <li><strong>Combo Multiplier:</strong> Hit consecutive ears to boost your score multiplier</li>
+          <li><strong>Levels:</strong> Progress through infinite levels - difficulty increases every level</li>
+          <li><strong>Speed:</strong> Ears appear faster as you level up. Stay sharp!</li>
+        </ul>
       </div>
 
       <div class="htp-section">
@@ -242,74 +260,76 @@ the character is usually drawn with a confident or suspicious expression, as if 
         <div class="bonus-grid">
           <div class="bonus-item">
             <span class="bonus-emoji">🐶</span>
-            <span class="bonus-desc">+50 pts Bonk!</span>
-          </div>
-          <div class="bonus-item">
-            <span class="bonus-emoji">🚀</span>
-            <span class="bonus-desc">x2 Rocket Boost</span>
+            <span class="bonus-desc">Bonk +50 pts</span>
           </div>
           <div class="bonus-item">
             <span class="bonus-emoji">💎</span>
-            <span class="bonus-desc">Diamond Hands +100</span>
+            <span class="bonus-desc">Diamond +100 pts</span>
           </div>
           <div class="bonus-item">
             <span class="bonus-emoji">🤑</span>
-            <span class="bonus-desc">Money Rain!</span>
+            <span class="bonus-desc">Money Rain</span>
           </div>
           <div class="bonus-item">
             <span class="bonus-emoji">🔥</span>
             <span class="bonus-desc">Combo Boost</span>
           </div>
           <div class="bonus-item">
-            <span class="bonus-emoji">💀</span>
-            <span class="bonus-desc">Instant Death!</span>
-          </div>
-          <div class="bonus-item">
-            <span class="bonus-emoji">🕵️‍♂️</span>
-            <span class="bonus-desc">Cabal: +2 Levels</span>
-          </div>
-          <div class="bonus-item">
-            <span class="bonus-emoji">🤡</span>
-            <span class="bonus-desc">Reverse Controls</span>
+            <span class="bonus-emoji">🚀</span>
+            <span class="bonus-desc">Rocket x2</span>
           </div>
           <div class="bonus-item">
             <span class="bonus-emoji">⚡</span>
             <span class="bonus-desc">Speed Frenzy</span>
           </div>
           <div class="bonus-item">
+            <span class="bonus-emoji">🕵️</span>
+            <span class="bonus-desc">Cabal +2 Levels</span>
+          </div>
+          <div class="bonus-item">
             <span class="bonus-emoji">💊</span>
-            <span class="bonus-desc">Cope Pill Reset</span>
+            <span class="bonus-desc">Reset Streak</span>
           </div>
           <div class="bonus-item">
             <span class="bonus-emoji">❄️</span>
-            <span class="bonus-desc">Freeze Streak</span>
+            <span class="bonus-desc">Freeze Time</span>
           </div>
           <div class="bonus-item">
-            <span class="bonus-emoji">🪙</span>
-            <span class="bonus-desc">Coin Bonus</span>
+            <span class="bonus-emoji">🎲</span>
+            <span class="bonus-desc">Random Effect</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🤡</span>
+            <span class="bonus-desc">Reverse Controls</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">💀</span>
+            <span class="bonus-desc">INSTANT DEATH!</span>
           </div>
         </div>
       </div>
 
       <div class="htp-section">
-        <h3>⚡ Game Mechanics</h3>
+        <h3>🏆 Pro Tips</h3>
         <ul class="htp-list">
-          <li><strong>Strikes:</strong> Miss 5 ears = Game Over!</li>
-          <li><strong>Combos:</strong> Hit consecutive ears to multiply your score</li>
-          <li><strong>Levels:</strong> Progress through 30+ levels with increasing difficulty</li>
-          <li><strong>Stars:</strong> Earn up to 3 stars per level based on performance</li>
-          <li><strong>Challenges:</strong> Complete special challenges for massive bonuses</li>
+          <li>💡 <strong>Build combos:</strong> Hit ears in a row to multiply your score</li>
+          <li>⚠️ <strong>Avoid skulls:</strong> The 💀 means instant game over!</li>
+          <li>🎯 <strong>Focus on speed:</strong> Higher levels = faster ears</li>
+          <li>⚡ <strong>Speed Frenzy:</strong> Don't miss during power-ups!</li>
+          <li>🕵️ <strong>Cabal boost:</strong> Rare but powerful - skip 2 levels!</li>
+          <li>📈 <strong>Score modes:</strong> Check the leaderboard to compete globally!</li>
         </ul>
       </div>
 
       <div class="htp-section">
-        <h3>🏆 Pro Tips</h3>
+        <h3>🎮 Controls</h3>
         <ul class="htp-list">
-          <li>Focus on building combos for higher scores</li>
-          <li>Watch out for the 💀 skull - it's instant death!</li>
-          <li>Use power-ups strategically</li>
-          <li>Don't miss during Speed Frenzy ⚡</li>
-          <li>Cabal boosts 🕵️‍♂️ are rare but powerful!</li>
+          <li><strong>Desktop:</strong> Click on ears with mouse</li>
+          <li><strong>Mobile:</strong> Tap on ears with finger</li>
+          <li><strong>?</strong> - Open this help menu</li>
+          <li><strong>🔊</strong> - Toggle background music</li>
+          <li><strong>🔔</strong> - Toggle sound effects</li>
+          <li><strong>🏆</strong> - View global leaderboard</li>
         </ul>
       </div>
     </div>
@@ -508,19 +528,19 @@ setInterval(loadLiveScoresFooter, 10000);
 <script src="js/pwa.js"></script>
 
 <!-- 🔥💀 ULTRA DEGEN GAME OVER - COMPLETE EDITION 💀🔥 -->
+<!-- 🎓 Tutorial System (V7) - MANUEL UNIQUEMENT -->
+<script src="js/tutorial.js"></script>
+
+<!-- 📊 Progression System (V7) -->
+<script src="js/progression.js"></script>
+
+<!-- 💎 Metagame System (V7) -->
+<script src="js/metagame.js"></script>
+
 <script src="js/ultra-degen-complete.js"></script>
 
 <!-- 🎰💀 HEARING MACHINE ULTRA DEGEN 💀🎰 -->
 <script src="js/hearing-machine-degen.js"></script>
-
-<!-- 🎓 TUTORIAL SYSTEM (Onboarding) -->
-<script src="js/tutorial.js"></script>
-
-<!-- 🎯 PROGRESSION SYSTEM (Milestones + Progress Bar) -->
-<script src="js/progression.js"></script>
-
-<!-- 💎 META-GAME SYSTEM (Achievements + Currency + Stats) -->
-<script src="js/metagame.js"></script>
 
 </body>
 </html>

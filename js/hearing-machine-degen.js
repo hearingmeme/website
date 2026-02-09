@@ -741,21 +741,21 @@ function checkWin(results) {
     
     // Special jackpots
     if (results[0] === '👂') {
-      winAmount = 2000; // 🔥 V17: Doublé! (était 1000)
+      winAmount = 1000;
       resultDiv.innerHTML = `
         <div style="font-size: 35px; animation: rainbow 0.5s infinite;">🎰💎 LEGENDARY EARS JACKPOT! 💎🎰</div>
         <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
         <div style="font-size: 16px; color: #ff00ff;">ABSOLUTELY BASED AND EARPILLED!</div>
       `;
     } else if (results[0] === '💰') {
-      winAmount = 1500; // 🔥 V17: Presque doublé! (était 777)
+      winAmount = 777;
       resultDiv.innerHTML = `
         <div style="font-size: 35px; animation: rainbow 0.5s infinite;">🎰💰 MONEY PRINTER GO BRRR! 💰🎰</div>
         <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
         <div style="font-size: 16px; color: #00ff00;">WE'RE ALL GONNA MAKE IT!</div>
       `;
     } else {
-      winAmount = 1000; // 🔥 V17: Doublé! (était 500)
+      winAmount = 500;
       resultDiv.innerHTML = `
         <div style="font-size: 35px; animation: rainbow 0.5s infinite;">🎰🔥 JACKPOT DEGEN! 🔥🎰</div>
         <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
@@ -769,7 +769,7 @@ function checkWin(results) {
   } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
     // Small win
     isWin = true;
-    winAmount = 300; // 🔥 V17: Doublé! (était 150)
+    winAmount = 150;
     resultDiv.innerHTML = `
       <div style="font-size: 28px; color: #00ff00;">👂✨ SMOL WIN BUT STILL WINNING! ✨👂</div>
       <div style="font-size: 22px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS!</div>
@@ -870,20 +870,19 @@ function playDoubleOrNothing() {
       }, 1000);
       
     } else {
-      // 🔥 V17 FIX: Plus de malus ! Donne au moins 50% des points au lieu de tout perdre
-      const minBonus = Math.floor(currentWinAmount * 0.5);
+      // Lost it all
       if (typeof window.score !== 'undefined') {
-        window.score += minBonus; // Bonus minimum au lieu de malus!
+        window.score -= currentWinAmount;
       }
       
       resultDiv.innerHTML = `
-        <div style="font-size: 35px; color: #ffa500; animation: textShake 0.5s;">😅 CLOSE CALL! 😅</div>
-        <div style="font-size: 22px; color: #ffcc66; margin-top: 10px;">Didn't double but kept ${minBonus} points!</div>
-        <div style="font-size: 16px; color: #888;">Better luck next time! 🎰</div>
+        <div style="font-size: 35px; color: #ff0000; animation: textShake 0.5s;">💀 RUGGED! 💀</div>
+        <div style="font-size: 22px; color: #ff6666; margin-top: 10px;">LOST ${currentWinAmount} POINTS!</div>
+        <div style="font-size: 16px; color: #888;">Greed is a hell of a drug... 😭</div>
       `;
       
       playLoseSound();
-      currentWinAmount = minBonus; // Garde au moins ce qu'on a gagné
+      currentWinAmount = 0;
     }
     
     // Update UI
@@ -983,16 +982,11 @@ function closeMachine() {
     if (overlay) overlay.remove();
     machineActive = false;
     
-    // 🐛 V17 FIX CRITIQUE: Utiliser fonction globale de reprise
-    if (typeof window.resumeGameAfterMinigame === 'function') {
-      window.resumeGameAfterMinigame();
-    } else {
-      // Fallback
-      if (typeof window.setPaused === 'function') window.setPaused(false);
-      window.gamePaused = false;
-      if (typeof window.startSpawning === 'function') {
-        setTimeout(() => window.startSpawning(), 100);
-      }
+    // Resume game
+    if (typeof window.setPaused === 'function') window.setPaused(false);
+    window.gamePaused = false;
+    if (typeof window.startSpawning === 'function') {
+      setTimeout(() => window.startSpawning(), 100);
     }
   }, 400);
 }

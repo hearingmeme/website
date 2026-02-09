@@ -1,0 +1,416 @@
+/* ========================================
+   HEADER ULTRA STYLÉ V2
+   Plus gros, plus d'espace, boutons à droite
+   ======================================== */
+
+/* ==================== FORCE REMOVE ALL GLOW (GLOBAL) ==================== */
+.icon,
+.stat-icon,
+.level-stars,
+.game-stats .icon,
+.game-stats .level-stars,
+.stat-clean .stat-icon,
+span[class*="icon"] {
+  color: inherit !important;
+  text-shadow: none !important;
+  filter: none !important;
+  -webkit-text-stroke: 0 !important;
+  text-stroke: 0 !important;
+}
+
+.stat-separator {
+  display: none !important;
+}
+/* ========================================================================= */
+
+/* ==================== GAME TITLE - MEGA BANGER AVEC EFFETS ==================== */
+.game-title-clean {
+  font-family: 'Luckiest Guy', cursive;
+  font-size: clamp(42px, 8vw, 72px);
+  margin: 25px auto 30px;
+  text-align: center;
+  color: #FFD700;
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 40px rgba(255, 165, 0, 0.6),
+    0 0 60px rgba(255, 140, 0, 0.4),
+    4px 4px 0 #000,
+    -2px -2px 0 #000,
+    2px -2px 0 #000,
+    -2px 2px 0 #000;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  line-height: 1;
+  animation: titlePulse 3s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% {
+    text-shadow: 
+      0 0 20px rgba(255, 215, 0, 0.8),
+      0 0 40px rgba(255, 165, 0, 0.6),
+      0 0 60px rgba(255, 140, 0, 0.4),
+      4px 4px 0 #000,
+      -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000;
+  }
+  50% {
+    text-shadow: 
+      0 0 30px rgba(255, 215, 0, 1),
+      0 0 60px rgba(255, 165, 0, 0.8),
+      0 0 90px rgba(255, 140, 0, 0.6),
+      4px 4px 0 #000,
+      -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000;
+  }
+}
+
+/* ==================== STATS - ULTRA SOBRE ET UNIFORME (2 LIGNES MAX) ==================== */
+.game-stats-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 0 auto 35px;
+  padding: 20px 30px;
+  background: transparent;
+  border: none;
+  max-width: 700px;
+}
+
+.stats-main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: clamp(24px, 4.5vw, 32px);
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.stats-secondary {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  font-family: 'Luckiest Guy', cursive;
+  font-size: clamp(18px, 3.5vw, 24px);
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  margin-top: 5px;
+}
+
+.stat-clean {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.stat-small {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.stat-icon {
+  font-size: 1.2em;
+  display: inline-block;
+  margin-right: 1px;
+}
+
+/* Score highlight - sobre, pas de glow, pas d'animation */
+.stat-score {
+  color: #FFD700;
+  font-size: 1.3em;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* ==================== HEADER CONTROLS - COLONNE DROITE SCROLLBAR ==================== */
+.game-header-controls {
+  position: fixed !important;
+  top: 50% !important;
+  right: 12px !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: translateY(-50%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
+  z-index: 10000 !important;
+}
+
+.header-btn {
+  background: rgba(20, 20, 20, 0.85) !important;
+  backdrop-filter: blur(10px) !important;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 16px !important;
+  width: 65px !important;
+  height: 65px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 40px !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+  position: relative !important;
+}
+
+.header-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.header-btn:hover {
+  background: rgba(30, 30, 30, 0.95);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 255, 255, 0.1),
+    inset 0 2px 4px rgba(255, 255, 255, 0.15);
+}
+
+.header-btn:hover::before {
+  opacity: 1;
+}
+
+.header-btn:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Bouton Close - accent rouge subtil */
+.header-btn-close {
+  background: rgba(30, 20, 20, 0.85);
+  border-color: rgba(255, 100, 100, 0.2);
+  color: #ff6666;
+  font-size: 38px;
+}
+
+.header-btn-close::before {
+  background: linear-gradient(145deg, rgba(255, 100, 100, 0.2), rgba(255, 100, 100, 0.05));
+}
+
+.header-btn-close:hover {
+  background: rgba(40, 25, 25, 0.95);
+  border-color: rgba(255, 100, 100, 0.4);
+  color: #ff8888;
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(255, 100, 100, 0.2),
+    inset 0 2px 4px rgba(255, 100, 100, 0.1);
+}
+
+/* ==================== MOBILE OPTIMIZATIONS ==================== */
+@media (max-width: 768px) {
+  .game-title-clean {
+    font-size: clamp(32px, 7vw, 52px);
+    margin: 20px auto 25px;
+  }
+
+  .game-stats-clean {
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    gap: 15px;
+  }
+
+  .stats-main {
+    font-size: clamp(20px, 4.2vw, 28px);
+    gap: 25px;
+  }
+
+  .stats-secondary {
+    font-size: clamp(16px, 3.2vw, 20px);
+    gap: 20px;
+  }
+
+  .stat-icon {
+    font-size: 1.2em;
+  }
+
+  .stat-clean {
+    gap: 8px;
+  }
+
+  .stat-small {
+    gap: 6px;
+  }
+
+  .game-header-controls {
+    position: fixed;
+    bottom: 12px;
+    top: auto;
+    right: 50%;
+    transform: translateX(50%);
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .game-header-controls {
+    position: fixed;
+    bottom: 12px;
+    top: auto;
+    right: 50%;
+    transform: translateX(50%);
+    gap: 12px;
+  }
+
+  .header-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 32px;
+    border-radius: 14px;
+  }
+
+  .header-btn-close {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 400px) {
+  .game-title-clean {
+    font-size: clamp(28px, 6.5vw, 42px);
+    margin: 15px auto 20px;
+  }
+
+  .game-stats-clean {
+    padding: 12px 15px;
+    gap: 12px;
+  }
+
+  .stats-main {
+    font-size: clamp(18px, 4vw, 24px);
+    gap: 20px;
+  }
+
+  .stats-secondary {
+    font-size: clamp(14px, 3vw, 18px);
+    gap: 15px;
+  }
+
+  .stat-clean {
+    gap: 6px;
+  }
+
+  .stat-small {
+    gap: 5px;
+  }
+
+  .header-btn {
+    width: 52px;
+    height: 52px;
+    font-size: 28px;
+  }
+
+  .header-btn-close {
+    font-size: 26px;
+  }
+}
+
+/* ==================== ULTRA CLEAN - NO CLUTTER ==================== */
+/* Remove old buttons */
+.close-game-btn,
+.mute-music-btn,
+.sound-fx-btn,
+.how-to-play-btn,
+.leaderboard-btn {
+  display: none !important;
+}
+
+/* Remove old stats */
+.game-stats:not(.game-stats-clean),
+.game-title:not(.game-title-clean) {
+  display: none !important;
+}
+
+/* ==================== BOUTON START PLAYING - GROS ET STYLÉ ==================== */
+.intro-start-btn {
+  font-size: 60px !important;
+  padding: 30px 80px !important;
+  background: linear-gradient(145deg, #00ff88, #00cc66) !important;
+  color: #000 !important;
+  border: 5px solid #00ff88 !important;
+  border-radius: 25px !important;
+  box-shadow: 
+    0 10px 40px rgba(0, 255, 136, 0.6),
+    0 0 60px rgba(0, 255, 136, 0.4) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 3px !important;
+  font-weight: 900 !important;
+}
+
+.intro-start-btn:hover {
+  transform: scale(1.08) translateY(-5px) !important;
+  box-shadow: 
+    0 15px 60px rgba(0, 255, 136, 0.8),
+    0 0 80px rgba(0, 255, 136, 0.6) !important;
+  background: linear-gradient(145deg, #00ff99, #00dd77) !important;
+}
+
+@media (max-width: 768px) {
+  .intro-start-btn {
+    font-size: 45px !important;
+    padding: 25px 60px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .intro-start-btn {
+    font-size: 35px !important;
+    padding: 20px 45px !important;
+  }
+}
+
+/* ==================== GAME CONTAINER - PLUS D'ESPACE ==================== */
+.game-container {
+  padding: 20px !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== GAME BOARD - CENTRÉ VERTICALEMENT ==================== */
+.game-board {
+  margin: 5px auto 80px !important;
+}
+
+@media (max-width: 768px) {
+  .game-container {
+    padding: 15px !important;
+  }
+
+  .game-board {
+    margin: 5px auto 50px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .game-container {
+    padding: 10px !important;
+  }
+
+  .game-board {
+    margin: 8px auto 25px !important;
+  }
+}

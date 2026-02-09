@@ -155,11 +155,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getMaxEars() {
-    // 🔥 FIX CRITIQUE V17.4 : Correction logique spawn
-    if (level === 1) return 1;       // Niveau 1: 1 oreille max
-    if (level < 6) return 2;         // Niveaux 2-5: 2 oreilles max
-    if (level < 12) return 3;        // Niveaux 6-11: 3 oreilles max
-    return 4;                        // Niveau 12+: 4 oreilles max
+    if (level <= 10) return Math.min(level === 1 ? 1 : 2, 2);
+    if (level < 6) return 2;
+    if (level < 12) return 3;
+    return 4;
   }
 
   function getBonusChance() {
@@ -405,20 +404,6 @@ document.addEventListener("DOMContentLoaded", () => {
       starsThisLevel = 1;
       setPaused(false);
       window.gamePaused = false; // CRITICAL: Resume game
-      
-      // 🎯 V7: Check for milestone achievement
-      if (typeof MilestoneSystem !== 'undefined') {
-        MilestoneSystem.checkMilestone(level);
-        MilestoneSystem.updateProgressBar(level);
-      }
-      
-      // 💎 V7: Track achievements
-      if (typeof MetaGameSystem !== 'undefined') {
-        // Check perfect level
-        if (levelMisses === 0) {
-          MetaGameSystem.checkAchievement('perfect_level', 1);
-        }
-      }
       
       let hasMinigame = false;
       
@@ -795,17 +780,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gameOverScreen.style.display = "none";
     resetBoard();
     updateUI();
-    
-    // 🎯 V7: Initialize milestone progress bar
-    if (typeof MilestoneSystem !== 'undefined') {
-      MilestoneSystem.updateProgressBar(level);
-    }
-    
-    // 🎓 V7: Show tutorial prompt for first-time users
-    if (typeof TutorialSystem !== 'undefined') {
-      TutorialSystem.showFirstTimePrompt();
-    }
-    
     startSpawning();
 
     if (soundtrack && !isMuted) {
@@ -837,73 +811,10 @@ document.addEventListener("DOMContentLoaded", () => {
     window.gameIntervals = { powerUpInterval, eventsInterval };
   }
 
-  // 🐛 V17.2 FIX ULTRA CRITIQUE: Fonction globale pour reprendre le jeu après mini-jeu
-  window.resumeGameAfterMinigame = function() {
-    console.log('🎮🔥 RESUMING GAME AFTER MINIGAME - ULTRA AGGRESSIVE MODE');
-    
-    // 1. FORCER unpause
-    if (typeof window.setPaused === 'function') {
-      window.setPaused(false);
-    }
-    window.gamePaused = false;
-    isPaused = false;
-    
-    // 2. Clear toutes les oreilles actives
-    document.querySelectorAll('.ear.active').forEach(ear => {
-      if (!ear.dataset.tutorial) {
-        ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-        ear.textContent = '';
-      }
-    });
-    activeEarsCount = 0;
-    
-    // 3. CLEAR gameInterval puis REDEMARRER
-    if (gameInterval) {
-      clearInterval(gameInterval);
-      gameInterval = null;
-    }
-    
-    // 4. Redémarrer le spawning IMMÉDIATEMENT
-    setTimeout(() => {
-      if (typeof window.startSpawning === 'function') {
-        window.startSpawning();
-        console.log('✅ startSpawning() called');
-      }
-    }, 100);
-    
-    // 5. Force TROIS spawns espacés pour être SÛR
-    setTimeout(() => {
-      if (typeof spawnEar === 'function' && !isPaused && !window.gamePaused) {
-        spawnEar();
-        console.log('✅ Force spawn 1/3');
-      }
-    }, 300);
-    
-    setTimeout(() => {
-      if (typeof spawnEar === 'function' && !isPaused && !window.gamePaused) {
-        spawnEar();
-        console.log('✅ Force spawn 2/3');
-      }
-    }, 600);
-    
-    setTimeout(() => {
-      if (typeof spawnEar === 'function' && !isPaused && !window.gamePaused) {
-        spawnEar();
-        console.log('✅ Force spawn 3/3 - GAME FULLY RESUMED');
-      }
-    }, 900);
-  };
-
   function startSpawning() {
-    console.log('🔥 startSpawning() called - isPaused:', isPaused, 'gamePaused:', window.gamePaused);
+    if (gameInterval) clearInterval(gameInterval);
     
-    // Clear l'ancien interval
-    if (gameInterval) {
-      clearInterval(gameInterval);
-      gameInterval = null;
-    }
-    
-    // FORCER unpause
+    // 🐛 FIX CRITIQUE: Forcer le redémarrage même si déjà en cours
     isPaused = false;
     window.gamePaused = false;
     
@@ -912,27 +823,16 @@ document.addEventListener("DOMContentLoaded", () => {
       startSpawning();
     }
     window.adjustInterval = adjustInterval;
-    window.startSpawning = startSpawning;
+    window.startSpawning = startSpawning; // Expose globally for mini-games
 
-    // Créer le nouvel interval
-    const interval = getSpawnInterval();
-    console.log(`📊 Spawn interval: ${interval}ms`);
-    gameInterval = setInterval(spawnEar, interval);
+    gameInterval = setInterval(spawnEar, getSpawnInterval());
     
-    // Force DEUX spawns immédiats pour être SÛR
+    // 🐛 FIX: S'assurer qu'au moins une oreille spawne immédiatement
     setTimeout(() => {
       if (!isPaused && !window.gamePaused && activeEarsCount < getMaxEars()) {
         spawnEar();
-        console.log('✅ Immediate spawn 1/2');
       }
     }, 100);
-    
-    setTimeout(() => {
-      if (!isPaused && !window.gamePaused && activeEarsCount < getMaxEars()) {
-        spawnEar();
-        console.log('✅ Immediate spawn 2/2 - SPAWNING ACTIVE');
-      }
-    }, 400);
   }
 
   function spawnEar() {
@@ -1002,11 +902,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     activeEarsCount++;
     setTimeout(() => {
-      // 🎓 V7: Don't let tutorial ears disappear
-      if (ear.dataset.tutorial === 'true') {
-        return;
-      }
-      
       if (ear.classList.contains("active") && !ear.classList.contains("power-up")) {
         const symbol = ear.textContent;
         ear.classList.remove("active", "cabal", "echo");
@@ -1240,7 +1135,7 @@ document.addEventListener("DOMContentLoaded", () => {
       combo += 0.5;
       levelHits++;
       
-      // 💎 V7: Track achievements
+      // 💎 Track achievements with MetaGameSystem
       if (typeof MetaGameSystem !== 'undefined') {
         // Track combo achievement
         MetaGameSystem.checkAchievement('combo_master', Math.floor(combo));
@@ -1400,11 +1295,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleBonus(symbol, ear) {
     checkBonusCombo(symbol);
-    
-    // 🎓 V7: Tutorial - Mark bonus as seen
-    if (symbol && symbol !== '👂') {
-      window.tutorialBonusSeen = true;
-    }
     
     if (typeof SoundSystem !== 'undefined') {
       SoundSystem.bonus();
@@ -1605,27 +1495,6 @@ document.addEventListener("DOMContentLoaded", () => {
             gameContainer.style.background = '';
           }
           counter.remove();
-          
-          // 🔥 V17.3 FIX MEGA CRITIQUE: Force 3 spawns après Dogs
-          console.log('🔥🔥🔥 DOGS ENDED - FORCING SPAWNS');
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 1/3 after Dogs');
-            }
-          }, 200);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 2/3 after Dogs');
-            }
-          }, 500);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 3/3 after Dogs - GAME ACTIVE');
-            }
-          }, 800);
         }, duration);
       },
       '🚀': () => {
@@ -1709,27 +1578,6 @@ document.addEventListener("DOMContentLoaded", () => {
             gameContainer.style.filter = '';
             gameContainer.style.animation = '';
             gameContainer.style.opacity = '1';
-            
-            // 🔥 V17.3 FIX MEGA CRITIQUE: Force 3 spawns après Channel Switch
-            console.log('🔥🔥🔥 CHANNEL SWITCH ENDED - FORCING SPAWNS');
-            setTimeout(() => {
-              if (!isPaused && !window.gamePaused) {
-                spawnEar();
-                console.log('✅ Spawn 1/3 after Channel');
-              }
-            }, 200);
-            setTimeout(() => {
-              if (!isPaused && !window.gamePaused) {
-                spawnEar();
-                console.log('✅ Spawn 2/3 after Channel');
-              }
-            }, 500);
-            setTimeout(() => {
-              if (!isPaused && !window.gamePaused) {
-                spawnEar();
-                console.log('✅ Spawn 3/3 after Channel - GAME ACTIVE');
-              }
-            }, 800);
           }, duration);
         }
       },
@@ -1850,27 +1698,6 @@ document.addEventListener("DOMContentLoaded", () => {
             delete ear.dataset.firebonus;
           });
           if (gameContainer) gameContainer.style.background = '';
-          
-          // 🔥 V17.3 FIX MEGA CRITIQUE: Force 3 spawns après Fire
-          console.log('🔥🔥🔥 FIRE ENDED - FORCING SPAWNS');
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 1/3 after Fire');
-            }
-          }, 200);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 2/3 after Fire');
-            }
-          }, 500);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 3/3 after Fire - GAME ACTIVE');
-            }
-          }, 800);
         }, duration);
       },
       '💀': () => {
@@ -2245,27 +2072,6 @@ document.addEventListener("DOMContentLoaded", () => {
             invincibleMode = wasInvincible;
             
             if (!wasPaused) isPaused = false;
-            
-            // 🔥 V17.3 FIX MEGA CRITIQUE: Force 3 spawns après Lightning
-            console.log('🔥🔥🔥 LIGHTNING ENDED - FORCING SPAWNS');
-            setTimeout(() => {
-              if (!isPaused && !window.gamePaused) {
-                spawnEar();
-                console.log('✅ Spawn 1/3 after Lightning');
-              }
-            }, 200);
-            setTimeout(() => {
-              if (!isPaused && !window.gamePaused) {
-                spawnEar();
-                console.log('✅ Spawn 2/3 after Lightning');
-              }
-            }, 500);
-            setTimeout(() => {
-              if (!isPaused && !window.gamePaused) {
-                spawnEar();
-                console.log('✅ Spawn 3/3 after Lightning - GAME ACTIVE');
-              }
-            }, 800);
           }, 10000); // 10 seconds
         }
       },
@@ -2395,27 +2201,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           
           updateUI();
-          
-          // 🔥 V17.3 FIX MEGA CRITIQUE: Force 3 spawns après Freeze
-          console.log('🔥🔥🔥 FREEZE ENDED - FORCING SPAWNS');
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 1/3 after Freeze');
-            }
-          }, 200);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 2/3 after Freeze');
-            }
-          }, 500);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 3/3 after Freeze - GAME ACTIVE');
-            }
-          }, 800);
         }, duration);
         
         streak = 0; // Reset misses
@@ -2522,27 +2307,6 @@ document.addEventListener("DOMContentLoaded", () => {
             ear.style.opacity = '1';
             ear.style.filter = '';
           });
-          
-          // 🔥 V17.3 FIX MEGA CRITIQUE: Force 3 spawns après Ghosts
-          console.log('🔥🔥🔥 GHOSTS ENDED - FORCING SPAWNS');
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 1/3 after Ghosts');
-            }
-          }, 200);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 2/3 after Ghosts');
-            }
-          }, 500);
-          setTimeout(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-              console.log('✅ Spawn 3/3 after Ghosts - GAME ACTIVE');
-            }
-          }, 800);
         }, duration);
         
         score += 150;
@@ -3686,19 +3450,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const action = bonusActions[symbol];
     if (action) {
-      console.log(`🎁 Executing bonus: ${symbol}`);
       action();
       rumorBubble.classList.add("show");
       setTimeout(() => rumorBubble.classList.remove("show"), 1800);
       vibrate([100, 50, 150]);
-      
-      // 🔥 V17.2 FIX CRITIQUE: Forcer spawn après CHAQUE bonus
-      setTimeout(() => {
-        if (!isPaused && !window.gamePaused && activeEarsCount < getMaxEars()) {
-          console.log(`🔥 Forcing spawn after bonus ${symbol}`);
-          spawnEar();
-        }
-      }, 2500);
     }
 
     if (Math.random() < 0.03 && symbol !== '💀') {
@@ -3807,52 +3562,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gameOverLevel = level;
     finalLevelEl.textContent = `LEVEL ${gameOverLevel}`;
     
-    // 💎 V7: Convert score to ears currency
-    if (typeof MetaGameSystem !== 'undefined' && window.convertScoreToEars) {
-      const earnedEars = window.convertScoreToEars(score);
-      
-      // Show notification
-      if (earnedEars > 0) {
-        const earNotif = document.createElement('div');
-        earNotif.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: linear-gradient(145deg, #FFD700, #FFA000);
-          color: #000;
-          font-family: 'Luckiest Guy', cursive;
-          font-size: 24px;
-          padding: 20px 30px;
-          border-radius: 15px;
-          z-index: 100001;
-          box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
-          animation: slideInRight 0.5s, slideOutRight 0.5s 3s;
-        `;
-        earNotif.textContent = `+${earnedEars} 👂 EARS EARNED!`;
-        document.body.appendChild(earNotif);
-        setTimeout(() => earNotif.remove(), 3500);
-      }
-    }
-    
-    // 📊 V7: Track session stats
-    if (typeof MetaGameSystem !== 'undefined') {
-      const gamesPlayed = parseInt(localStorage.getItem('stats_games_played') || 0) + 1;
-      const highestLevel = Math.max(parseInt(localStorage.getItem('stats_highest_level') || 1), level);
-      const longestCombo = Math.max(parseInt(localStorage.getItem('stats_longest_combo') || 1), Math.floor(combo));
-      const totalEars = (parseInt(localStorage.getItem('stats_total_ears') || 0)) + 1; // Increment per game for now
-      const totalPoints = (parseInt(localStorage.getItem('stats_total_points') || 0)) + Math.round(score);
-      
-      localStorage.setItem('stats_games_played', gamesPlayed);
-      localStorage.setItem('stats_highest_level', highestLevel);
-      localStorage.setItem('stats_longest_combo', longestCombo);
-      localStorage.setItem('stats_total_ears', totalEars);
-      localStorage.setItem('stats_total_points', totalPoints);
-      
-      // Check score achievements
-      MetaGameSystem.checkAchievement('big_earner', Math.round(score));
-      MetaGameSystem.checkAchievement('millionaire', Math.round(score));
-    }
-    
+    // 🔥 CRITICAL: Afficher le game over screen AVANT tout le reste
     gameOverScreen.style.display = "flex";
     
     const nameInputSection = document.getElementById('nameInputSection');
@@ -3860,6 +3570,57 @@ document.addEventListener("DOMContentLoaded", () => {
     const playerNameInput = document.getElementById('playerNameInput');
     
     nameInputSection.style.display = 'block';
+    
+    // 💎 V7: Convert score to ears currency (APRÈS game over display)
+    try {
+      if (typeof MetaGameSystem !== 'undefined' && window.convertScoreToEars) {
+        const earnedEars = window.convertScoreToEars(score);
+        
+        // Show notification
+        if (earnedEars > 0) {
+          const earNotif = document.createElement('div');
+          earNotif.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(145deg, #FFD700, #FFA000);
+            color: #000;
+            font-family: 'Luckiest Guy', cursive;
+            font-size: 24px;
+            padding: 20px 30px;
+            border-radius: 15px;
+            z-index: 100001;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
+            animation: slideInRight 0.5s, slideOutRight 0.5s 3s;
+          `;
+          earNotif.textContent = `+${earnedEars} 👂 EARS EARNED!`;
+          document.body.appendChild(earNotif);
+          setTimeout(() => earNotif.remove(), 3500);
+        }
+      }
+      
+      // 📊 V7: Track session stats
+      if (typeof MetaGameSystem !== 'undefined') {
+        const gamesPlayed = parseInt(localStorage.getItem('stats_games_played') || 0) + 1;
+        const highestLevel = Math.max(parseInt(localStorage.getItem('stats_highest_level') || 1), level);
+        const longestCombo = Math.max(parseInt(localStorage.getItem('stats_longest_combo') || 1), Math.floor(combo));
+        const totalEars = (parseInt(localStorage.getItem('stats_total_ears') || 0)) + 1;
+        const totalPoints = (parseInt(localStorage.getItem('stats_total_points') || 0)) + Math.round(score);
+        
+        localStorage.setItem('stats_games_played', gamesPlayed);
+        localStorage.setItem('stats_highest_level', highestLevel);
+        localStorage.setItem('stats_longest_combo', longestCombo);
+        localStorage.setItem('stats_total_ears', totalEars);
+        localStorage.setItem('stats_total_points', totalPoints);
+        
+        // Check score achievements
+        MetaGameSystem.checkAchievement('big_earner', Math.round(score));
+        MetaGameSystem.checkAchievement('millionaire', Math.round(score));
+      }
+    } catch (error) {
+      console.error('MetaGameSystem error:', error);
+      // Game over screen already displayed, so this is non-critical
+    }
     
     submitScoreBtn.onclick = async () => {
       const playerName = playerNameInput.value.trim();

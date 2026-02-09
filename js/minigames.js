@@ -545,16 +545,10 @@ const MiniGames = {
     
     setTimeout(() => {
       overlay.remove();
+      window.gamePaused = false;
       
-      // 🐛 V17 FIX CRITIQUE: Utiliser fonction globale de reprise
-      if (typeof window.resumeGameAfterMinigame === 'function') {
-        window.resumeGameAfterMinigame();
-      } else {
-        // Fallback
-        window.gamePaused = false;
-        if (window.startSpawning) {
-          setTimeout(() => window.startSpawning(), 100);
-        }
+      if (window.startSpawning) {
+        setTimeout(() => window.startSpawning(), 100);
       }
     }, 3000);
   },
@@ -630,16 +624,10 @@ const MiniGames = {
     
     setTimeout(() => {
       overlay.remove();
+      window.gamePaused = false;
       
-      // 🐛 V17 FIX CRITIQUE: Utiliser fonction globale de reprise
-      if (typeof window.resumeGameAfterMinigame === 'function') {
-        window.resumeGameAfterMinigame();
-      } else {
-        // Fallback
-        window.gamePaused = false;
-        if (window.startSpawning) {
-          setTimeout(() => window.startSpawning(), 100);
-        }
+      if (window.startSpawning) {
+        setTimeout(() => window.startSpawning(), 100);
       }
     }, 3000);
   },

@@ -620,7 +620,7 @@ const MegaBonusEffects = {
     setTimeout(() => notif.remove(), 3000);
     
     let caughtBats = 0;
-    const totalBats = 5; // 🐛 V17 FIX: 5 au lieu de 20
+    const totalBats = 20;
     
     const counter = document.createElement('div');
     counter.textContent = `🦇 0/${totalBats}`;
@@ -711,17 +711,11 @@ const MegaBonusEffects = {
             bat.remove();
             
             if (caughtBats === totalBats) {
-              // 🔥 V17: MEGA BONUS si on attrape toutes les chauves-souris!
-              const megaBonus = 500;
-              game.score += megaBonus;
-              game.updateUI();
-              
               const perfectMsg = document.createElement('div');
               perfectMsg.innerHTML = `
                 <div style="font-size: 60px; margin-bottom: 20px;">🎉 PERFECT! 🎉</div>
                 <div style="font-size: 40px;">ALL ${totalBats} BATS CAUGHT!</div>
-                <div style="font-size: 35px; color: #FFD700; margin-top: 10px;">+${totalBats * 100} POINTS!</div>
-                <div style="font-size: 50px; color: #ff00ff; margin-top: 20px; animation: pulse 0.5s infinite;">🔥 MEGA BONUS: +${megaBonus} 🔥</div>
+                <div style="font-size: 35px; color: #FFD700; margin-top: 10px;">+${totalBats * 100} POINTS TOTAL!</div>
               `;
               perfectMsg.style.cssText = `
                 position: fixed;
