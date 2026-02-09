@@ -1,0 +1,203 @@
+/* 🔥 MOBILE FIXES V17.5 - VERSION CORRIGÉE 🔥 */
+
+/* ========================================
+   MEDIA QUERY MOBILE (max-width: 768px)
+======================================== */
+
+@media (max-width: 768px) {
+  
+  /* 1️⃣ CACHER LE LEADERBOARD SUR MOBILE */
+  #leaderboard,
+  .leaderboard-container,
+  .leaderboard-section {
+    display: none !important;
+  }
+  
+  /* 2️⃣ NAVBAR SIMPLIFIÉE SANS EFFETS */
+  .ears-container {
+    gap: 10px !important;
+    padding: 10px !important;
+  }
+  
+  .ear-icon,
+  .camera-icon,
+  .game-icon,
+  .pencil-icon {
+    /* Désactiver les effets d'animation lourds uniquement */
+    animation: none !important;
+    transform: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+  
+  .ear-icon:hover,
+  .camera-icon:hover,
+  .game-icon:hover,
+  .pencil-icon:hover {
+    /* Juste un léger fade au hover */
+    opacity: 0.8 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  
+  /* Désactiver les effets de glitch sur les icônes */
+  .ear-icon::before,
+  .ear-icon::after,
+  .camera-icon::before,
+  .camera-icon::after,
+  .game-icon::before,
+  .game-icon::after,
+  .pencil-icon::before,
+  .pencil-icon::after {
+    display: none !important;
+  }
+  
+  /* 3️⃣ AMÉLIORER VISIBILITÉ DES HOLES */
+  .hole {
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    box-shadow: 
+      inset 0 0 20px rgba(0, 0, 0, 0.8),
+      0 0 10px rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .hole.popped {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  /* 4️⃣ OPTIMISER GAME CONTAINER */
+  #game-container {
+    /* Désactiver les effets de background animés */
+    background: linear-gradient(145deg, #050505 0%, #0f0f0f 100%) !important;
+  }
+  
+  /* Désactiver les effets psychédéliques sur mobile */
+  .lsd-psycho,
+  .rug-pull,
+  .glitch-effect {
+    animation: none !important;
+    filter: none !important;
+  }
+  
+  /* 5️⃣ FIX HOME AFFICHAGE */
+  .about {
+    padding: 15px !important;
+    font-size: 14px !important;
+  }
+  
+  .about-text {
+    line-height: 1.5 !important;
+  }
+  
+  /* 6️⃣ SIMPLIFIER SIDEBAR */
+  .sidebar {
+    padding: 10px !important;
+  }
+  
+  .sidebar h1 {
+    font-size: 2em !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .title-line span {
+    animation: none !important;
+  }
+  
+  /* 7️⃣ DÉSACTIVER LES EFFETS VISUELS LOURDS */
+  .power-up-active,
+  .invincible-mode,
+  .freeze-mode {
+    /* Garder seulement un indicateur simple */
+    opacity: 0.9 !important;
+    animation: none !important;
+    filter: none !important;
+  }
+  
+  /* 8️⃣ OPTIMISER LES BONUS */
+  .bonus-notification,
+  .level-up-notification,
+  .combo-notification {
+    /* Notifications simples sans animations */
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  /* 9️⃣ FIX GAME OVERLAY */
+  #game-overlay {
+    background: rgba(0, 0, 0, 0.95) !important;
+  }
+  
+  /* Désactiver les particules et effets de fond */
+  .particles,
+  .background-effect,
+  .visual-effect {
+    display: none !important;
+  }
+  
+  /* ⚡ PERFORMANCE - DÉSACTIVER UNIQUEMENT LES ANIMATIONS DÉCORATIVES */
+  /* ❌ NE PAS TOUCHER AUX ANIMATIONS DU GAMEPLAY ! */
+  .menu-btn,
+  .sidebar-menu,
+  .ears-container span,
+  h1 span,
+  .body-image,
+  .speech-bubble,
+  .menu-btn::before,
+  .menu-btn::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.1s !important;
+  }
+  
+  /* ✅ LAISSER LES ANIMATIONS CRITIQUES DU JEU INTACTES */
+  /* Les .ear, .hole, .game-board, etc. DOIVENT garder leurs animations */
+}
+
+/* ========================================
+   FIXES SUPPLÉMENTAIRES POUR TRÈS PETIT ÉCRAN
+   (max-width: 480px)
+======================================== */
+
+@media (max-width: 480px) {
+  
+  /* Encore plus épuré */
+  .sidebar-menu {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+  }
+  
+  .menu-btn {
+    font-size: 12px !important;
+    padding: 8px !important;
+  }
+  
+  .ears-container {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+  
+  .ear-icon img,
+  .camera-icon img,
+  .game-icon img,
+  .pencil-icon img {
+    width: 50px !important;
+    height: 50px !important;
+  }
+  
+  /* Grid de jeu optimisé */
+  .game-grid {
+    gap: 5px !important;
+  }
+  
+  .hole {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .ear {
+    font-size: 2em !important;
+  }
+}
