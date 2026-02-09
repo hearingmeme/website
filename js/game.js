@@ -155,10 +155,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getMaxEars() {
-    if (level <= 10) return Math.min(level === 1 ? 1 : 2, 2);
-    if (level < 6) return 2;
-    if (level < 12) return 3;
-    return 4;
+    // 🔥 FIX CRITIQUE V17.4 : Correction logique spawn
+    if (level === 1) return 1;       // Niveau 1: 1 oreille max
+    if (level < 6) return 2;         // Niveaux 2-5: 2 oreilles max
+    if (level < 12) return 3;        // Niveaux 6-11: 3 oreilles max
+    return 4;                        // Niveau 12+: 4 oreilles max
   }
 
   function getBonusChance() {
