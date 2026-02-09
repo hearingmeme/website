@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Hearing Things">
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Meta Tags -->
+  <meta name="description" content="Whack The Rumors – The official $HEARING game on Solana. Test your reflexes in this chaotic meme game!">
+  <meta name="keywords" content="hearing, solana, meme, game, crypto, degen">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@hearingmeme">
+  <meta name="twitter:creator" content="@hearingmeme">
+  <meta name="twitter:title" content="Whack The Rumors – $HEARING Game 👂💀">
+  <meta name="twitter:description" content="Just whacked rumors in the chaotic $HEARING game on Solana. High score energy!">
+  <meta name="twitter:image" content="https://hearingthings.meme/images/game-preview.jpg">
+  
+  <meta property="og:title" content="Whack The Rumors – $HEARING Game 👂💀">
+  <meta property="og:description" content="Whack rumors before they whack you.">
+  <meta property="og:image" content="https://hearingthings.meme/images/game-preview.jpg">
+  <meta property="og:url" content="https://hearingthings.meme">
+  <meta property="og:type" content="website">
+  
+  <title>Hearing Things - Whack The Rumors</title>
+  
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  
+  <!-- Styles - FULLY OPTIMIZED BUNDLE -->
+  <link rel="stylesheet" href="css/bundle.optimized.css">
+  <!-- 🔥💀 DEGEN EFFECTS 💀🔥 -->
+  <link rel="stylesheet" href="css/degen-effects.css">
+</head>
+
+<body>
+  <!-- INTRO SCREEN -->
+  
+
+
+
+<div class="container">
+<aside class="sidebar">
+  <h1>
+    <div class="title-line">
+      <span>h</span><span>e</span><span>a</span><span>r</span><span>i</span><span>n</span><span>g</span>
+    </div>
+    <div class="title-line">
+      <span>t</span><span>h</span><span>i</span><span>n</span><span>g</span><span>s</span>
+    </div>
+  </h1>
+
+    <div class="ears-container">
+      <span class="ear-icon" id="audioEarTrigger" aria-label="Audio Player" title="Audio Player 🎵">
+        <img src="images/music-note.svg" width="70" height="70" alt="Audio">
+      </span>
+      <span class="camera-icon" id="videoTrigger" aria-label="Videos" title="Videos 🎥">
+        <img src="images/video-camera.svg" width="70" height="70" alt="Videos">
+      </span>
+      <span class="game-icon" id="gameTrigger" aria-label="Game" title="Play Game 🕹️">
+        <img src="images/game-controller.svg" width="70" height="70" alt="Game">
+      </span>
+      <span class="pencil-icon disabled-icon" id="memeTrigger" aria-label="Meme Generator" title="Meme Generator ✏️">
+        <img src="images/pencil-meme.svg" width="70" height="70" alt="Meme">
+        <span class="wip-tooltip">WIP</span>
+      </span>
+    </div>
+
+    <div class="sidebar-menu">
+      <a href="https://dexscreener.com/solana/expsw7dqczvq3gyfvselk2lcx2x1etfrviejqlwztc3u" target="_blank" rel="noopener" class="menu-btn">Dexscreener</a>
+      <a href="https://x.com/hearingmeme" target="_blank" rel="noopener" class="menu-btn">X @hearingmeme</a>
+      <a href="https://memedepot.com/d/hearingthings" target="_blank" rel="noopener" class="menu-btn">Meme Depot</a>
+            <a href="https://github.com/hearingmeme/" target="_blank" rel="noopener" class="menu-btn">Github</a>
+<a href="https://jup.ag/?sell=So11111111111111111111111111111111111111112&buy=97sraAGszzEFY6AW8iuWfTceBQWa1RzuFRXryJqSbonk" target="_blank" rel="noopener" class="menu-btn">Buy on Jupiter</a>
+     
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="audio-controls" id="audioControls">
+      <button class="audio-btn" id="prevBtn" aria-label="Previous">&lt;&lt;</button>
+      <button class="audio-btn" id="playPauseBtn" aria-label="Play/Pause">&gt;</button>
+      <button class="audio-btn" id="nextBtn" aria-label="Next">&gt;&gt;</button>
+      <button class="audio-btn" id="closeAudioBtn" aria-label="Close Audio Player">X</button>
+    </div>
+
+    <div class="about" id="aboutBlock">
+      <div class="about-content" id="aboutContent">
+        <div class="about-text" id="aboutText">hearing is a hand drawn cartoon character recognizable by his large curved ears, black sunglasses, and snow white skin.
+
+the character is usually drawn with a confident or suspicious expression, as if he is overhearing something important. this led to the associated phrase "hearing things", which is used as a caption or catchphrase when someone thinks they are picking up on drama, secrets or hidden information.<span class="about-cursor"></span></div>
+      </div>
+    </div>
+
+    <div class="video-container" id="videoContainer">
+      <button class="close-video-btn" id="closeVideoBtn" aria-label="Close">X</button>
+      <button class="video-nav-btn left" id="prevVideoBtn" aria-label="Previous Video">&lt;</button>
+      <video id="hearingVideo" controls playsinline preload="metadata"></video>
+      <button class="video-nav-btn right" id="nextVideoBtn" aria-label="Next Video">&gt;</button>
+    </div>
+
+    <div class="ca-container" id="caContainer">
+      <span class="ca-text" onclick="copyCA()">97sraAGszzEFY6AW8iuWfTceBQWa1RzuFRXryJqSbonk</span>
+      <div class="disclaimer">
+        Hearing Things is an entertainment-only community meme coin.<br>
+        It does not constitute financial, investment or trading advice.<br>
+        Investments in cryptocurrency and memecoins involve an extreme risk of total loss.<br>
+        Users participate at their own risk and the operators disclaim all liability<br>
+        for any losses, damages or decisions made based on the provided content.
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Game Overlay -->
+<div class="game-overlay" id="gameOverlay">
+  <div class="game-container">
+    <!-- 🎯 HEADER REDESIGNÉ - Ultra clean et lisible -->
+    
+    <!-- Boutons regroupés en haut à droite -->
+    <div class="game-header-controls">
+      <button class="header-btn" id="howToPlayBtn" aria-label="How to Play" title="How to Play">?</button>
+      <button class="header-btn" id="muteMusicBtn" aria-label="Toggle Music" title="Music">🔊</button>
+      <button class="header-btn" id="soundFxBtn" aria-label="Toggle Sound FX" title="Sound FX">🔔</button>
+      <button class="header-btn" id="leaderboardBtn" aria-label="Leaderboard" title="Leaderboard">🏆</button>
+      <button class="header-btn header-btn-close" id="closeGameBtn" aria-label="Close Game" title="Close">✕</button>
+    </div>
+
+    <!-- Titre simplifié sur une ligne -->
+    <h1 class="game-title-clean">WHACK THE RUMORS</h1>
+
+    <!-- Stats ULTRA simplifiées et lisibles -->
+    <div class="game-stats-clean">
+      <div class="stats-main">
+        <span class="stat-clean stat-score"><span class="stat-icon">👂</span><span id="score">0</span></span>
+        <span class="stat-clean stat-separator">|</span>
+        <span class="stat-clean"><span class="stat-icon">❤️</span><span id="lives">1</span></span>
+        <span class="stat-clean stat-separator">|</span>
+        <span class="stat-clean"><span class="stat-icon">🔥</span><span id="combo">x1.0</span></span>
+        <span class="stat-clean stat-separator">|</span>
+        <span class="stat-clean"><span class="stat-icon">📈</span><span id="currentLevel">1</span></span>
+      </div>
+      <div class="stats-secondary">
+        <span class="stat-small"><span class="stat-icon">🏆</span><span id="highScore">0</span></span>
+        <span class="stat-separator">•</span>
+        <span class="stat-small"><span class="stat-icon">⚡</span><span id="misses">0/7</span></span>
+      </div>
+    </div>
+
+    <!-- Compact Progression Panel (Side) -->
+    <div class="progression-panel" id="progressionPanel" style="display: none;">
+      <div class="progress-mini" id="xpProgressMini" title="Player Level">
+        <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #4CAF50, #8BC34A);"></div>
+        <span class="progress-text">Lvl 1</span>
+      </div>
+      <div class="progress-mini" id="achievementProgressMini" title="Achievements">
+        <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #FF9800, #FFC107);"></div>
+        <span class="progress-text">🏆 0</span>
+      </div>
+      <div class="progress-mini" id="seasonProgressMini" title="Season Progress">
+        <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #9C27B0, #E91E63);"></div>
+        <span class="progress-text">S1</span>
+      </div>
+      <div id="dailyStreakMini" class="streak-mini" title="Daily Streak">🔥 1</div>
+    </div>
+
+    <div id="rumorBubble" class="rumor-bubble"></div>
+
+    <div id="gameBoard" class="game-board">
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+      <div class="hole"><span class="ear">👂</span></div>
+    </div>
+
+    <div id="levelNameDisplay" class="level-name-display">🔥 NO SIGNAL 🔥</div>
+
+    <button id="startBtn" class="game-btn">START HEARING THINGS</button>
+
+    <!-- Game Over Screen -->
+    <div class="game-over-screen" id="gameOverScreen">
+      <div class="game-over-title">GAME OVER 💀</div>
+
+      <div class="game-over-stats">
+        <div class="stat-item"><span class="icon">👂</span> Score: <span id="finalScore">0</span></div>
+        <div class="stat-item"><span class="icon">🏆</span> High: <span id="finalHighScore">0</span></div>
+        <div class="stat-item"><span class="icon">🔥</span> Combo: <span id="finalCombo">x1</span></div>
+        <div class="stat-item"><span class="icon">⚡</span> Misses: <span id="finalMisses">0</span></div>
+        <div class="stat-item"><span class="icon">📈</span> <span id="finalLevel">1</span></div>
+      </div>
+
+      <div class="game-over-text">The rumours got you... 😭</div>
+
+      <div class="gameover-name-input" id="nameInputSection">
+        <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+        <button id="submitScoreBtn" class="submit-score-btn">💾</button>
+      </div>
+
+      <button id="tryAgainBtn" class="try-again-btn">TRY AGAIN 🕹️</button>
+      <div class="game-over-actions">
+        <button id="shareXBtn" class="share-x-btn">SHARE ON 𝕏</button>
+        <button id="exitGameBtn" class="exit-game-btn">EXIT ✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to Play Modal -->
+  <div class="modal" id="howToPlayModal">
+    <div class="modal-content how-to-play-content">
+      <button class="modal-close" id="closeHowToPlay">X</button>
+      <h2>🎮 How to Play</h2>
+      
+      <div class="htp-section">
+        <h3>🎯 Objective</h3>
+        <p>Whack the 👂 ears as fast as you can! Don't let them escape or you'll get a strike!</p>
+      </div>
+
+      <div class="htp-section">
+        <h3>💎 Power-Ups & Bonuses</h3>
+        <div class="bonus-grid">
+          <div class="bonus-item">
+            <span class="bonus-emoji">🐶</span>
+            <span class="bonus-desc">+50 pts Bonk!</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🚀</span>
+            <span class="bonus-desc">x2 Rocket Boost</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">💎</span>
+            <span class="bonus-desc">Diamond Hands +100</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🤑</span>
+            <span class="bonus-desc">Money Rain!</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🔥</span>
+            <span class="bonus-desc">Combo Boost</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">💀</span>
+            <span class="bonus-desc">Instant Death!</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🕵️‍♂️</span>
+            <span class="bonus-desc">Cabal: +2 Levels</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🤡</span>
+            <span class="bonus-desc">Reverse Controls</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">⚡</span>
+            <span class="bonus-desc">Speed Frenzy</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">💊</span>
+            <span class="bonus-desc">Cope Pill Reset</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">❄️</span>
+            <span class="bonus-desc">Freeze Streak</span>
+          </div>
+          <div class="bonus-item">
+            <span class="bonus-emoji">🪙</span>
+            <span class="bonus-desc">Coin Bonus</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="htp-section">
+        <h3>⚡ Game Mechanics</h3>
+        <ul class="htp-list">
+          <li><strong>Strikes:</strong> Miss 5 ears = Game Over!</li>
+          <li><strong>Combos:</strong> Hit consecutive ears to multiply your score</li>
+          <li><strong>Levels:</strong> Progress through 30+ levels with increasing difficulty</li>
+          <li><strong>Stars:</strong> Earn up to 3 stars per level based on performance</li>
+          <li><strong>Challenges:</strong> Complete special challenges for massive bonuses</li>
+        </ul>
+      </div>
+
+      <div class="htp-section">
+        <h3>🏆 Pro Tips</h3>
+        <ul class="htp-list">
+          <li>Focus on building combos for higher scores</li>
+          <li>Watch out for the 💀 skull - it's instant death!</li>
+          <li>Use power-ups strategically</li>
+          <li>Don't miss during Speed Frenzy ⚡</li>
+          <li>Cabal boosts 🕵️‍♂️ are rare but powerful!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div class="modal" id="leaderboardModal">
+    <div class="modal-content leaderboard-content">
+      <button class="modal-close" id="closeLeaderboard">X</button>
+      <h2>🏆 Global Leaderboard</h2>
+      
+      <div class="leaderboard-filters">
+        <button class="filter-btn active" data-filter="all">All Time</button>
+        <button class="filter-btn" data-filter="today">Today</button>
+        <button class="filter-btn" data-filter="week">This Week</button>
+      </div>
+
+      <div class="leaderboard-list" id="leaderboardList">
+        <div class="loading">Loading scores...</div>
+      </div>
+
+      <!-- <button id="clearLeaderboardBtn" class="clear-leaderboard-btn">Clear Leaderboard</button> -->
+    </div>
+  </div>
+</div>
+
+<!-- Meme Overlay -->
+<div class="meme-overlay" id="memeOverlay">
+  <div class="meme-container">
+    <button class="close-meme-btn" id="closeMemeBtn" aria-label="Close Meme Generator">X</button>
+    <h2>✏️ Meme Generator</h2>
+    <input type="file" id="uploadBg" accept="image/*" class="upload-input">
+    <div id="canvasContainer" class="canvas-container"></div>
+    <div class="meme-tools">
+      <h3>Hearing Characters</h3>
+      <div class="hearing-buttons">
+        <img src="images/hearing_1.png" class="tool-btn" data-type="image" data-src="images/hearing_1.png" alt="Hearing 1">
+        <img src="images/hearing_2.png" class="tool-btn" data-type="image" data-src="images/hearing_2.png" alt="Hearing 2">
+        <img src="images/hearing_3.png" class="tool-btn" data-type="image" data-src="images/hearing_3.png" alt="Hearing 3">
+        <img src="images/hearing_4.png" class="tool-btn" data-type="image" data-src="images/hearing_4.png" alt="Hearing 4">
+        <img src="images/hearing_5.png" class="tool-btn" data-type="image" data-src="images/hearing_5.png" alt="Hearing 5">
+      </div>
+      <h3>Ear Emojis</h3>
+      <div class="ear-emojis">
+        <span class="tool-btn" data-type="emoji" data-content="👂">👂</span>
+        <span class="tool-btn" data-type="emoji" data-content="👂🏻">👂🏻</span>
+        <span class="tool-btn" data-type="emoji" data-content="👂🏼">👂🏼</span>
+        <span class="tool-btn" data-type="emoji" data-content="👂🏽">👂🏽</span>
+        <span class="tool-btn" data-type="emoji" data-content="👂🏾">👂🏾</span>
+        <span class="tool-btn" data-type="emoji" data-content="👂🏿">👂🏿</span>
+        <span class="tool-btn" data-type="emoji" data-content="👁️">👁️</span>
+      </div>
+      <div class="meme-actions">
+        <button id="addText" class="meme-btn">➕ Add Text</button>
+        <button id="clearCanvas" class="meme-btn">🗑️ Clear</button>
+        <button id="downloadMeme" class="meme-btn primary">⬇️ Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="moneyRain" class="money-rain" aria-hidden="true"></div>
+<img id="bodyImage" src="images/body.png" alt="Hearing Character" style="display:none;">
+<div id="speechBubble" class="speech-bubble" aria-live="polite"></div>
+
+<!-- Firebase SDK (Compat version for simpler usage) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<!-- Firebase Configuration -->
+<script>
+  // Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBipczFFGssHSdm8GsXQZ--NpfjwZqIkik",
+    authDomain: "whack-the-rumor-leaderboard.firebaseapp.com",
+    projectId: "whack-the-rumor-leaderboard",
+    storageBucket: "whack-the-rumor-leaderboard.firebasestorage.app",
+    messagingSenderId: "45214134409",
+    appId: "1:45214134409:web:461dc385a7c112038a1658",
+    measurementId: "G-5E63FXX7H6"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  
+  console.log("✅ Firebase connected!");
+</script>
+
+<!-- 🔥 LIVE SCORES FOOTER 🔥 -->
+<div id="liveScoresFooter" style="
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(26,26,0,0.95));
+  border-top: 3px solid #FFD700;
+  padding: 10px 15px;
+  z-index: 9998;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  font-family: 'Luckiest Guy', cursive;
+  box-shadow: 0 -5px 20px rgba(255,215,0,0.5);
+  animation: footerPulse 3s infinite;
+  overflow: hidden;
+">
+  <!-- TOP 3 -->
+  <div style="flex: 1; min-width: 0;">
+    <div style="font-size: 14px; color: #FFD700; margin-bottom: 5px; text-shadow: 0 0 10px #FFD700;">🏆 TOP 3</div>
+    <div id="footerTop3" style="font-size: 12px; color: #fff; display: flex; gap: 15px; flex-wrap: wrap;"></div>
+  </div>
+  
+  <!-- LIVE SCORES -->
+  <div style="flex: 2; min-width: 0; overflow: hidden;">
+    <div style="font-size: 14px; color: #00ff00; margin-bottom: 5px; text-shadow: 0 0 10px #00ff00; animation: glitchText 0.5s infinite;">📊 LIVE SCORES</div>
+    <div id="liveScoresFeed" style="
+      font-size: 11px;
+      color: #fff;
+      white-space: nowrap;
+      animation: scrollScores 20s linear infinite;
+    "></div>
+  </div>
+</div>
+
+<style>
+@keyframes footerPulse {
+  0%, 100% { box-shadow: 0 -5px 20px rgba(255,215,0,0.5); }
+  50% { box-shadow: 0 -5px 30px rgba(255,215,0,0.8); }
+}
+
+@keyframes scrollScores {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+</style>
+
+<script>
+// Load live scores
+async function loadLiveScoresFooter() {
+  try {
+    // Get top 3
+    const top3Snapshot = await db.collection('scores').orderBy('score', 'desc').limit(3).get();
+    const top3Container = document.getElementById('footerTop3');
+    if (top3Container) {
+      let top3Html = '';
+      let rank = 1;
+      top3Snapshot.forEach(doc => {
+        const data = doc.data();
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉';
+        top3Html += `<span style="color: ${rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : '#CD7F32'};">${medal} ${data.nom}: ${data.score.toLocaleString()}</span>`;
+        rank++;
+      });
+      top3Container.innerHTML = top3Html || '<span style="opacity: 0.5;">No scores yet</span>';
+    }
+    
+    // Get last 10 scores for scrolling feed
+    const recentSnapshot = await db.collection('scores').orderBy('date', 'desc').limit(10).get();
+    const feedContainer = document.getElementById('liveScoresFeed');
+    if (feedContainer) {
+      let feedHtml = '';
+      recentSnapshot.forEach(doc => {
+        const data = doc.data();
+        feedHtml += `<span style="margin-right: 30px; color: #00ff00;">💀 ${data.nom}: ${data.score.toLocaleString()} pts</span>`;
+      });
+      feedContainer.innerHTML = feedHtml || '<span style="opacity: 0.5;">Waiting for scores...</span>';
+    }
+  } catch (error) {
+    console.error('Error loading footer scores:', error);
+  }
+}
+
+// Load initially
+setTimeout(loadLiveScoresFooter, 2000);
+
+// Refresh every 10 seconds
+setInterval(loadLiveScoresFooter, 10000);
+</script>
+
+<!-- Game Scripts -->
+<script src="js/utils.js"></script>
+  <script src="js/performance.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/leaderboard.js"></script>
+<script src="js/main.js"></script>
+<script src="js/visual-effects.js"></script>
+<script src="js/power-ups.js"></script>
+<script src="js/events-bosses.js"></script>
+<script src="js/progressive-effects.js"></script>
+<script src="js/mega-bonus-effects.js"></script>
+<script src="js/minigames.js"></script>
+<script src="js/sound-system.js"></script>
+<script src="js/game.js"></script>
+<script src="js/meme.js"></script>
+<script src="js/pwa.js"></script>
+
+<!-- 🔥💀 ULTRA DEGEN GAME OVER - COMPLETE EDITION 💀🔥 -->
+<script src="js/ultra-degen-complete.js"></script>
+
+<!-- 🎰💀 HEARING MACHINE ULTRA DEGEN 💀🎰 -->
+<script src="js/hearing-machine-degen.js"></script>
+
+<!-- 🎓 TUTORIAL SYSTEM (Onboarding) -->
+<script src="js/tutorial.js"></script>
+
+<!-- 🎯 PROGRESSION SYSTEM (Milestones + Progress Bar) -->
+<script src="js/progression.js"></script>
+
+<!-- 💎 META-GAME SYSTEM (Achievements + Currency + Stats) -->
+<script src="js/metagame.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,77 @@
+
+
+.ear {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+}
+
+.hole {
+  transform: none !important;
+}
+
+.game-board {
+  transform: none !important;
+  position: relative !important;
+}
+
+.ear[data-bonus="true"] {
+  pointer-events: auto !important;
+}
+
+.ear.clicked {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.game-container {
+  transform: none !important;
+  position: relative !important;
+}
+
+.ear, .hole {
+  will-change: auto !important;
+}
+
+.progression-panel {
+  pointer-events: none !important;
+}
+
+.progression-panel * {
+  pointer-events: auto !important;
+}
+
+.game-overlay,
+.game-container {
+  perspective: none !important;
+  transform-style: flat !important;
+}
+
+.reverse-controls-active .ear {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+@keyframes powerUpGlow {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.ear-hit-feedback {
+  pointer-events: none !important;
+  position: absolute !important;
+}
+
+@media (max-width: 768px) {
+  .ear {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    touch-action: manipulation !important;
+  }
+}

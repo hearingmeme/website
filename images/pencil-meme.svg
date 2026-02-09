@@ -1,0 +1,19 @@
+<svg id="pencil-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Pencil body (hand-drawn angular) -->
+            <path d="M 68 8 L 72 12 L 90 30 L 86 34 L 32 88 L 28 92 L 12 95 Q 10 95 10 93 L 13 77 L 17 73 Z" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- Pencil tip (filled) -->
+            <path d="M 32 88 L 17 73 L 13 77 L 12 95 Q 10 95 10 93 Z" fill="#000"/>
+            
+            <!-- Inner lines -->
+            <line x1="58" y1="18" x2="80" y2="40" stroke="#000" stroke-width="5"/>
+            <line x1="48" y1="28" x2="70" y2="50" stroke="#000" stroke-width="5"/>
+            <line x1="38" y1="38" x2="60" y2="60" stroke="#000" stroke-width="5"/>
+            
+            <!-- Eraser end -->
+            <path d="M 68 8 L 72 4 L 86 4 L 90 8" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- Draw marks (squiggles) -->
+            <path d="M 25 82 Q 30 78 35 76" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+            <path d="M 18 72 Q 22 68 26 66" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+          </svg>

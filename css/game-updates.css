@@ -1,0 +1,135 @@
+
+.level-name-display {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ff00ff;
+  text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 60px #ff00ff;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-family: 'Luckiest Guy', cursive;
+  letter-spacing: 3px;
+  animation: levelPulse 0.8s ease-out;
+  text-transform: uppercase;
+}
+
+@keyframes levelPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.exit-game-btn {
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  color: #FFD700;
+  border: 3px solid #FFD700;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 15px;
+  cursor: pointer;
+  font-family: 'Luckiest Guy', cursive;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.3),
+    0 4px 15px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 
+    0 0 10px rgba(255, 215, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.exit-game-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.exit-game-btn:hover::before {
+  left: 100%;
+}
+
+.exit-game-btn:hover {
+  background: linear-gradient(145deg, #2a2a00, #1a1a00);
+  border-color: #FFED4E;
+  color: #FFED4E;
+  transform: translateY(-3px);
+  box-shadow: 
+    0 0 30px rgba(255, 215, 0, 0.6),
+    0 8px 25px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 
+    0 0 15px rgba(255, 237, 78, 0.8),
+    0 0 25px rgba(255, 215, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.exit-game-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 15px rgba(255, 215, 0, 0.4),
+    0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.button-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.button-row .share-x-btn,
+.button-row .exit-game-btn {
+  flex: 1;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .level-name-display {
+    font-size: 1.3rem;
+    margin-top: 1rem;
+    letter-spacing: 2px;
+  }
+  
+  .exit-game-btn {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+    letter-spacing: 2px;
+  }
+  
+  .button-row {
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .button-row .share-x-btn,
+  .button-row .exit-game-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .exit-game-btn {
+    font-size: 0.9rem;
+    padding: 0.7rem 1.2rem;
+  }
+}

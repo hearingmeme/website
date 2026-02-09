@@ -1,0 +1,18 @@
+<svg id="game-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Controller body (simpler shape) -->
+            <path d="M 20 40 Q 15 38 15 45 L 18 60 Q 22 70 32 72 L 42 72 Q 45 70 48 65 L 52 65 Q 55 70 58 72 L 68 72 Q 78 70 82 60 L 85 45 Q 85 38 80 40 L 70 42 Q 65 43 60 40 L 40 40 Q 35 43 30 42 Z" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- D-pad (left) -->
+            <line x1="30" y1="52" x2="30" y2="62" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+            <line x1="25" y1="57" x2="35" y2="57" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+            
+            <!-- Buttons (right - ABXY style) -->
+            <circle cx="65" cy="52" r="5" fill="#000"/>
+            <circle cx="75" cy="57" r="5" fill="#000"/>
+            <circle cx="65" cy="62" r="5" fill="#000"/>
+            <circle cx="55" cy="57" r="5" fill="#000"/>
+            
+            <!-- Grips (handles) -->
+            <path d="M 32 72 Q 28 78 25 82" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+            <path d="M 68 72 Q 72 78 75 82" fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+          </svg>

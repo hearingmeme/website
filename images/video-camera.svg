@@ -1,0 +1,15 @@
+<svg id="video-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Camera body (hand-drawn rounded rect) -->
+            <path d="M 12 30 Q 10 28 12 26 L 58 26 Q 60 28 60 30 L 60 70 Q 60 72 58 74 L 12 74 Q 10 72 10 70 Z" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+            
+            <!-- Lens (wonky circles) -->
+            <circle cx="32" cy="50" r="16" fill="none" stroke="#000" stroke-width="6"/>
+            <circle cx="32" cy="50" r="9" fill="#000"/>
+            
+            <!-- Triangle flap (hand-drawn) -->
+            <path d="M 60 38 L 62 36 L 88 28 Q 90 28 90 30 L 90 70 Q 90 72 88 72 L 62 64 L 60 62 Z" fill="none" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+            
+            <!-- Details -->
+            <circle cx="50" cy="35" r="4" fill="#000"/>
+            <rect x="15" y="62" width="12" height="5" fill="#000" rx="2"/>
+          </svg>
