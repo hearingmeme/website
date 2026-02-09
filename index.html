@@ -1,294 +1,1018 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-  <!-- Twitter / X Cards -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@hearingmeme">
-  <meta name="twitter:creator" content="@hearingmeme">
-  <meta name="twitter:title" content="Whack The Rumors – $HEARING Game 👂💀">
-  <meta name="twitter:description" content="Just whacked rumors in the chaotic $HEARING game on Solana. High score energy! Play now and join the degen vibes.">
-  <meta name="twitter:image" content="https://hearingthings.meme/images/game-preview.jpg">
-  <meta name="twitter:image:alt" content="Whack The Rumors - $HEARING memecoin game preview on Solana">
-
-  <!-- Open Graph (compatibilité maximale) -->
-  <meta property="og:title" content="Whack The Rumors – $HEARING Game 👂💀">
-  <meta property="og:description" content="Hearing Things: the memecoin where you whack rumors before they whack you. Score big, share the chaos! #HEARING #Solana">
-  <meta property="og:image" content="https://hearingthings.meme/images/game-preview.jpg">
-  <meta property="og:image:alt" content="Whack The Rumors - $HEARING memecoin game preview on Solana">
-  <meta property="og:url" content="https://hearingthings.meme">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Hearing Things">
-
-  <title>Hearing Things</title>
-  <meta name="description" content="Hearing Things is a Solana memecoin launched on Bonk.fun, bringing chaotic hearing things… vibes and $HEARING degen energy since September 20, 2025."/>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hearing Things - The Beginning</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <!-- Mobile Detection & Redirect -->
+  <script>
+    // Detect mobile devices and redirect to skip heavy animation
+    (function() {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isSmallScreen = window.innerWidth <= 768;
+      
+      // Redirect mobile users directly to home.html to skip heavy animation
+      if (isMobile || isSmallScreen) {
+        window.location.href = 'home.html';
+      }
+    })();
+  </script>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-
   <style>
-    body{margin:0;padding:0;background:url('images/pattern5.png') repeat;color:#000;font-family:"Courier New",Courier,monospace;line-height:1.45;min-height:100vh;overflow-x:hidden;position:relative;}
-    .container{width:90%;max-width:1600px;margin:60px auto;padding:0 40px;display:flex;gap:40px;}
-    .sidebar{width:380px;flex-shrink:0;}
-    .main-content{flex:1;min-width:0;}
-    h1{font-family:'Luckiest Guy',cursive;font-size:clamp(40px,8vw,90px);margin:30px auto 20px;letter-spacing:-2px;line-height:0.85;text-transform:uppercase;color:#f8f8f8;-webkit-text-stroke:1.5px #000;text-shadow:4px 4px 0 #000,8px 8px 0 #000;text-align:center;max-width:1000px;display:block;cursor:pointer;user-select:none;}
-    h1 span{display:inline-block;transition:all 0.7s cubic-bezier(0.68,-0.6,0.32,1.6);}
-    @media (min-width:1101px){h1:hover span{transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(1.3);opacity:0.85;text-shadow:0 0 18px #ffcc00,0 0 38px #ffcc00,0 0 65px #ffcc00;}}
-    h1 span:nth-child(1){--tx:-40px;--ty:100px;--rot:-40deg;}
-    h1 span:nth-child(2){--tx:-20px;--ty:130px;--rot:-25deg;}
-    h1 span:nth-child(3){--tx:0;--ty:150px;--rot:-10deg;}
-    h1 span:nth-child(4){--tx:20px;--ty:130px;--rot:10deg;}
-    h1 span:nth-child(5){--tx:40px;--ty:110px;--rot:25deg;}
-    h1 span:nth-child(6){--tx:60px;--ty:80px;--rot:40deg;}
-    h1 span:nth-child(7){--tx:50px;--ty:50px;--rot:35deg;}
-    h1 span:nth-child(8){--tx:30px;--ty:80px;--rot:20deg;}
-    h1 span:nth-child(9){--tx:-30px;--ty:90px;--rot:-20deg;}
-    h1 span:nth-child(10){--tx:-50px;--ty:70px;--rot:-35deg;}
-    h1 span:nth-child(11){--tx:-70px;--ty:110px;--rot:-50deg;}
-    h1 span.space{width:0.4em;transform:none!important;opacity:1!important;}
-    .ears-container{display:flex;justify-content:center;gap:50px;margin:0 auto 40px;max-width:900px;}
-    .ear-icon,.camera-icon,.game-icon{font-size:3.8rem;cursor:pointer;animation:listen 2.5s infinite ease-in-out;transform-origin:center;color:#ffcc00;transition:all 0.25s;}
-    .camera-icon{font-size:3.4rem;color:#ff3366;}
-    .game-icon{font-size:3.4rem;color:#00ff9d;animation-duration:3.2s;}
-    .ear-icon:hover,.camera-icon:hover,.game-icon:hover{transform:scale(1.15) rotate(10deg);}
-    @keyframes listen{0%,100%{transform:rotate(0deg);}25%{transform:rotate(18deg);}50%{transform:rotate(-15deg);}75%{transform:rotate(12deg);}}
-    .audio-controls{text-align:center;margin:20px auto 40px;max-width:900px;display:none;justify-content:center;gap:30px;}
-    .audio-controls.visible{display:flex;}
-    .audio-btn{background:#000;color:#fff;border:5px solid #000;padding:16px 28px;font-size:2.4rem;font-weight:bold;cursor:pointer;box-shadow:8px 8px 0 #000;transition:all 0.18s ease-out;user-select:none;width:80px;height:80px;display:flex;align-items:center;justify-content:center;}
-    .audio-btn:hover{transform:translate(6px,6px);box-shadow:2px 2px 0 #000;}
-    .audio-btn:active{transform:translate(10px,10px);box-shadow:0 0 0 #000;}
-    .about{font-size:28px;margin:0 auto 60px;max-width:900px;background:#fff;padding:30px;border:4px solid #000;box-shadow:12px 12px 0 #000;position:relative;overflow:hidden;max-height:0;transition:max-height 3s ease-in-out;}
-    .about.expanded{max-height:1000px;}
-    .about-content{position:relative;min-height:180px;}
-    .about-text{opacity:0;white-space:pre-wrap;}
-    .about-text.visible{opacity:1;}
-    .about-cursor{display:inline-block;width:2px;height:1.2em;background:#000;vertical-align:middle;animation:blink 0.8s infinite;}
-    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-    .video-container{display:none;position:relative;margin:30px auto 0;text-align:center;max-width:480px;}
-    .video-container.active{display:block;}
-    #hearingVideo{width:100%;height:auto;display:block;}
-    .close-video-btn,.close-game-btn{position:absolute;top:-25px;right:-25px;background:#000;color:#fff;border:5px solid #000;padding:8px 16px;font-size:1.4rem;font-weight:bold;cursor:pointer;z-index:1000;box-shadow:6px 6px 0 #000;}
-    .video-nav-btn{position:absolute;top:50%;transform:translateY(-50%);background:#000;color:#fff;border:5px solid #000;width:70px;height:70px;font-size:2.4rem;font-weight:bold;cursor:pointer;box-shadow:8px 8px 0 #000;transition:all 0.18s ease-out;display:flex;align-items:center;justify-content:center;z-index:15;user-select:none;}
-    .video-nav-btn:hover{transform:translateY(-50%) translate(6px,6px);box-shadow:2px 2px 0 #000;}
-    .video-nav-btn:active{transform:translateY(-50%) translate(10px,10px);box-shadow:0 0 0 #000;}
-    .video-nav-btn.left{left:-100px;}
-    .video-nav-btn.right{right:-100px;}
-    .ca-container{background:#fff;padding:30px;border:4px solid #000;box-shadow:12px 12px 0 #000;max-width:900px;margin:0 auto 40px;text-align:center;}
-    .ca-text{font-size:32px;font-weight:bold;cursor:pointer;user-select:all;word-break:break-all;display:inline-block;}
-    .disclaimer{margin-top:20px;font-size:13px;color:#555;line-height:1.5;}
-    .sidebar-menu{display:flex;flex-direction:column;gap:24px;}
-    .menu-btn{background:#000;color:#fff;padding:18px 32px;font-size:28px;text-decoration:none;text-align:left;border:5px solid #000;box-shadow:12px 12px 0 #000;transition:all 0.18s ease-out;white-space:nowrap;position:relative;overflow:hidden;}
-    .menu-btn:hover{transform:translate(8px,8px);box-shadow:4px 4px 0 #000;}
-    .sidebar-menu a:nth-child(1):hover{color:transparent;background:#000 url('images/dexlogo.png') center/contain no-repeat;}
-    .sidebar-menu a:nth-child(2):hover{color:transparent;background:#000 url('images/xlogo.png') center/contain no-repeat;}
-    .sidebar-menu a:nth-child(4):hover{color:transparent;background:#000 url('images/juplogo.png') center/contain no-repeat;}
-    .sidebar-menu a:nth-child(5):hover{color:transparent;background:#000 url('images/bonkswaplogo.png') center/contain no-repeat;}
-    #bodyImage{position:fixed;bottom:-5px;right:-41px;width:clamp(180px,22vw,400px);max-width:35vw;height:auto;opacity:0;transition:opacity 1.2s ease-in;pointer-events:none;z-index:90;}
-    #bodyImage.visible{opacity:1;pointer-events:auto;cursor:pointer;}
-    .speech-bubble{display:none;position:fixed;background:#fff;padding:15px 20px;border:3px solid #000;box-shadow:6px 6px 0 #000;border-radius:15px;font-size:24px;font-family:'Luckiest Guy',cursive;text-transform:uppercase;color:#000;max-width:280px;text-align:center;z-index:200;white-space:nowrap;line-height:1.2;}
-    .speech-bubble::after{content:'';position:absolute;bottom:-15px;left:80%;transform:translateX(-50%);border-width:15px 15px 0;border-style:solid;border-color:#fff transparent transparent transparent;}
-    .speech-bubble::before{content:'';position:absolute;bottom:-18px;left:80%;transform:translateX(-50%);border-width:18px 18px 0;border-style:solid;border-color:#000 transparent transparent transparent;}
-    .money-rain{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;}
-    .dollar{position:absolute;font-size:2.5rem;color:#00ff9d;text-shadow:0 0 10px #00ff9d,0 0 20px #00ff9d;user-select:none;pointer-events:none;animation:fall linear forwards;will-change:transform;}
-    @keyframes fall{0%{transform:translateY(-100px) rotate(0deg);}100%{transform:translateY(120vh) rotate(720deg);}}
-
-    .game-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);backdrop-filter:blur(8px);z-index:9999;display:none;align-items:center;justify-content:center;}
-    .game-overlay.active{display:flex;}
-    .game-container{width:100%;max-width:560px;height:100%;max-height:100vh;margin-top:2%;background:linear-gradient(145deg,#050505 0%,#0f0f0f 100%);border:none;box-shadow:none;border-radius:0;padding:20px;display:flex;flex-direction:column;position:relative;overflow-y:auto;box-sizing:border-box;}
-    .mobile-exit-btn{position:absolute;top:15px;right:15px;background:#ff3366;color:#fff;border:4px solid #000;padding:10px 18px;font-size:1.5rem;font-weight:bold;font-family:'Luckiest Guy',cursive;cursor:pointer;z-index:10000;box-shadow:6px 6px 0 #000;display:none;}
-    .close-game-btn{position:absolute;top:15px;right:15px;background:#000;color:#fff;border:5px solid #000;padding:8px 16px;font-size:1.4rem;font-weight:bold;cursor:pointer;z-index:1000;box-shadow:6px 6px 0 #000;}
-    .game-title{font-family:'Luckiest Guy',cursive;font-size:clamp(36px,8vw,80px);margin:20px auto 25px;letter-spacing:-6px;line-height:0.68;text-transform:uppercase;color:#ffcc00;-webkit-text-stroke:2.5px #000;text-shadow:6px 6px 0 #000,12px 12px 0 #000;text-align:center;max-width:95%;}
-    .game-title span{display:inline-block;transition:all 0.7s cubic-bezier(0.68,-0.6,0.32,1.6);}
-    @media (min-width:1101px){.game-title:hover span{transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(1.25);opacity:0.9;}}
-    .game-board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:min(90vw,350px);height:min(90vw,350px);margin:0 auto 25px;}
-    .hole{background:#111;border:6px solid #000;border-radius:50%;position:relative;aspect-ratio:1;box-shadow:8px 8px 0 #000;transition:all 0.2s;}
-    .hole.popped{transform:scale(0.78) rotate(8deg);box-shadow:4px 4px 0 #000;}
-    .ear{font-size:4rem;position:absolute;inset:0;display:none;align-items:center;justify-content:center;transition:all 0.4s cubic-bezier(0.68,-0.6,0.32,1.6);}
-    .ear.active{display:flex;animation:earPop 0.6s infinite alternate;}
-    @keyframes earPop{from{transform:scale(0.92) rotate(-6deg);}to{transform:scale(1.18) rotate(6deg);}}
-    .game-ui{font-family:'Luckiest Guy',cursive;text-transform:uppercase;color:#fff;-webkit-text-stroke:1.5px #000;text-shadow:4px 4px 0 #000,8px 8px 0 #000;font-size:clamp(20px,5vw,36px);letter-spacing:-1px;line-height:1.1;margin:0 auto 25px;user-select:none;text-align:center;width:100%;}
-    #startBtnContainer{display:flex;justify-content:center;margin:15px 0;}
-    .game-btn{background:#000;color:#ffcc00;border:5px solid #000;padding:16px 36px;font-size:2.2rem;font-weight:bold;font-family:"Courier New",Courier,monospace;box-shadow:10px 10px 0 #000;cursor:pointer;transition:all 0.18s ease-out;text-transform:uppercase;user-select:none;min-width:240px;}
-    .game-btn:hover{transform:translate(6px,6px);box-shadow:4px 4px 0 #000;background:#111;}
-    .game-btn:active{transform:translate(10px,10px);box-shadow:0 0 0 #000;background:#222;}
-    .rumor-bubble{position:absolute;top:-80px;left:50%;transform:translateX(-50%);background:#fff;color:#000;padding:14px 28px;border:5px solid #000;font-size:2rem;border-radius:30px;box-shadow:8px 8px 0 #000;white-space:nowrap;display:none;z-index:10;font-family:'Luckiest Guy',cursive;text-transform:uppercase;}
-    .game-over-screen{position:absolute;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#ff3366;font-family:'Luckiest Guy',cursive;text-align:center;z-index:20;padding:20px;}
-    .game-over-title{font-size:clamp(3rem,10vw,6rem);margin:0 0 20px;text-shadow:6px 6px 0 #000;line-height:0.9;}
-    .game-over-stats{font-size:clamp(1.2rem,4vw,1.8rem);color:#fff;-webkit-text-stroke:1px #000;text-shadow:2px 2px 0 #000;margin:15px 0 30px;line-height:1.4;}
-    .game-over-stats span{color:#ffcc00;-webkit-text-stroke:0.8px #000;font-weight:bold;}
-    .game-over-text{font-size:clamp(1.6rem,5vw,2.8rem);color:#fff;margin-bottom:40px;}
-    .try-again-btn,.share-x-btn{background:#000;color:#ffcc00;border:5px solid #000;padding:16px 48px;font-size:2.1rem;font-family:'Luckiest Guy',cursive;font-weight:bold;box-shadow:10px 10px 0 #000;cursor:pointer;transition:all 0.18s;text-transform:uppercase;min-width:260px;margin:15px;}
-    .try-again-btn:hover,.share-x-btn:hover{transform:translate(6px,6px);box-shadow:4px 4px 0 #000;}
-    .share-x-btn{color:#1DA1F2;}
-    .share-x-btn:hover{color:#fff;}
-
-    @media (max-width:1100px){
-      .container{flex-direction:column;padding:0 12px;margin:20px auto;}
-      .sidebar{width:100%;}
-      h1{margin:35px auto 10px;}
-      .ears-container{margin:5px auto 40px;gap:60px;}
-      .ear-icon,.camera-icon,.game-icon{font-size:4.5rem;}
-      #bodyImage,.speech-bubble{display:none;}
-      .about{font-size:20px;padding:20px;margin:20px 0;}
-      .ca-container{padding:20px;}
-      .ca-text{font-size:22px;}
-      .game-container{margin-top:2%;padding:15px;}
-      .mobile-exit-btn{display:block;}
-      .close-game-btn{top:15px;right:15px;}
-      .game-board{width:min(94vw,340px);height:min(94vw,340px);}
-      .game-title{margin:15px auto 20px;}
-      .rumor-bubble{top:-60px;font-size:1.6rem;padding:10px 20px;}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    @media (min-width:1101px){
-      .ears-container{position:absolute;top:20px;right:40px;flex-direction:column;gap:12px;margin:0;}
+    body {
+      background: #000;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Luckiest Guy', cursive;
+      position: relative;
+      cursor: pointer;
+    }
+
+    /* AUDIO CONTROLS */
+    .audio-control {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10001;
+      background: #000;
+      border: 4px solid #0f0;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-family: 'Luckiest Guy', cursive;
+      font-size: 18px;
+      color: #0f0;
+      text-transform: uppercase;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+      animation: glitchBorder 0.3s infinite;
+      transition: all 0.3s ease;
+    }
+
+    .audio-control:hover {
+      background: #0f0;
+      color: #000;
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+    }
+
+    @keyframes glitchBorder {
+      0%, 100% { border-color: #0f0; }
+      33% { border-color: #f0f; }
+      66% { border-color: #0ff; }
+    }
+
+    /* SKIP TEXT - IMPROVED */
+    .skip-text {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      color: #FFD700;
+      font-size: 20px;
+      z-index: 10000;
+      animation: skipPulse 1.5s ease-in-out infinite;
+      text-shadow: 0 0 15px #FFD700, 0 0 30px #FFD700;
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border: 3px solid #FFD700;
+      border-radius: 10px;
+    }
+
+    @keyframes skipPulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+
+    /* SCENE */
+    .scene {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .scene.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* SCENE 1 */
+    #scene1 {
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .intro-text {
+      font-size: clamp(60px, 12vw, 180px);
+      color: #FFD700;
+      text-transform: uppercase;
+      text-align: center;
+      opacity: 0;
+      transform: scale(0.5);
+      animation: textExplode 2s ease-out forwards;
+      text-shadow: 0 0 40px #FFD700, 0 0 80px #FFA500;
+    }
+
+    @keyframes textExplode {
+      0% { opacity: 0; transform: scale(0.5) rotate(-20deg); }
+      50% { opacity: 1; transform: scale(1.4) rotate(10deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .subtitle {
+      font-size: clamp(24px, 5vw, 60px);
+      color: #fff;
+      margin-top: 40px;
+      opacity: 0;
+      animation: subtitleAppear 1.5s ease-out 1.5s forwards;
+    }
+
+    @keyframes subtitleAppear {
+      0% { opacity: 0; transform: translateY(80px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* SCENE 2 */
+    #scene2 {
+      background: url('images/pattern-y2.png') repeat;
+      animation: patternZoom 1.5s ease-out forwards;
+      transform: scale(10);
+    }
+
+    @keyframes patternZoom {
+      0% { transform: scale(10) rotate(0deg); filter: blur(40px); }
+      100% { transform: scale(1) rotate(720deg); filter: blur(0); }
+    }
+
+    /* SCENE 3 */
+    #scene3 {
+      background: url('images/pattern-y2.png') repeat;
+      background-size: 150px;
+    }
+
+    /* FALLING EARS */
+    .falling-ears {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .falling-ear {
+      position: absolute;
+      font-size: 80px;
+      opacity: 0.7;
+      animation: earFallBg linear infinite;
+      filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+    }
+
+    @keyframes earFallBg {
+      0% { transform: translateY(-100px) rotate(0deg); opacity: 0.7; }
+      100% { transform: translateY(120vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* VIRUS GLITCH - Propagation derrière le personnage */
+    .virus-glitch {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9;
+    }
+
+    .virus-img {
+      position: absolute;
+      opacity: 0;
+      animation: virusPropagate 3s ease-out forwards;
+      filter: drop-shadow(0 0 20px rgba(0, 255, 0, 0.6));
+    }
+
+    @keyframes virusPropagate {
+      0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0) rotate(0deg);
+      }
+      10% { 
+        opacity: 0.9; 
+        transform: translate(-50%, -50%) scale(0.3) rotate(180deg);
+      }
+      30% { 
+        opacity: 0.8; 
+        transform: translate(-50%, -50%) scale(1) rotate(360deg);
+      }
+      60% { 
+        opacity: 0.6; 
+        transform: translate(-50%, -50%) scale(1.5) rotate(720deg);
+      }
+      100% { 
+        opacity: 0.4; 
+        transform: translate(-50%, -50%) scale(1) rotate(1080deg);
+      }
+    }
+
+    /* WALL EMERGE - Images sortant du mur */
+    .wall-emerge {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .emerge-img {
+      position: absolute;
+      opacity: 0;
+      animation: wallEmerge 4s ease-out forwards;
+    }
+
+    @keyframes wallEmerge {
+      0% { 
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.1) perspective(1000px) rotateY(90deg);
+        filter: blur(20px) brightness(2);
+      }
+      15% { 
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.8) perspective(1000px) rotateY(0deg);
+        filter: blur(5px) brightness(1.5);
+      }
+      30% { 
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.8) perspective(1000px) rotateY(-10deg);
+        filter: blur(0) brightness(1.2);
+      }
+      50% { 
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1.5) perspective(1000px) rotateY(5deg);
+        filter: blur(0) brightness(1);
+      }
+      70% { 
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1) perspective(1000px) rotateY(-5deg);
+        filter: blur(2px) brightness(0.8);
+      }
+      100% { 
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5) perspective(1000px) rotateY(0deg);
+        filter: blur(10px) brightness(0);
+      }
+    }
+
+    /* Calques fluos clignotants */
+    .emerge-img::before {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      background: linear-gradient(45deg, 
+        rgba(0, 255, 0, 0.4), 
+        rgba(255, 0, 255, 0.4), 
+        rgba(0, 255, 255, 0.4),
+        rgba(255, 255, 0, 0.4)
+      );
+      filter: blur(20px);
+      animation: fluoFlicker 0.3s infinite;
+      z-index: -1;
+    }
+
+    @keyframes fluoFlicker {
+      0%, 100% { opacity: 0.8; }
+      25% { opacity: 0.3; }
+      50% { opacity: 1; }
+      75% { opacity: 0.5; }
+    }
+
+    /* CHARACTER - Commence grand (3x) et rétrécit progressivement */
+    .character {
+      position: absolute;
+      width: 1800px;
+      height: 1800px;
+      z-index: 10;
+      transition: all 1.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .character img {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8));
+    }
+
+    .character.pos-enter {
+      top: -100%;
+      left: 50%;
+      transform: translateX(-50%) scale(3);
+      animation: characterEnterShrink 2.5s ease-out forwards;
+    }
+
+    /* NOUVELLE ANIMATION : descend progressivement vers le centre */
+    @keyframes characterEnterShrink {
+      0% { 
+        top: -100%;
+        transform: translateX(-50%) scale(3); 
+      }
+      50% { 
+        top: 10%;
+        transform: translateX(-50%) scale(2) rotate(540deg); 
+      }
+      100% { 
+        top: 50%;
+        transform: translateX(-50%) translateY(-50%) scale(1) rotate(1080deg); 
+      }
+    }
+
+    .character.pos-left {
+      top: 50%;
+      left: 10%;
+      transform: translateY(-50%) scale(0.37) rotate(-15deg);
+    }
+
+    .character.pos-right {
+      top: 50%;
+      right: 5%;
+      left: auto;
+      transform: translateY(-50%) scale(0.32) rotate(20deg);
+    }
+
+    .character.pos-center {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.4);
+    }
+
+    /* GLITCH CHAOTIQUE du personnage quand le BUTTON apparaît */
+    .character.glitch-mode {
+      animation: characterGlitchChaos 0.3s infinite;
+    }
+
+    @keyframes characterGlitchChaos {
+      0% { 
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg) skew(0deg);
+        filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8)) hue-rotate(0deg);
+      }
+      10% { 
+        transform: translate(-48%, -52%) scale(0.6) rotate(-5deg) skew(3deg);
+        filter: drop-shadow(0 0 60px rgba(0, 255, 0, 1)) hue-rotate(120deg);
+      }
+      20% { 
+        transform: translate(-52%, -48%) scale(0.3) rotate(8deg) skew(-5deg);
+        filter: drop-shadow(0 0 80px rgba(255, 0, 255, 1)) hue-rotate(240deg);
+      }
+      30% { 
+        transform: translate(-50%, -50%) scale(0.55) rotate(-12deg) skew(8deg);
+        filter: drop-shadow(0 0 100px rgba(0, 255, 255, 1)) hue-rotate(180deg);
+      }
+      40% { 
+        transform: translate(-49%, -51%) scale(0.25) rotate(15deg) skew(-10deg);
+        filter: drop-shadow(0 0 120px rgba(255, 255, 0, 1)) hue-rotate(60deg);
+      }
+      50% { 
+        transform: translate(-51%, -49%) scale(0.65) rotate(-20deg) skew(12deg);
+        filter: drop-shadow(0 0 140px rgba(255, 0, 0, 1)) hue-rotate(300deg);
+        opacity: 0.5;
+      }
+      60% { 
+        transform: translate(-50%, -50%) scale(0.2) rotate(25deg) skew(-15deg);
+        filter: drop-shadow(0 0 160px rgba(0, 0, 255, 1)) hue-rotate(200deg);
+      }
+      70% { 
+        transform: translate(-48%, -52%) scale(0.7) rotate(-30deg) skew(18deg);
+        filter: drop-shadow(0 0 180px rgba(255, 128, 0, 1)) hue-rotate(90deg);
+      }
+      80% { 
+        transform: translate(-52%, -48%) scale(0.15) rotate(35deg) skew(-20deg);
+        filter: drop-shadow(0 0 200px rgba(128, 0, 255, 1)) hue-rotate(270deg);
+        opacity: 0.3;
+      }
+      90% { 
+        transform: translate(-50%, -50%) scale(0.75) rotate(-40deg) skew(25deg);
+        filter: drop-shadow(0 0 220px rgba(0, 255, 128, 1)) hue-rotate(150deg);
+      }
+      100% { 
+        transform: translate(-50%, -50%) scale(0.4) rotate(0deg) skew(0deg);
+        filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8)) hue-rotate(360deg);
+      }
+    }
+
+    /* DIALOGUES */
+    .dialogue {
+      position: absolute;
+      background: #fff;
+      padding: 30px 45px;
+      border: 6px solid #000;
+      box-shadow: 15px 15px 0 #000;
+      border-radius: 25px;
+      font-size: clamp(22px, 4vw, 42px);
+      color: #000;
+      text-transform: uppercase;
+      max-width: 550px;
+      opacity: 0;
+      transform: scale(0);
+      z-index: 20;
+    }
+
+    .dialogue.left { top: 12%; left: 5%; }
+    .dialogue.right { top: 28%; right: 8%; }
+    .dialogue.center { bottom: 12%; left: 70%; transform: translateX(-50%) scale(0); }
+    .dialogue.bottom-left { bottom: 15%; left: 5%; transform: scale(0); }
+    .dialogue.top-center { top: 8%; left: 50%; transform: translateX(-50%) scale(0); }
+
+    .dialogue.show {
+      animation: bubblePop 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards, dialogueGlitch 0.6s infinite;
+    }
+
+    @keyframes bubblePop {
+      0% { opacity: 0; transform: scale(0); }
+      70% { transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Animation glitch pour les dialogues */
+    @keyframes dialogueGlitch {
+      0%, 100% { 
+        border-color: #000; 
+        box-shadow: 15px 15px 0 #000;
+      }
+      25% { 
+        border-color: #0f0; 
+        box-shadow: 15px 15px 0 #0f0, 0 0 20px rgba(0, 255, 0, 0.5);
+      }
+      50% { 
+        border-color: #f0f; 
+        box-shadow: 15px 15px 0 #f0f, 0 0 20px rgba(255, 0, 255, 0.5);
+      }
+      75% { 
+        border-color: #0ff; 
+        box-shadow: 15px 15px 0 #0ff, 0 0 20px rgba(0, 255, 255, 0.5);
+      }
+    }
+
+    /* BUTTON NOIR GLITCH - Style sidebar index */
+    .enter-button {
+      position: absolute;
+      bottom: 6%;
+      left: 50%;
+      transform: translateX(-50%) scale(0);
+      background: #000;
+      color: #0f0;
+      border: 6px solid #0f0;
+      padding: 30px 80px;
+      font-size: clamp(32px, 6vw, 64px);
+      font-family: 'Luckiest Guy', cursive;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+      opacity: 0;
+      z-index: 30;
+      letter-spacing: 5px;
+      transition: all 0.3s ease;
+      animation: glitchBorderBtn 0.5s infinite;
+      pointer-events: auto;
+    }
+
+    @keyframes glitchBorderBtn {
+      0%, 100% { 
+        border-color: #0f0; 
+        color: #0f0;
+        text-shadow: 0 0 10px #0f0;
+      }
+      25% { 
+        border-color: #f0f; 
+        color: #f0f;
+        text-shadow: 0 0 10px #f0f;
+      }
+      50% { 
+        border-color: #0ff; 
+        color: #0ff;
+        text-shadow: 0 0 10px #0ff;
+      }
+      75% { 
+        border-color: #ff0; 
+        color: #ff0;
+        text-shadow: 0 0 10px #ff0;
+      }
+    }
+
+    .enter-button.show {
+      animation: buttonExplodeGlitch 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards, glitchBorderBtn 0.5s infinite;
+    }
+
+    @keyframes buttonExplodeGlitch {
+      0% { opacity: 0; transform: translateX(-50%) scale(0) rotate(-720deg); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
+    }
+
+    .enter-button:hover {
+      transform: translateX(-50%) scale(1.15);
+      background: #0f0;
+      color: #000;
+      box-shadow: 0 0 60px rgba(0, 255, 0, 1), 0 0 100px rgba(0, 255, 0, 0.5);
+    }
+
+    /* EAR RAIN */
+    .ear-rain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .ear {
+      position: absolute;
+      font-size: 60px;
+      animation: earFall 2s ease-in forwards;
+    }
+
+    @keyframes earFall {
+      0% { opacity: 1; transform: translateY(-100px) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(120vh) rotate(1080deg); }
+    }
+
+    /* GLITCH */
+    .glitch-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0;
+    }
+
+    .glitch-layer.active {
+      animation: glitchFlash 3s ease-in-out infinite;
+    }
+
+    @keyframes glitchFlash {
+      0%, 85%, 100% { opacity: 0; }
+      86%, 92% { opacity: 0.6; }
+    }
+
+    /* SCANLINES */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, rgba(255, 0, 255, 0.15) 0px, transparent 3px);
+      pointer-events: none;
+      animation: scanlineMove 12s linear infinite;
+      z-index: 100;
+      opacity: 0.6;
+    }
+
+    @keyframes scanlineMove {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(40px); }
+    }
+
+    /* EFFECTS PSYCHÉDÉLIQUES - OPTIMIZED */
+    .psychedelic-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(255, 0, 255, 0.2) 0%, transparent 60%);
+      animation: psychedelicPulse 4s ease-in-out infinite;
+      mix-blend-mode: screen;
+    }
+
+    .psychedelic-layer.active {
+      opacity: 0.7;
+    }
+
+    @keyframes psychedelicPulse {
+      0%, 100% { 
+        transform: scale(1);
+        filter: hue-rotate(0deg);
+      }
+      50% { 
+        transform: scale(1.1);
+        filter: hue-rotate(180deg);
+      }
+    }
+
+    /* EFFECT de vagues - DISABLED FOR PERFORMANCE */
+    .wave-distortion {
+      display: none !important;
+    }
+
+    /* Kaleidoscope effect - SIMPLIFIED */
+    .kaleidoscope {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0;
+      background: radial-gradient(circle, rgba(255, 0, 255, 0.1) 0%, transparent 70%);
+      animation: kaleidoscopeRotate 6s linear infinite;
+      mix-blend-mode: color-dodge;
+    }
+
+    .kaleidoscope.active {
+      opacity: 0.6;
+    }
+
+    @keyframes kaleidoscopeRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Chromatic aberration */
+    .chromatic-aberration {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 101;
+      opacity: 0;
+      animation: chromaticShift 0.5s ease-in-out infinite;
+    }
+
+    .chromatic-aberration.active {
+      opacity: 1;
+    }
+
+    @keyframes chromaticShift {
+      0%, 100% { 
+        box-shadow: 
+          -3px 0 0 rgba(255, 0, 0, 0.5),
+          3px 0 0 rgba(0, 255, 255, 0.5);
+      }
+      50% { 
+        box-shadow: 
+          -6px 0 0 rgba(255, 0, 0, 0.7),
+          6px 0 0 rgba(0, 255, 255, 0.7);
+      }
+    }
+
+    /* Trails effect - SIMPLIFIED */
+    body.psychedelic-mode {
+      animation: bodyWarp 4s ease-in-out infinite;
+    }
+
+    @keyframes bodyWarp {
+      0%, 100% { 
+        filter: hue-rotate(0deg);
+      }
+      50% { 
+        filter: hue-rotate(180deg);
+      }
+    }
+
+    /* PARTICLES - DISABLED FOR PERFORMANCE */
+    .particles {
+      display: none !important;
+    }
+
+    /* SHAKE */
+    @keyframes screenShake {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-10px, 10px); }
+      50% { transform: translate(10px, -10px); }
+      75% { transform: translate(-10px, -10px); }
+    }
+
+    .shake { animation: screenShake 0.7s ease-in-out; }
+
+    /* TRANSITION OUT */
+    @keyframes transitionOut {
+      0% { opacity: 1; filter: brightness(1); }
+      50% { filter: hue-rotate(360deg) saturate(20); }
+      100% { opacity: 0; filter: brightness(0); }
+    }
+
+    @media (max-width: 768px) {
+      .character { width: 900px; height: 900px; }
+      .dialogue { max-width: 75%; font-size: 18px; }
     }
   </style>
 </head>
+<body onclick="skipToIndex()">
 
-<body>
+  <!-- AUDIO AUTO-PLAY -->
+  <audio id="bgAudio" autoplay loop>
+    <source src="audio/hearingthings03.mp3" type="audio/mpeg">
+  </audio>
 
-<div class="container">
-  <aside class="sidebar">
-    <h1>
-      <span>h</span><span>e</span><span>a</span><span>r</span><span>i</span><span>n</span><span>g</span>
-      <span class="space"> </span>
-      <span>t</span><span>h</span><span>i</span><span>n</span><span>g</span><span>s</span>
-    </h1>
-    <div class="ears-container">
-      <span class="ear-icon" id="audioEarTrigger">👂</span>
-      <span class="camera-icon" id="videoTrigger">🎥</span>
-    </div>
-    <div class="sidebar-menu">
-      <a href="https://dexscreener.com/solana/expsw7dqczvq3gyfvselk2lcx2x1etfrviejqlwztc3u" target="_blank" class="menu-btn">Dexscreener</a>
-      <a href="https://x.com/hearingmeme" target="_blank" class="menu-btn">X @hearingmeme</a>
-      <a href="https://memedepot.com/d/hearingthings" target="_blank" class="menu-btn">Meme Depot</a>
-      <a href="https://jup.ag/?sell=So11111111111111111111111111111111111111112&buy=97sraAGszzEFY6AW8iuWfTceBQWa1RzuFRXryJqSbonk" target="_blank" class="menu-btn">Buy on Jupiter</a>
-      <a href="https://www.bonkswap.io/" target="_blank" class="menu-btn">Buy on Bonkswap</a>
-    </div>
-  </aside>
+  <button class="audio-control" id="audioBtn" onclick="event.stopPropagation(); toggleAudio();">
+    🔊 PLAY THE SONG
+  </button>
 
-  <main class="main-content">
-    <div class="audio-controls" id="audioControls">
-      <button class="audio-btn" id="prevBtn">⏮</button>
-      <button class="audio-btn" id="playPauseBtn">▶</button>
-      <button class="audio-btn" id="nextBtn">⏭</button>
-    </div>
+  <div class="skip-text">⚡ CLICK ANYWHERE TO SKIP ⚡</div>
+  <div class="falling-ears" id="fallingEars"></div>
+  <div class="ear-rain" id="earRain"></div>
+  <div class="virus-glitch" id="virusGlitch"></div>
+  <div class="wall-emerge" id="wallEmerge"></div>
+  <div class="psychedelic-layer" id="psychedelicLayer"></div>
+  <div class="wave-distortion" id="waveDistortion"></div>
+  <div class="kaleidoscope" id="kaleidoscope"></div>
+  <div class="chromatic-aberration" id="chromaticAberration"></div>
+  <div class="glitch-layer"></div>
+  <div class="scanlines"></div>
+  <div class="particles" id="particles"></div>
 
-    <div class="about" id="aboutBlock">
-      <div class="about-content" id="aboutContent">
-        <div class="about-text" id="aboutText">
-          hearing is a hand drawn cartoon character recognizable by his large curved ears, black sunglasses, and snow white skin.
-
-the character is usually drawn with a confident or suspicious expression, as if he is overhearing something important. this led to the associated phrase "hearing things", which is used as a caption or catchphrase when someone thinks they are picking up on drama, secrets or hidden information.
-          <span class="about-cursor"></span>
-        </div>
-
-        <div class="video-container" id="videoContainer">
-          <button class="close-video-btn" id="closeVideoBtn">X</button>
-          <button class="video-nav-btn left" id="prevVideoBtn">◀</button>
-          <video id="hearingVideo" controls playsinline></video>
-          <button class="video-nav-btn right" id="nextVideoBtn">▶</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="ca-container">
-      <span class="ca-text" onclick="copyCA()">97sraAGszzEFY6AW8iuWfTceBQWa1RzuFRXryJqSbonk</span>
-      <div class="disclaimer">
-        Hearing Things is an entertainment-only community meme coin.<br>
-        It does not constitute financial, investment or trading advice.<br>
-        Investments in cryptocurrency and memecoins involve an extreme risk of total loss.<br>
-        Users participate at their own risk and the operators disclaim all liability<br>
-        for any losses, damages or decisions made based on the provided content.
-      </div>
-    </div>
-  </main>
-</div>
-
-<img id="bodyImage" src="images/body.png" alt="Hearing character">
-<div class="speech-bubble" id="speechBubble"></div>
-<div class="money-rain" id="moneyRain"></div>
-
-<div class="game-overlay" id="gameOverlay">
-  <div class="game-container">
-    <button class="mobile-exit-btn" id="mobileExitBtn">EXIT</button>
-    <button class="close-game-btn" id="closeGameBtn">X</button>
-
-    <div class="game-title">
-      <span>w</span><span>h</span><span>a</span><span>c</span><span>k</span>
-      <br />
-      <span>t</span><span>h</span><span>e</span>
-      <span class="space"> </span>
-      <span>r</span><span>u</span><span>m</span><span>o</span><span>r</span><span>s</span>
-    </div>
-
-    <div class="game-ui">
-      <div>Score: <span id="score">0</span></div>
-      <div>Combo: <span id="combo">x1</span> | Miss: <span id="misses">0</span>/5</div>
-      <div>High: <span id="highScore">0</span></div>
-    </div>
-
-    <div class="game-board" id="gameBoard"></div>
-
-    <div id="startBtnContainer">
-      <button class="game-btn" id="startBtn">START HEARING THINGS</button>
-    </div>
-
-    <div class="rumor-bubble" id="rumorBubble"></div>
+  <div class="scene active" id="scene1">
+    <div class="intro-text">HEARING THINGS</div>
+    <div class="subtitle">The rumors are coming... 👂💀🔥</div>
   </div>
-</div>
 
-<script>
-// IMPORTANT : Corrige l'URL du site ici pour le partage X
-const aboutText=document.getElementById('aboutText');const bodyImage=document.getElementById('bodyImage');const speechBubble=document.getElementById('speechBubble');const videoContainer=document.getElementById('videoContainer');const video=document.getElementById('hearingVideo');const closeBtn=document.getElementById('closeVideoBtn');const videoTrigger=document.getElementById('videoTrigger');const audioControls=document.getElementById('audioControls');const prevVideoBtn=document.getElementById('prevVideoBtn');const nextVideoBtn=document.getElementById('nextVideoBtn');const moneyRain=document.getElementById('moneyRain');const aboutBlock=document.getElementById('aboutBlock');
-const audioFiles=['audio/hearingthings01.mp3','audio/hearingthings02.mp3','audio/hearingthings03.mp3','audio/hearingthings04.mp3','audio/hearingthings05.mp3'];
-const videoFiles=['vids/hearing.mp4','vids/hearing1.mp4','vids/hearing2.mp4','vids/hearing3.mp4','vids/hearing5.mp4','vids/hearing6.mp4','vids/hearing7.mp4','vids/hearing8.mp4','vids/hearing9.mp4'];
-let currentTrackIndex=0;let currentVideoIndex=0;let isPlaying=false;
-const audio=new Audio();const playPauseBtn=document.getElementById('playPauseBtn');const prevBtn=document.getElementById('prevBtn');const nextBtn=document.getElementById('nextBtn');const audioEarTrigger=document.getElementById('audioEarTrigger');
-function loadTrack(index){if(index<0||index>=audioFiles.length)return;currentTrackIndex=index;audio.src=audioFiles[index];audio.load();}
-function playTrack(){audio.play().catch(()=>{});playPauseBtn.textContent='⏸';isPlaying=true;}
-function pauseTrack(){audio.pause();playPauseBtn.textContent='▶';isPlaying=false;}
-function nextTrack(){currentTrackIndex=(currentTrackIndex+1)%audioFiles.length;loadTrack(currentTrackIndex);playTrack();}
-function prevTrack(){currentTrackIndex=(currentTrackIndex-1+audioFiles.length)%audioFiles.length;loadTrack(currentTrackIndex);playTrack();}
-function loadVideo(index){if(index<0)index=videoFiles.length-1;if(index>=videoFiles.length)index=0;currentVideoIndex=index;video.innerHTML=`<source src="${videoFiles[index]}" type="video/mp4">`;video.load();video.play().catch(()=>{});}
-if(audioFiles.length>0)loadTrack(0);
-audioEarTrigger.addEventListener('click',()=>{if(audioControls.classList.contains('visible')){audioControls.classList.remove('visible');pauseTrack();}else{audioControls.classList.add('visible');if(!isPlaying)playTrack();}});
-playPauseBtn.addEventListener('click',()=>{if(isPlaying)pauseTrack();else playTrack();});
-nextBtn.addEventListener('click',nextTrack);prevBtn.addEventListener('click',prevTrack);audio.addEventListener('ended',nextTrack);
-videoTrigger.addEventListener('click',()=>{aboutText.style.display='none';videoContainer.classList.add('active');const randomIndex=Math.floor(Math.random()*videoFiles.length);loadVideo(randomIndex);});
-prevVideoBtn.addEventListener('click',()=>loadVideo(currentVideoIndex-1));nextVideoBtn.addEventListener('click',()=>loadVideo(currentVideoIndex+1));
-closeBtn.addEventListener('click',()=>{video.pause();video.currentTime=0;videoContainer.classList.remove('active');aboutText.style.display='block';});
-if(aboutText){const fullText=aboutText.textContent.trim();aboutText.textContent='';aboutText.classList.add('visible');let i=0;const speed=35;function typeWriter(){if(i<fullText.length){aboutText.textContent+=fullText.charAt(i);i++;setTimeout(typeWriter,speed);}else{document.querySelector('.about-cursor')?.remove();if(window.innerWidth>1100)bodyImage?.classList.add('visible');}}window.addEventListener('load',()=>{setTimeout(()=>{aboutBlock.classList.add('expanded');typeWriter();},800);});}
-const phrases=["just heard a rumor","they're toast","i don't want to name names","i've been hearing things","big if true","saw it on biz","there's rumor"];
-let intervalId=null;
-function setBubblePosition(){if(!bodyImage||!speechBubble)return;const rect=bodyImage.getBoundingClientRect();const bubbleWidth=speechBubble.offsetWidth||280;const leftPos=rect.left+(rect.width/2)-(bubbleWidth/2)-10;const topPos=rect.top-speechBubble.offsetHeight;speechBubble.style.left=`${leftPos}px`;speechBubble.style.top=`${topPos}px`;}
-function showRandomPhrase(){if(!speechBubble)return;const randomPhrase=phrases[Math.floor(Math.random()*phrases.length)];speechBubble.textContent=randomPhrase;speechBubble.style.display='block';setBubblePosition();}
-if(bodyImage){bodyImage.addEventListener('click',()=>{if(intervalId)clearInterval(intervalId);showRandomPhrase();intervalId=setInterval(showRandomPhrase,10000);});}
-document.addEventListener('click',(e)=>{if(bodyImage&&speechBubble&&!bodyImage.contains(e.target)&&!speechBubble.contains(e.target)){if(intervalId){clearInterval(intervalId);intervalId=null;speechBubble.style.display='none';}}});
-function copyCA(){navigator.clipboard.writeText('97sraAGszzEFY6AW8iuWfTceBQWa1RzuFRXryJqSbonk').then(()=>{alert("Yeah, It's time to buy some $hearing !");rainMoney();}).catch(()=>alert('Copy failed'));}
-function rainMoney(){moneyRain.innerHTML='';const count=80;for(let i=0;i<count;i++){const dollar=document.createElement('div');dollar.className='dollar';dollar.textContent='💲';const left=Math.random()*100;const delay=Math.random()*0.8;const duration=2+Math.random()*2;dollar.style.left=left+'vw';dollar.style.animationDelay=delay+'s';dollar.style.animationDuration=duration+'s';moneyRain.appendChild(dollar);}setTimeout(()=>{moneyRain.innerHTML='';},3500);}
-window.addEventListener('resize',setBubblePosition);window.addEventListener('scroll',setBubblePosition);
+  <div class="scene" id="scene2"></div>
 
-const gameTrigger=document.getElementById('gameTrigger');const gameOverlay=document.getElementById('gameOverlay');const closeGameBtn=document.getElementById('closeGameBtn');const mobileExitBtn=document.getElementById('mobileExitBtn');
-let gameRunning=false;let score=0;let combo=1;let misses=0;let highScore=parseInt(localStorage.getItem('hearingWhackHigh')||'0');
-let scoreEl,comboEl,missesEl,highScoreEl,rumorBubble,startBtn,gameBoard,ears;
-const gamePhrases=["just heard a rumor","they're toast","i don't want to name names","i've been hearing things","saw it on biz","there's rumor"];
-const phraseSounds={"just heard a rumor":'audio/hearing-game3.mp3',"they're toast":'audio/hearing-game6.mp3',"i don't want to name names":'audio/hearing-game1.mp3',"i've been hearing things":'audio/hearing-game2.mp3',"saw it on biz":'audio/hearing-game4.mp3',"there's rumor":'audio/hearing-game5.mp3'};
-const bonusEmojis=['💲','🚀','🐶'];
-function initGameBoard(){gameBoard=document.getElementById('gameBoard');if(!gameBoard)return;gameBoard.innerHTML='';for(let i=0;i<16;i++){const hole=document.createElement('div');hole.className='hole';const ear=document.createElement('div');ear.className='ear';ear.innerHTML='👂';ear.onclick=()=>whack(i);hole.appendChild(ear);gameBoard.appendChild(hole);}ears=gameBoard.querySelectorAll('.ear');scoreEl=document.getElementById('score');comboEl=document.getElementById('combo');missesEl=document.getElementById('misses');highScoreEl=document.getElementById('highScore');rumorBubble=document.getElementById('rumorBubble');startBtn=document.getElementById('startBtn');highScoreEl.textContent=highScore;startBtn.textContent="START HEARING THINGS";startBtn.onclick=startGame;startBtn.style.display='block';}
-function whack(index){if(!gameRunning)return;const ear=ears[index];if(!ear.classList.contains('active'))return;const symbol=ear.innerHTML;ear.classList.remove('active');ear.parentElement.classList.add('popped');if(bonusEmojis.includes(symbol)){if(symbol==='💲'){score+=50;rumorBubble.textContent='Money Bag! +50';}else if(symbol==='🚀'){combo*=2;rumorBubble.textContent='Rocket Boost! Combo x2';}else if(symbol==='🐶'){misses=Math.max(0,misses-1);missesEl.textContent=misses;rumorBubble.textContent='Bonk Dog! -1 Miss';}rumorBubble.style.display='block';setTimeout(()=>rumorBubble.style.display='none',1400);}else{score+=Math.floor(combo);combo=Math.min(combo+0.4,8);comboEl.textContent='x'+combo.toFixed(1);}scoreEl.textContent=score;if(score>highScore){highScore=score;highScoreEl.textContent=highScore;localStorage.setItem('hearingWhackHigh',highScore);}setTimeout(()=>ear.parentElement.classList.remove('popped'),300);}
-function popEar(){if(!gameRunning)return;const inactiveEars=Array.from(ears).filter(e=>!e.classList.contains('active'));if(inactiveEars.length===0)return;const randomEar=inactiveEars[Math.floor(Math.random()*inactiveEars.length)];let symbol='👂';if(Math.random()<0.20){symbol=bonusEmojis[Math.floor(Math.random()*bonusEmojis.length)];randomEar.style.color='#ffcc00';randomEar.style.textShadow='0 0 10px #ffcc00';}else{randomEar.style.color='';randomEar.style.textShadow='';}randomEar.innerHTML=symbol;randomEar.classList.add('active');setTimeout(()=>{if(randomEar.classList.contains('active')){randomEar.classList.remove('active');if(symbol==='👂'&&Math.random()<0.40){misses++;missesEl.textContent=misses;const randomPhrase=gamePhrases[Math.floor(Math.random()*gamePhrases.length)];rumorBubble.textContent=randomPhrase;rumorBubble.style.display='block';const soundPath=phraseSounds[randomPhrase];if(soundPath){const missSound=new Audio(soundPath);missSound.volume=0.4;missSound.play().catch(()=>{});}setTimeout(()=>rumorBubble.style.display='none',1400);}if(misses>=5)gameOver();}},900+Math.random()*1400);}
-function gameLoop(){if(!gameRunning)return;popEar();setTimeout(gameLoop,450-Math.min(score*1.8,300));}
-function startGame(){gameRunning=true;score=0;combo=1;misses=0;scoreEl.textContent=0;comboEl.textContent='x1';missesEl.textContent=0;startBtn.textContent="KEEP WHACKING!";startBtn.style.display='block';gameLoop();}
-function gameOver(){gameRunning=false;gameBoard.innerHTML=`<div class="game-over-screen"><div class="game-over-title">GAME OVER</div><div class="game-over-stats">Score: <span>${score}</span><br>High: <span>${highScore}</span><br>Combo: <span>${combo.toFixed(1)}x</span><br>Misses: <span>${misses}/5</span></div><div class="game-over-text">The rumors got you... 👂💀</div><button class="try-again-btn">TRY AGAIN</button><button class="share-x-btn">SHARE ON X</button></div>`;const tryAgainBtn=gameBoard.querySelector('.try-again-btn');if(tryAgainBtn){tryAgainBtn.onclick=()=>{initGameBoard();startGame();}}const shareBtn=gameBoard.querySelector('.share-x-btn');if(shareBtn){shareBtn.onclick=()=>{const tweetText=`Just whacked ${score} rumors in $HEARING game! 👂💀\nCombo x${combo.toFixed(1)} | High: ${highScore}\nThe rumors got me... \nPlay now: https://hearingthings.meme`;window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`,'_blank');}}startBtn.style.display='none';}
-gameTrigger.onclick=()=>{gameOverlay.classList.add('active');setTimeout(initGameBoard,100);};
-closeGameBtn.addEventListener('click',()=>{gameOverlay.classList.remove('active');gameRunning=false;});
-mobileExitBtn.addEventListener('click',()=>{gameOverlay.classList.remove('active');gameRunning=false;});
-</script>
+  <div class="scene" id="scene3">
+    <div class="character pos-enter" id="character">
+      <img src="images/body.png" alt="Hearing Character">
+    </div>
+
+    <div class="dialogue left" id="dialogue1">JUST HEARD<br>A RUMOR 👂💸</div>
+    <div class="dialogue right" id="dialogue2">I'VE BEEN<br>HEARING THINGS 💀🔥</div>
+    <div class="dialogue center" id="dialogue3">SAW IT<br>ON BIZ 🚀💎</div>
+    <div class="dialogue top-center" id="dialogue4">THEY'RE<br>TOAST 🔥💀</div>
+    <div class="dialogue bottom-left" id="dialogue5">BIG IF<br>TRUE 💎⚡</div>
+
+    <button class="enter-button" id="enterBtn" onclick="event.stopPropagation(); buttonClicked();">
+      LET'S FUCKING GO
+    </button>
+  </div>
+
+  <script>
+    let buttonClickAllowed = false;
+    const audio = document.getElementById('bgAudio');
+    const audioBtn = document.getElementById('audioBtn');
+    let audioPlaying = false;
+
+    // Démarrer l'audio immédiatement
+    const startAudio = () => {
+      audio.play().then(() => {
+        audioPlaying = true;
+        audioBtn.textContent = '🔊 PLAY THE SONG';
+      }).catch(err => {
+        console.log('Autoplay bloqué:', err);
+      });
+    };
+
+    // Tenter de jouer immédiatement
+    startAudio();
+
+    // Si bloqué, jouer au premier clic/toucher sur la page
+    const playOnInteraction = () => {
+      if (!audioPlaying) {
+        startAudio();
+      }
+      document.removeEventListener('click', playOnInteraction);
+      document.removeEventListener('touchstart', playOnInteraction);
+    };
+
+    document.addEventListener('click', playOnInteraction);
+    document.addEventListener('touchstart', playOnInteraction);
+
+    function toggleAudio() {
+      if (audioPlaying) {
+        audio.pause();
+        audioBtn.textContent = '🔇 STOP THE SONG';
+        audioPlaying = false;
+      } else {
+        audio.play();
+        audioBtn.textContent = '🔊 PLAY THE SONG';
+        audioPlaying = true;
+      }
+    }
+
+    const timeline = [
+      { time: 0, action: () => switchScene(1) },
+      { time: 3000, action: () => switchScene(2) },
+      { time: 4500, action: () => switchScene(3) },
+      { time: 4500, action: () => document.querySelector('.glitch-layer').classList.add('active') },
+      { time: 4500, action: startFallingEars },
+      { time: 4500, action: () => {
+        // Activer tous les EFFECTs psychédéliques
+        document.getElementById('psychedelicLayer').classList.add('active');
+        document.getElementById('waveDistortion').classList.add('active');
+        document.getElementById('kaleidoscope').classList.add('active');
+        document.getElementById('chromaticAberration').classList.add('active');
+        document.body.classList.add('psychedelic-mode');
+      }},
+      { time: 6500, action: () => { document.getElementById('character').className = 'character pos-left'; } },
+      { time: 7000, action: () => document.getElementById('dialogue1').classList.add('show') },
+      { time: 8500, action: () => { document.getElementById('character').className = 'character pos-right'; } },
+      { time: 9000, action: () => document.getElementById('dialogue2').classList.add('show') },
+      { time: 10500, action: () => { document.getElementById('character').className = 'character pos-center'; } },
+      { time: 11000, action: () => document.getElementById('dialogue3').classList.add('show') },
+      { time: 12500, action: () => document.getElementById('dialogue4').classList.add('show') },
+      { time: 14000, action: () => document.getElementById('dialogue5').classList.add('show') },
+      { time: 15500, action: () => { 
+        // Recentrer le personnage verticalement avant le BUTTON
+        document.getElementById('character').className = 'character pos-center';
+      }},
+      { time: 16500, action: () => { 
+        document.getElementById('enterBtn').classList.add('show'); 
+        document.getElementById('character').classList.add('glitch-mode');
+        buttonClickAllowed = true;
+        
+        // Arrêter TOUT après 2 secondes - figer body.png et hearingglitch.png
+        setTimeout(() => {
+          const character = document.getElementById('character');
+          character.classList.remove('glitch-mode');
+          // Figer complètement body.png au centre verticalement
+          character.style.animation = 'none';
+          character.style.top = '50%';
+          character.style.left = '50%';
+          character.style.transform = 'translate(-50%, -50%) scale(0.4)';
+        }, 2000);
+      } }
+    ];
+
+    timeline.forEach(e => setTimeout(e.action, e.time));
+
+    function switchScene(n) {
+      document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+      document.getElementById(`scene${n}`).classList.add('active');
+      if (n === 2) {
+        document.body.classList.add('shake');
+        setTimeout(() => document.body.classList.remove('shake'), 700);
+      }
+    }
+
+    function startFallingEars() {
+      const container = document.getElementById('fallingEars');
+      const earEmojis = ['👂', '💵', '💸'];
+      function create() {
+        const ear = document.createElement('div');
+        ear.className = 'falling-ear';
+        ear.textContent = earEmojis[Math.floor(Math.random() * earEmojis.length)];
+        ear.style.left = Math.random() * 100 + '%';
+        ear.style.animationDuration = (5 + Math.random() * 5) + 's';
+        container.appendChild(ear);
+        setTimeout(() => ear.remove(), 12000);
+      }
+      setInterval(create, 500);
+      for (let i = 0; i < 15; i++) setTimeout(create, i * 300);
+    }
+
+    const particles = document.getElementById('particles');
+    const emojis = ['👂', '💀', '🔥', '💎', '🚀', '⚡', '👁️', '🌀', '💰', '💵', '💸', '💲'];
+
+    function createParticle() {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      p.style.left = Math.random() * 100 + '%';
+      p.style.animationDuration = (2.5 + Math.random() * 3) + 's';
+      particles.appendChild(p);
+      setTimeout(() => p.remove(), 6000);
+    }
+
+    let particleInterval;
+    // PARTICULES DÉSACTIVÉES POUR PERFORMANCE
+    // setTimeout(() => { particleInterval = setInterval(createParticle, 150); }, 4500);
+
+    // Propagation virus glitch
+    let virusInterval;
+    let virusElements = [];
+    
+    function createVirusGlitch() {
+      const container = document.getElementById('virusGlitch');
+      const sizes = [80, 120, 160, 200, 250, 300, 400];
+      
+      function spawn() {
+        const virus = document.createElement('img');
+        virus.className = 'virus-img';
+        virus.src = 'images/hearingglitch.png';
+        virus.style.width = sizes[Math.floor(Math.random() * sizes.length)] + 'px';
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        virus.style.left = left + '%';
+        virus.style.top = top + '%';
+        virus.style.animationDuration = (2 + Math.random() * 2) + 's';
+        virus.style.animationDelay = Math.random() * 0.5 + 's';
+        container.appendChild(virus);
+        virusElements.push({element: virus, left: left, top: top});
+        setTimeout(() => {
+          const index = virusElements.findIndex(v => v.element === virus);
+          if (index > -1) virusElements.splice(index, 1);
+          virus.remove();
+        }, 4000);
+      }
+      
+      // Propagation continue
+      virusInterval = setInterval(spawn, 300);
+      // Démarrage initial avec MOINS de virus (5 au lieu de 20)
+      for (let i = 0; i < 5; i++) {
+        setTimeout(spawn, i * 150);
+      }
+      
+      // Arrêter la propagation après 2 secondes et FIGER les images
+      setTimeout(() => {
+        clearInterval(virusInterval);
+        // Figer COMPLÈTEMENT toutes les images virus présentes
+        virusElements.forEach(v => {
+          v.element.style.animation = 'none';
+          v.element.style.opacity = '0.5';
+          v.element.style.transform = 'translate(-50%, -50%) scale(1)';
+          v.element.style.left = v.left + '%';
+          v.element.style.top = v.top + '%';
+          v.element.style.filter = 'drop-shadow(0 0 20px rgba(0, 255, 0, 0.6))';
+          // Empêcher la suppression automatique
+          clearTimeout();
+        });
+      }, 2000);
+    }
+
+    // Démarrer la propagation virus quand le personnage arrive
+    setTimeout(createVirusGlitch, 4500);
+
+    // Images sortant du mur
+    function createWallEmerge() {
+      const container = document.getElementById('wallEmerge');
+      const hearingImages = [
+        'images/hearing_1.png',
+        'images/hearing_2.png',
+        'images/hearing_3.png',
+        'images/hearing_4.png',
+        'images/hearing_5.png'
+      ];
+      const sizes = [150, 200, 250, 300, 350, 400];
+      
+      function emerge() {
+        const img = document.createElement('img');
+        img.className = 'emerge-img';
+        img.src = hearingImages[Math.floor(Math.random() * hearingImages.length)];
+        img.style.width = sizes[Math.floor(Math.random() * sizes.length)] + 'px';
+        img.style.left = Math.random() * 100 + '%';
+        img.style.top = Math.random() * 100 + '%';
+        img.style.animationDuration = (3 + Math.random() * 2) + 's';
+        img.style.animationDelay = Math.random() * 0.5 + 's';
+        container.appendChild(img);
+        setTimeout(() => img.remove(), 5000);
+      }
+      
+      // Émergence continue - REDUCED
+      setInterval(emerge, 1200); // Plus lent
+      // Démarrage initial - REDUCED (5 au lieu de 10)
+      for (let i = 0; i < 5; i++) {
+        setTimeout(emerge, i * 400);
+      }
+    }
+
+    // Démarrer les émergences du mur
+    setTimeout(createWallEmerge, 5000);
+
+    function createEarRain() {
+      const container = document.getElementById('earRain');
+      for (let i = 0; i < 150; i++) {
+        setTimeout(() => {
+          const ear = document.createElement('div');
+          ear.className = 'ear';
+          ear.textContent = '👂';
+          ear.style.left = Math.random() * 100 + '%';
+          ear.style.top = (Math.random() * 30 - 30) + '%';
+          ear.style.animationDuration = (1 + Math.random() * 2) + 's';
+          container.appendChild(ear);
+          setTimeout(() => ear.remove(), 3000);
+        }, i * 15);
+      }
+    }
+
+    function buttonClicked() {
+      if (!buttonClickAllowed) return;
+      createEarRain();
+      setTimeout(goToIndex, 800);
+    }
+
+    function skipToIndex() {
+      if (buttonClickAllowed) return;
+      goToIndex();
+    }
+
+    function goToIndex() {
+      if (particleInterval) clearInterval(particleInterval);
+      // Fade out audio
+      let vol = 1;
+      const fadeOut = setInterval(() => {
+        vol -= 0.05;
+        if (vol <= 0) {
+          clearInterval(fadeOut);
+          audio.pause();
+        } else {
+          audio.volume = vol;
+        }
+      }, 50);
+      
+      document.body.style.animation = 'transitionOut 1.5s ease-out forwards';
+      setTimeout(() => { window.location.href = 'home.html'; }, 1500);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        buttonClickAllowed ? buttonClicked() : skipToIndex();
+      }
+    });
+  </script>
+
 </body>
 </html>
