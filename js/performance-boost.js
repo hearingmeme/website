@@ -4,17 +4,27 @@
 if (window.innerWidth <= 768) {
   document.documentElement.style.setProperty('--reduce-motion', '1');
   
-  // Réduire la qualité des effets
+  // Réduire SEULEMENT les effets lourds, pas tout
   const style = document.createElement('style');
   style.textContent = `
-    * {
-      animation-duration: 0.01s !important;
-      transition-duration: 0.01s !important;
-    }
+    /* Désactiver seulement les particules et effets lourds */
     .particle,
     .bonus-particle,
-    .dollar {
+    .dollar,
+    .money-rain,
+    [class*="animation"],
+    [class*="pulse"],
+    [class*="glow"],
+    [class*="float"] {
+      animation: none !important;
       display: none !important;
+    }
+    
+    /* Garder les transitions normales pour les boutons */
+    .header-btn,
+    .menu-btn,
+    button {
+      transition-duration: 0.3s !important;
     }
   `;
   document.head.appendChild(style);
