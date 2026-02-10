@@ -31,6 +31,15 @@ const MiniGames = {
     // 🔊 TTS
     this.speak("Mystery box! Let's see what you get!");
     
+    // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
+    document.querySelectorAll('.ear.active').forEach(ear => {
+      ear.classList.remove('active', 'cabal', 'echo', 'power-up');
+      ear.textContent = '';
+    });
+    if (typeof window.activeEarsCount !== 'undefined') {
+      window.activeEarsCount = 0;
+    }
+    
     const box = document.createElement('div');
     box.textContent = '🎁';
     box.style.cssText = `

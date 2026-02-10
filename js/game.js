@@ -910,11 +910,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isEcho) ear.classList.add("echo");
     
     const upTime = getEarUpTime();
-    ear.dataset.spawnTime = Date.now();
+    const spawnTime = Date.now();
+    ear.dataset.spawnTime = spawnTime;
     ear.dataset.lifetime = upTime;
     
     activeEarsCount++;
     setTimeout(() => {
+      // 🐛 FIX: Si l'ear a été nettoyé par un mini-jeu, ne pas compter de miss
+      if (!ear.textContent || ear.textContent === '') {
+        activeEarsCount--;
+        return;
+      }
+      
+      // 🐛 FIX CRITIQUE: Vérifier que c'est toujours le MÊME ear (pas un re-spawn)
+      const currentSpawnTime = parseInt(ear.dataset.spawnTime);
+      if (currentSpawnTime !== spawnTime) {
+        // Un nouvel ear a spawn sur ce hole entre temps !
+        return; // Ne pas compter de miss pour l'ancien ear
+      }
+      
       if (ear.classList.contains("active") && !ear.classList.contains("power-up")) {
         const symbol = ear.textContent;
         ear.classList.remove("active", "cabal", "echo");
@@ -3379,12 +3393,37 @@ document.addEventListener("DOMContentLoaded", () => {
                       
                       activeEarsCount++;
                       
+                      // 🐛 FIX: Sauvegarder le spawnTime pour vérification
+                      const fortuneSpawnTime = Date.now();
+                      ear.dataset.spawnTime = fortuneSpawnTime;
+                      ear.dataset.lifetime = getEarUpTime();
+                      
                       setTimeout(() => {
-                        if (ear.classList.contains('active')) {
+                        // 🐛 FIX TRIPLE PROTECTION (même que spawnEar)
+                        // Protection #1: Vérifier si nettoyé par mini-jeu
+                        if (!ear.textContent || ear.textContent === '') {
+                          activeEarsCount--;
+                          return;
+                        }
+                        
+                        // Protection #2: Vérifier que c'est le même ear
+                        const currentSpawnTime = parseInt(ear.dataset.spawnTime);
+                        if (currentSpawnTime !== fortuneSpawnTime) {
+                          return; // Un autre ear a spawn entre temps
+                        }
+                        
+                        // Protection #3: Vérifier gamePaused
+                        if (ear.classList.contains('active') && !ear.classList.contains('power-up')) {
+                          const wasGamePaused = window.gamePaused || isPaused;
+                          
                           ear.classList.remove('active');
                           activeEarsCount--;
-                          streak++;
-                          if (streak >= maxStreak) endGame();
+                          
+                          // Seulement compter miss si pas en pause
+                          if (!wasGamePaused && !invincibleMode && !(powerUpActive && powerUpActive.type === 'invincible' && Date.now() < powerUpActive.endTime)) {
+                            streak++;
+                            if (streak >= maxStreak) endGame();
+                          }
                         }
                       }, getEarUpTime());
                     }
@@ -3668,7 +3707,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll(".hole").forEach(hole => {
     hole.addEventListener("click", () => {
-      if (isPaused) return;
+      // 🐛 FIX: Vérifier AUSSI gamePaused (pas juste isPaused)
+      if (isPaused || window.gamePaused) return;
       
       if (powerUpActive && powerUpActive.type === 'reverse' && Date.now() < powerUpActive.endTime) {
         const ear = hole.querySelector(".ear");
