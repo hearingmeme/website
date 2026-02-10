@@ -101,7 +101,7 @@ if (window.innerWidth <= 768) {
   });
 }
 
-// Limiter requestAnimationFrame
+// Limiter requestAnimationFrame (mais pas bloquer)
 let lastFrameTime = 0;
 const FPS_LIMIT = 60;
 const frameInterval = 1000 / FPS_LIMIT;
@@ -112,6 +112,9 @@ window.requestAnimationFrame = function(callback) {
     if (time - lastFrameTime >= frameInterval) {
       lastFrameTime = time;
       callback(time);
+    } else {
+      // Relancer pour le prochain frame au lieu de bloquer
+      window.requestAnimationFrame(callback);
     }
   });
 };

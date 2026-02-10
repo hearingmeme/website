@@ -243,13 +243,15 @@ span[class*="icon"] {
   }
 
   .stats-main {
-    font-size: clamp(16px, 3.5vw, 22px);
-    gap: 15px;
-    flex-wrap: nowrap;
+    font-size: clamp(14px, 3vw, 18px);
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   .stats-secondary {
-    display: none !important; /* Caché sur mobile pour garder 1 ligne */
+    font-size: clamp(12px, 2.5vw, 16px);
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   .stat-icon {

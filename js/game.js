@@ -133,21 +133,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getSpawnInterval() {
-    if (level <= 10) {
-      return Math.max(1500 - level * 30, 800);
+    // Difficulté progressive plus douce
+    if (level <= 5) {
+      return Math.max(1800 - level * 80, 1200); // Débute plus lent
     }
-    let base = Math.max(1100 - level * 25, 150);
+    if (level <= 15) {
+      return Math.max(1200 - level * 40, 600); // Progression medium
+    }
+    // Après niveau 15, ça devient vraiment intense
+    let base = Math.max(800 - level * 20, 200);
     if (powerUpActive && powerUpActive.type === 'speed') {
-      base = Math.max(350, base * 0.5);
+      base = Math.max(300, base * 0.5);
     }
     return base;
   }
 
   function getEarUpTime() {
-    if (level <= 10) {
-      return Math.max(2500 - level * 50, 1200) + randomInt(0, 400);
+    // Temps d'affichage plus long au début
+    if (level <= 5) {
+      return Math.max(3000 - level * 80, 2200) + randomInt(0, 500);
     }
-    return Math.max(1800 - level * 40, 250) + randomInt(0, 400);
+    if (level <= 15) {
+      return Math.max(2200 - level * 60, 1200) + randomInt(0, 400);
+    }
+    // Après niveau 15, très rapide
+    return Math.max(1200 - level * 30, 400) + randomInt(0, 300);
   }
 
   function getEarLifetime() {
@@ -155,15 +165,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getMaxEars() {
-    if (level <= 10) return Math.min(level === 1 ? 1 : 2, 2);
-    if (level < 6) return 2;
-    if (level < 12) return 3;
-    return 4;
+    if (level <= 3) return 1; // 1 seul au début
+    if (level <= 8) return 2;
+    if (level <= 15) return 3;
+    if (level <= 25) return 4;
+    return 5; // Max 5 à haut niveau
   }
 
   function getBonusChance() {
-    // V6: Augmenté pour profiter plus des bonus
-    return 0.28 + (level * 0.004); // Au lieu de 0.22 + 0.003
+    // Augmenté pour plus de fun et variété
+    const baseChance = 0.32; // De 0.28 à 0.32
+    const levelBonus = level * 0.005; // De 0.004 à 0.005
+    return Math.min(baseChance + levelBonus, 0.65); // Cap à 65%
   }
 
   function updateBackground() {
