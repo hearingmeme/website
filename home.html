@@ -47,6 +47,8 @@
   <link rel="stylesheet" href="css/mobile-ultra.css">
   <!-- 🎨 HEADER ULTRA BANGER -->
   <link rel="stylesheet" href="css/header-banger.css">
+  <!-- 📊 FOOTER STATS STYLÉ -->
+  <link rel="stylesheet" href="css/footer-stats.css">
 </head>
 
 <body>
@@ -419,54 +421,20 @@ the character is usually drawn with a confident or suspicious expression, as if 
   console.log("✅ Firebase connected!");
 </script>
 
-<!-- 🔥 LIVE SCORES FOOTER 🔥 -->
-<div id="liveScoresFooter" style="
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(26,26,0,0.95));
-  border-top: 3px solid #FFD700;
-  padding: 10px 15px;
-  z-index: 9998;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  font-family: 'Luckiest Guy', cursive;
-  box-shadow: 0 -5px 20px rgba(255,215,0,0.5);
-  animation: footerPulse 3s infinite;
-  overflow: hidden;
-">
-  <!-- TOP 3 -->
-  <div style="flex: 1; min-width: 0;">
-    <div style="font-size: 14px; color: #FFD700; margin-bottom: 5px; text-shadow: 0 0 10px #FFD700;">🏆 TOP 3</div>
-    <div id="footerTop3" style="font-size: 12px; color: #fff; display: flex; gap: 15px; flex-wrap: wrap;"></div>
+<!-- 🔥 LIVE SCORES FOOTER - ULTRA STYLÉ 🔥 -->
+<!-- FOOTER DÉSACTIVÉ TEMPORAIREMENT
+<div id="liveScoresFooter" class="footer-stats">
+  <div class="footer-section footer-top3">
+    <div class="footer-label">🏆 TOP 3</div>
+    <div id="footerTop3" class="footer-content"></div>
   </div>
   
-  <!-- LIVE SCORES -->
-  <div style="flex: 2; min-width: 0; overflow: hidden;">
-    <div style="font-size: 14px; color: #00ff00; margin-bottom: 5px; text-shadow: 0 0 10px #00ff00; animation: glitchText 0.5s infinite;">📊 LIVE SCORES</div>
-    <div id="liveScoresFeed" style="
-      font-size: 11px;
-      color: #fff;
-      white-space: nowrap;
-      animation: scrollScores 20s linear infinite;
-    "></div>
+  <div class="footer-section footer-live">
+    <div class="footer-label live-label">📊 LIVE SCORES</div>
+    <div id="liveScoresFeed" class="live-scores-scroll"></div>
   </div>
 </div>
 
-<style>
-@keyframes footerPulse {
-  0%, 100% { box-shadow: 0 -5px 20px rgba(255,215,0,0.5); }
-  50% { box-shadow: 0 -5px 30px rgba(255,215,0,0.8); }
-}
-
-@keyframes scrollScores {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-</style>
 
 <script>
 // Load live scores
@@ -509,8 +477,10 @@ setTimeout(loadLiveScoresFooter, 2000);
 // Refresh every 10 seconds
 setInterval(loadLiveScoresFooter, 10000);
 </script>
+FIN FOOTER DÉSACTIVÉ -->
 
 <!-- Game Scripts -->
+<script src="js/performance-boost.js"></script>
 <script src="js/utils.js"></script>
   <script src="js/performance.js"></script>
 <script src="js/storage.js"></script>
