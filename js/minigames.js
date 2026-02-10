@@ -32,7 +32,7 @@ const MiniGames = {
     this.speak("Mystery box! Let's see what you get!");
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -41,6 +41,7 @@ const MiniGames = {
     }
     
     const box = document.createElement('div');
+    box.id = 'mysteryBoxOverlay';  // FIX: Ajout ID
     box.textContent = '🎁';
     box.style.cssText = `
       position: fixed;
@@ -219,7 +220,7 @@ const MiniGames = {
     this.speak(`Memory game! Memorize ${sequenceLength} positions and repeat them!`);
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -648,7 +649,7 @@ const MiniGames = {
     this.speak("Blackjack! Hit or stand? Good luck!");
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -657,6 +658,7 @@ const MiniGames = {
     }
     
     const overlay = document.createElement('div');
+    overlay.id = 'blackjackOverlay';  // FIX: Ajout ID
     overlay.style.cssText = `
       position: fixed;
       inset: 0;
@@ -914,7 +916,7 @@ const MiniGames = {
     this.speak("Hearing Chest! Pick a chest if you dare!");
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -1173,7 +1175,7 @@ const MiniGames = {
     this.speak("Hearing Trader! Buy low, sell high, or short the market!");
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -1485,7 +1487,7 @@ const MiniGames = {
     if (typeof window.setPaused === 'function') window.setPaused(true);
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -2049,7 +2051,7 @@ const MiniGames = {
     this.speak("Hearinko time! Drop your balls and pray for that jackpot!");
     
     // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-    document.querySelectorAll('.ear.active').forEach(ear => {
+    document.querySelectorAll('.ear').forEach(ear => {
       ear.classList.remove('active', 'cabal', 'echo', 'power-up');
       ear.textContent = '';
     });
@@ -2458,10 +2460,17 @@ const MiniGames = {
     
     const closeGame = () => {
       if (animId) cancelAnimationFrame(animId);
-      overlay.remove();
-      window.gamePaused = false;
-      if (typeof window.setPaused === 'function') window.setPaused(false);
-      if (typeof window.startSpawning === 'function') setTimeout(() => window.startSpawning(), 100);
+      
+      // 🐛 FIX: Unpause seulement APRÈS fermeture overlay
+      overlay.style.transition = 'opacity 0.5s';
+      overlay.style.opacity = '0';
+      
+      setTimeout(() => {
+        overlay.remove();
+        window.gamePaused = false;
+        if (typeof window.setPaused === 'function') window.setPaused(false);
+        if (typeof window.startSpawning === 'function') setTimeout(() => window.startSpawning(), 100);
+      }, 500); // Attend que l'animation finisse
     };
     
     const finish = () => {

@@ -916,43 +916,70 @@ document.addEventListener("DOMContentLoaded", () => {
     
     activeEarsCount++;
     setTimeout(() => {
-      // 🐛 FIX: Si l'ear a été nettoyé par un mini-jeu, ne pas compter de miss
+      // 🐛 FIX #1: Si l'ear a été nettoyé par un mini-jeu
       if (!ear.textContent || ear.textContent === '') {
-        activeEarsCount--;
         return;
       }
       
-      // 🐛 FIX CRITIQUE: Vérifier que c'est toujours le MÊME ear (pas un re-spawn)
+      // 🐛 FIX #2: Vérifier que c'est toujours le MÊME ear
       const currentSpawnTime = parseInt(ear.dataset.spawnTime);
       if (currentSpawnTime !== spawnTime) {
-        // Un nouvel ear a spawn sur ce hole entre temps !
-        return; // Ne pas compter de miss pour l'ancien ear
+        return;
       }
       
-      if (ear.classList.contains("active") && !ear.classList.contains("power-up")) {
-        const symbol = ear.textContent;
-        ear.classList.remove("active", "cabal", "echo");
-        activeEarsCount--;
-
-        const isRegularEar = symbol === '👂';
-        
-        const wasGamePaused = window.gamePaused || isPaused;
-        
-        if (isRegularEar && !wasGamePaused && !invincibleMode && !(powerUpActive && powerUpActive.type === 'invincible' && Date.now() < powerUpActive.endTime)) {
-          streak++;
-          combo = 1;
-          levelMisses++;
+      // 🐛 FIX #3: Vérifier classList.contains('active')
+      if (!ear.classList.contains("active") || ear.classList.contains("power-up")) {
+        return;
+      }
+      
+      const symbol = ear.textContent;
+      const isRegularEar = symbol === '👂';
+      
+      // 🐛 FIX #4: DERNIÈRE vérification textContent
+      if (!ear.textContent || ear.textContent === '') {
+        return;
+      }
+      
+      // MAINTENANT on peut modifier l'ear
+      ear.classList.remove("active", "cabal", "echo");
+      activeEarsCount--;
+      
+      // 🐛 FIX #5: RE-vérifier gamePaused ET textContent JUSTE AVANT de compter miss
+      // + vérifier qu'AUCUN mini-jeu n'est actif
+      const wasGamePaused = window.gamePaused || isPaused;
+      
+      // Check si un overlay de mini-jeu existe
+      const anyMiniGameActive = 
+        document.getElementById('pachinkoOverlay') || 
+        document.getElementById('mysteryBoxOverlay') ||
+        document.getElementById('blackjackOverlay') ||
+        document.getElementById('bonneteauOverlay') ||
+        document.getElementById('memoryOverlay') ||
+        document.getElementById('hearingChestOverlay') ||  // FIX: bon nom !
+        document.getElementById('traderOverlay') ||
+        document.getElementById('grandpaOverlay') ||
+        document.getElementById('fortuneTellerOverlay') ||
+        document.getElementById('coinFlipOverlay');
+      
+      if (!ear.textContent || ear.textContent === '') {
+        return; // Mini-jeu a démarré pendant l'exécution
+      }
+      
+      // Compter le miss seulement si pas en pause ET aucun mini-jeu actif
+      if (isRegularEar && !wasGamePaused && !anyMiniGameActive && !invincibleMode && !(powerUpActive && powerUpActive.type === 'invincible' && Date.now() < powerUpActive.endTime)) {
+        streak++;
+        combo = 1;
+        levelMisses++;
           
-          if (level > 5 && Math.random() < 0.15) {
-            const taunt = tauntPhrases[randomInt(0, tauntPhrases.length - 1)];
-            rumorBubble.textContent = taunt;
-            rumorBubble.classList.add("show");
-            setTimeout(() => rumorBubble.classList.remove("show"), 1200);
-          }
-          
-          if (streak >= maxStreak) {
-            endGame();
-          }
+        if (level > 5 && Math.random() < 0.15) {
+          const taunt = tauntPhrases[randomInt(0, tauntPhrases.length - 1)];
+          rumorBubble.textContent = taunt;
+          rumorBubble.classList.add("show");
+          setTimeout(() => rumorBubble.classList.remove("show"), 1200);
+        }
+        
+        if (streak >= maxStreak) {
+          endGame();
         }
       }
       
@@ -1940,6 +1967,15 @@ document.addEventListener("DOMContentLoaded", () => {
         isPaused = true;
         window.gamePaused = true;
         
+        // 🐛 FIX: Clear ALL ears to prevent deaths during Lightning Speed
+        document.querySelectorAll('.ear').forEach(ear => {
+          ear.classList.remove('active', 'cabal', 'echo', 'power-up');
+          ear.textContent = '';
+        });
+        if (typeof window.activeEarsCount !== 'undefined') {
+          window.activeEarsCount = 0;
+        }
+        
         const instructionOverlay = document.createElement('div');
         instructionOverlay.style.cssText = `
           position: fixed;
@@ -2400,6 +2436,20 @@ document.addEventListener("DOMContentLoaded", () => {
         // HEARING GRANDPA V2 - ULTRA DÉBILE avec OVERLAY COMPLET
         rumorBubble.textContent = "🦻 HEARING GRANDPA! WHAT?! HUH?! 🦻";
         
+        // 🐛 FIX: Pauser le jeu et nettoyer les ears
+        const wasGamePaused = isPaused;
+        window.gamePaused = true;
+        isPaused = true;
+        
+        // 🐛 FIX: Clear ALL ears to prevent deaths during Grandpa
+        document.querySelectorAll('.ear').forEach(ear => {
+          ear.classList.remove('active', 'cabal', 'echo', 'power-up');
+          ear.textContent = '';
+        });
+        if (typeof window.activeEarsCount !== 'undefined') {
+          window.activeEarsCount = 0;
+        }
+        
         // 🎭 OVERLAY COMPLET pour cacher le fond
         const grandpaOverlay = document.createElement('div');
         grandpaOverlay.id = 'grandpaOverlay';
@@ -2567,6 +2617,12 @@ document.addEventListener("DOMContentLoaded", () => {
           setTimeout(() => {
             grandpaOverlay.remove();
             style.remove();
+            
+            // 🐛 FIX: Reprendre le jeu
+            if (!wasGamePaused) {
+              isPaused = false;
+              window.gamePaused = false;
+            }
           }, 1000);
           
           rumorBubble.textContent = "GRANDPA LEFT! BACK TO NORMAL! 🎯";
@@ -2608,8 +2664,8 @@ document.addEventListener("DOMContentLoaded", () => {
         isPaused = true;
         clearInterval(gameInterval);
         
-        // 🐛 FIX: Clear ALL active ears to prevent deaths during mini-game
-        document.querySelectorAll('.ear.active').forEach(ear => {
+        // 🐛 FIX: Clear ALL ears (pas juste .active) to prevent deaths during mini-game
+        document.querySelectorAll('.ear').forEach(ear => {
           ear.classList.remove('active', 'cabal', 'echo', 'power-up');
           ear.textContent = '';
         });
@@ -3132,6 +3188,15 @@ document.addEventListener("DOMContentLoaded", () => {
         isPaused = true;
         window.gamePaused = true;
         
+        // 🐛 FIX: Clear ALL ears to prevent deaths during Fortune Teller
+        document.querySelectorAll('.ear').forEach(ear => {
+          ear.classList.remove('active', 'cabal', 'echo', 'power-up');
+          ear.textContent = '';
+        });
+        if (typeof window.activeEarsCount !== 'undefined') {
+          window.activeEarsCount = 0;
+        }
+        
         // Overlay mystique complet
         const overlay = document.createElement('div');
         overlay.id = 'fortuneTellerOverlay';
@@ -3399,31 +3464,57 @@ document.addEventListener("DOMContentLoaded", () => {
                       ear.dataset.lifetime = getEarUpTime();
                       
                       setTimeout(() => {
-                        // 🐛 FIX TRIPLE PROTECTION (même que spawnEar)
-                        // Protection #1: Vérifier si nettoyé par mini-jeu
+                        // 🐛 FIX #1: Vérifier si nettoyé par mini-jeu
                         if (!ear.textContent || ear.textContent === '') {
-                          activeEarsCount--;
                           return;
                         }
                         
-                        // Protection #2: Vérifier que c'est le même ear
+                        // 🐛 FIX #2: Vérifier que c'est le même ear
                         const currentSpawnTime = parseInt(ear.dataset.spawnTime);
                         if (currentSpawnTime !== fortuneSpawnTime) {
-                          return; // Un autre ear a spawn entre temps
+                          return;
                         }
                         
-                        // Protection #3: Vérifier gamePaused
-                        if (ear.classList.contains('active') && !ear.classList.contains('power-up')) {
-                          const wasGamePaused = window.gamePaused || isPaused;
-                          
-                          ear.classList.remove('active');
-                          activeEarsCount--;
-                          
-                          // Seulement compter miss si pas en pause
-                          if (!wasGamePaused && !invincibleMode && !(powerUpActive && powerUpActive.type === 'invincible' && Date.now() < powerUpActive.endTime)) {
-                            streak++;
-                            if (streak >= maxStreak) endGame();
-                          }
+                        // 🐛 FIX #3: Vérifier classList
+                        if (!ear.classList.contains('active') || ear.classList.contains('power-up')) {
+                          return;
+                        }
+                        
+                        const symbol = ear.textContent;
+                        
+                        // 🐛 FIX #4: Re-vérifier textContent
+                        if (!ear.textContent || ear.textContent === '') {
+                          return;
+                        }
+                        
+                        // Modifier l'ear
+                        ear.classList.remove('active');
+                        activeEarsCount--;
+                        
+                        // 🐛 FIX #5: Re-vérifier gamePaused + textContent + overlays
+                        const wasGamePaused = window.gamePaused || isPaused;
+                        
+                        // Check si un overlay de mini-jeu existe
+                        const anyMiniGameActive = 
+                          document.getElementById('pachinkoOverlay') || 
+                          document.getElementById('mysteryBoxOverlay') ||
+                          document.getElementById('blackjackOverlay') ||
+                          document.getElementById('bonneteauOverlay') ||
+                          document.getElementById('memoryOverlay') ||
+                          document.getElementById('hearingChestOverlay') ||  // FIX: bon nom !
+                          document.getElementById('traderOverlay') ||
+                          document.getElementById('grandpaOverlay') ||
+                          document.getElementById('fortuneTellerOverlay') ||
+                          document.getElementById('coinFlipOverlay');
+                        
+                        if (!ear.textContent || ear.textContent === '') {
+                          return;
+                        }
+                        
+                        // Compter miss seulement si pas en pause ET aucun mini-jeu
+                        if (!wasGamePaused && !anyMiniGameActive && !invincibleMode && !(powerUpActive && powerUpActive.type === 'invincible' && Date.now() < powerUpActive.endTime)) {
+                          streak++;
+                          if (streak >= maxStreak) endGame();
                         }
                       }, getEarUpTime());
                     }
