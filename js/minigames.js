@@ -2324,12 +2324,18 @@ const MiniGames = {
     
     document.body.appendChild(overlay);
     
-    // Canvas setup
+    // 🐛 FIX MOBILE: Calculer dimensions après append
+    const isMobile = window.innerWidth <= 768;
     const rect = boardContainer.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    
+    // 🐛 FIX: Si rect invalide (0x0), utiliser dimensions par défaut
+    canvas.width = rect.width > 0 ? rect.width : (isMobile ? window.innerWidth * 0.95 : 700);
+    canvas.height = rect.height > 0 ? rect.height : (isMobile ? window.innerHeight * 0.6 : 600);
+    
     const W = canvas.width;
     const H = canvas.height;
+    
+    console.log('Hearinko canvas:', W, 'x', H, 'mobile:', isMobile);
     
     // Pegs - BIGGER for large board
     const pegs = [];
@@ -2345,11 +2351,11 @@ const MiniGames = {
       }
     }
     
-    // Physics
+    // Physics - 🐛 FIX MOBILE: Gravité plus forte
     const balls = [];
     let animId = null;
     let totalWin = 0, landed = 0, toLand = 0;
-    const G = 1.5;
+    const G = isMobile ? 2.5 : 1.5;
     const BOUNCE = 0.6;
     const BALLR = 12;
     

@@ -612,7 +612,7 @@ const MegaBonusEffects = {
       font-family: 'Luckiest Guy', cursive;
       color: #fff;
       text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff;
-      z-index: 10001;
+      z-index: 99999;
       border-radius: 10px;
       box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
     `;
@@ -632,7 +632,7 @@ const MegaBonusEffects = {
       font-size: 40px;
       color: #FFD700;
       font-weight: bold;
-      z-index: 10001;
+      z-index: 99999;
       text-shadow: 0 0 20px #FFD700;
       font-family: 'Luckiest Guy', cursive;
       pointer-events: none;
@@ -648,11 +648,12 @@ const MegaBonusEffects = {
           left: ${Math.random() * 100}%;
           top: ${Math.random() * 100}%;
           font-size: 40px;
-          z-index: 9999;
+          z-index: 99999;
           cursor: pointer;
           animation: batFly ${1.5 + Math.random()}s ease-in-out infinite;
           filter: drop-shadow(0 0 10px #8b00ff);
           transition: transform 0.2s;
+          pointer-events: auto;
         `;
         
         bat.onmouseenter = () => {
