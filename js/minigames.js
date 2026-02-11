@@ -346,7 +346,10 @@ const MiniGames = {
       MiniGames.addUniversalHover(readyBtn, 1.1);
       
       readyBtn.addEventListener('click', () => {
-        overlay.style.display = 'none';
+        // 🐛 FIX: Rendre transparent au lieu de cacher
+        overlay.style.background = 'transparent';
+        overlay.style.pointerEvents = 'none';
+        overlay.innerHTML = '';
         
         const floatingInstr = document.createElement('div');
         floatingInstr.textContent = '👀 WATCH CAREFULLY! 👀';
@@ -383,6 +386,9 @@ const MiniGames = {
               clearInterval(showInterval);
               floatingInstr.remove();
               
+              // 🐛 FIX: Restaurer overlay correctement
+              overlay.style.background = 'rgba(0, 0, 0, 0.95)';
+              overlay.style.pointerEvents = 'auto';
               overlay.style.display = 'flex';
               overlay.innerHTML = `
                 <div style="font-size: 60px; color: #FFD700; font-family: 'Luckiest Guy', cursive; margin-bottom: 30px;">🧠 YOUR TURN! 🧠</div>
@@ -390,7 +396,7 @@ const MiniGames = {
                 <div id="memoryProgress" style="font-size: 50px; color: #00ff00; font-family: 'Luckiest Guy', cursive;">0 / ${sequenceLength}</div>
               `;
               
-              MiniGames.playMemoryGame(game, sequence, overlay);
+              MiniGames.playMemoryGame(game, sequence, overlay, sequenceLength);
               return;
             }
             
@@ -434,8 +440,11 @@ const MiniGames = {
     }, 100);
   },
   
-  playMemoryGame(game, sequence, overlay) {
-    overlay.style.display = 'none';
+  playMemoryGame(game, sequence, overlay, sequenceLength) {
+    // 🐛 FIX: Ne PAS cacher l'overlay, juste le vider et le rendre transparent
+    overlay.style.background = 'transparent';
+    overlay.style.pointerEvents = 'none'; // Laisser passer les clics vers les holes
+    overlay.innerHTML = ''; // Vider le contenu
     
     const floatingUI = document.createElement('div');
     floatingUI.style.cssText = `
@@ -451,7 +460,7 @@ const MiniGames = {
     floatingUI.innerHTML = `
       <div style="font-size: 50px; color: #FFD700; font-family: 'Luckiest Guy', cursive; margin-bottom: 20px; text-shadow: 0 0 30px #FFD700;">🧠 YOUR TURN! 🧠</div>
       <div style="font-size: 35px; color: #fff; font-family: 'Luckiest Guy', cursive; margin-bottom: 15px; text-shadow: 0 0 20px #000;">Click the holes in order!</div>
-      <div id="memoryProgressFloat" style="font-size: 55px; color: #00ff00; font-family: 'Luckiest Guy', cursive; text-shadow: 0 0 25px #00ff00;">0 / 5</div>
+      <div id="memoryProgressFloat" style="font-size: 55px; color: #00ff00; font-family: 'Luckiest Guy', cursive; text-shadow: 0 0 25px #00ff00;">0 / ${sequenceLength}</div>
     `;
     
     document.body.appendChild(floatingUI);
@@ -474,7 +483,7 @@ const MiniGames = {
         
         const progressFloat = document.getElementById('memoryProgressFloat');
         if (progressFloat) {
-          progressFloat.textContent = `${playerIndex} / 5`;
+          progressFloat.textContent = `${playerIndex} / ${sequenceLength}`;
           progressFloat.style.animation = 'none';
           setTimeout(() => { progressFloat.style.animation = 'pulse 0.3s'; }, 10);
         }
@@ -482,7 +491,11 @@ const MiniGames = {
         if (playerIndex >= sequence.length) {
           holes.forEach(h => h.removeEventListener('click', clickHandler));
           floatingUI.remove();
-          overlay.style.display = 'flex';
+          
+          // 🐛 FIX: Restaurer l'overlay correctement
+          overlay.style.background = 'rgba(0, 0, 0, 0.95)';
+          overlay.style.pointerEvents = 'auto';
+          
           MiniGames.memoryGameSuccess(game, overlay, sequenceLength);
         }
       } else {
@@ -496,7 +509,11 @@ const MiniGames = {
         
         holes.forEach(h => h.removeEventListener('click', clickHandler));
         floatingUI.remove();
-        overlay.style.display = 'flex';
+        
+        // 🐛 FIX: Restaurer l'overlay correctement
+        overlay.style.background = 'rgba(0, 0, 0, 0.95)';
+        overlay.style.pointerEvents = 'auto';
+        
         MiniGames.memoryGameFail(game, overlay);
       }
     };
@@ -2037,27 +2054,54 @@ const MiniGames = {
             const styleEl = document.getElementById('bonneteauStyles');
             if (styleEl) styleEl.remove();
             
-            // 🔥 FIX BANGER: Redémarrage complet et propre du jeu
-            // Étape 1: Clear tous les flags de pause (ordre critique!)
+            // 🔥 FIX ULTRA-BANGER: Redémarrage FORCÉ et garanti
+            console.log('🎪 Bonneteau closing...');
+            
+            // Étape 1: Force unpause MULTIPLE fois (paranoïa mode)
             window.gamePaused = false;
+            window.isPaused = false;
             
             if (typeof window.setPaused === 'function') {
               window.setPaused(false);
             }
             
-            // Étape 2: Attendre propagation des flags
+            // Étape 2: Clear activeEarsCount au cas où
+            if (typeof window.activeEarsCount !== 'undefined') {
+              window.activeEarsCount = 0;
+            }
+            
+            // Étape 3: Attendre propagation + restart GARANTI
             setTimeout(() => {
-              // Étape 3: Redémarrer le spawning
+              // Triple-check unpause
+              window.gamePaused = false;
+              window.isPaused = false;
+              
+              // Restart spawning
               if (typeof window.startSpawning === 'function') {
                 window.startSpawning();
-                console.log('🔥 BANGER: Hearing Hustle ended - Game resumed');
-              } else if (typeof window.spawnEar === 'function' && typeof window.getSpawnInterval === 'function') {
-                // Fallback ultra-safe
-                if (window.gameInterval) clearInterval(window.gameInterval);
-                window.gameInterval = setInterval(window.spawnEar, window.getSpawnInterval());
-                console.log('🔥 BANGER: Hearing Hustle ended - Game resumed (fallback)');
+                console.log('✅ Bonneteau ended - Game resumed via startSpawning');
+              } else if (typeof window.spawnEar === 'function') {
+                // Fallback: spawn immédiatement + restart interval
+                window.spawnEar();
+                
+                if (typeof window.getSpawnInterval === 'function') {
+                  if (window.gameInterval) clearInterval(window.gameInterval);
+                  window.gameInterval = setInterval(window.spawnEar, window.getSpawnInterval());
+                  console.log('✅ Bonneteau ended - Game resumed via fallback');
+                }
               }
-            }, 250); // Timing augmenté pour sécurité
+              
+              // Force spawn une ear immédiatement (emergency)
+              setTimeout(() => {
+                if (typeof window.activeEarsCount !== 'undefined' && window.activeEarsCount === 0) {
+                  if (typeof window.spawnEar === 'function') {
+                    console.log('🚨 Emergency spawn after Bonneteau');
+                    window.spawnEar();
+                  }
+                }
+              }, 500);
+              
+            }, 250);
           }, 500);
         }, 3500);
       }, 500);
