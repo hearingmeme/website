@@ -39,6 +39,12 @@
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  
+  /* 🔥 iOS SAFE AREAS (notch support) */
+  padding-top: max(15px, env(safe-area-inset-top));
+  padding-bottom: max(15px, env(safe-area-inset-bottom));
+  padding-left: max(15px, env(safe-area-inset-left));
+  padding-right: max(15px, env(safe-area-inset-right));
 }
 
 .lsd-psycho {
@@ -177,6 +183,12 @@
   pointer-events: auto;
   transition: all 0.45s cubic-bezier(0.68, -0.6, 0.32, 1.6);
   z-index: 10;
+  
+  /* 🔥 MOBILE OPTIMIZATIONS */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .ear.active {

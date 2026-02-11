@@ -1,0 +1,173 @@
+/* 🔥 MINI-GAMES MOBILE IMPROVEMENTS */
+
+/* ====== BLACKJACK CARDS ====== */
+@media (max-width: 768px) {
+  .bj-card {
+    width: 80px !important;
+    height: 120px !important;
+    font-size: 2.5rem !important;
+  }
+  
+  .bj-card-small {
+    font-size: 1.8rem !important;
+  }
+  
+  /* Boutons plus gros */
+  .bj-btn {
+    min-width: 120px !important;
+    min-height: 60px !important;
+    font-size: 1.8rem !important;
+    padding: 15px 25px !important;
+  }
+}
+
+/* ====== TREASURE CHEST ====== */
+@media (max-width: 768px) {
+  .chest {
+    width: 180px !important;
+    height: 180px !important;
+    font-size: 5rem !important;
+  }
+}
+
+/* ====== BONNETEAU CUPS ====== */
+@media (max-width: 768px) {
+  .cup {
+    width: 100px !important;
+    height: 100px !important;
+    font-size: 4rem !important;
+  }
+}
+
+/* ====== TRADER BUTTONS ====== */
+@media (max-width: 768px) {
+  .trader-btn {
+    min-width: 140px !important;
+    min-height: 70px !important;
+    font-size: 2rem !important;
+    padding: 18px 30px !important;
+  }
+  
+  .trader-chart {
+    height: 250px !important;
+  }
+}
+
+/* ====== MEMORY GAME ====== */
+@media (max-width: 768px) {
+  #memoryReadyBtn {
+    min-width: 200px !important;
+    min-height: 80px !important;
+    padding: 20px 40px !important;
+  }
+}
+
+/* ====== HEARINKO ====== */
+@media (max-width: 768px) {
+  .ball-opt {
+    min-width: 70px !important;
+    min-height: 60px !important;
+    font-size: 1.8rem !important;
+  }
+  
+  #dropPachinkoBtn,
+  #dumpPachinkoBtn {
+    min-width: 150px !important;
+    min-height: 70px !important;
+    font-size: 2rem !important;
+  }
+}
+
+/* ====== UNIVERSAL BUTTON IMPROVEMENTS ====== */
+@media (max-width: 768px) {
+  /* Tous les boutons dans overlays */
+  [id$="Overlay"] button,
+  [id$="overlay"] button {
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Feedback tactile visuel */
+  [id$="Overlay"] button:active,
+  [id$="overlay"] button:active {
+    transform: scale(0.95) !important;
+    filter: brightness(0.8);
+  }
+}
+
+/* ====== FASTER ANIMATIONS MOBILE ====== */
+@media (max-width: 768px) {
+  /* Bonneteau swap plus rapide */
+  @keyframes swapCups {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(var(--swap-distance)); }
+  }
+  
+  /* Durée réduite */
+  .cup.swapping {
+    animation-duration: 0.4s !important; /* was 0.6s */
+  }
+  
+  /* Cards deal plus rapide */
+  @keyframes cardDeal {
+    0% {
+      transform: scale(0.5) rotateY(90deg);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1) rotateY(0deg);
+      opacity: 1;
+    }
+  }
+  
+  .bj-card {
+    animation-duration: 0.3s !important; /* was 0.5s */
+  }
+}
+
+/* ====== PREVENT ZOOM ON DOUBLE TAP ====== */
+@media (max-width: 768px) {
+  [id$="Overlay"],
+  [id$="overlay"] {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  /* Inputs dans mini-jeux */
+  [id$="Overlay"] input,
+  [id$="overlay"] input {
+    font-size: 16px !important; /* Prevent iOS zoom */
+  }
+}
+
+/* ====== BETTER SCROLL HANDLING ====== */
+@media (max-width: 768px) {
+  [id$="Overlay"],
+  [id$="overlay"] {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ====== LANDSCAPE MODE ADJUSTMENTS ====== */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Hearinko board plus petit en landscape */
+  #pachinkoOverlay .board-container {
+    height: min(60vh, 400px) !important;
+  }
+  
+  /* Memory plus compact */
+  #memoryOverlay {
+    padding: 10px !important;
+  }
+  
+  /* Blackjack cards plus petites */
+  .bj-card {
+    width: 60px !important;
+    height: 90px !important;
+  }
+}

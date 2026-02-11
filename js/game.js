@@ -1029,6 +1029,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function hitEar(ear) {
     if (!ear || isPaused) return;
     if (!ear.classList.contains("active")) return;
+    
+    // 🔥 MOBILE: Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(10); // 10ms subtle vibration
+    }
 
     const isPowerUp = ear.classList.contains('power-up');
     const powerUpType = ear.dataset.powerup;

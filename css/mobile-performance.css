@@ -1,0 +1,138 @@
+/* 🔥 MOBILE PERFORMANCE OPTIMIZATIONS */
+
+/* Reduce animations on mobile */
+@media (max-width: 768px) {
+  
+  /* Disable heavy infinite animations on mobile */
+  .menu-btn:hover,
+  .ears-container span:hover,
+  .audio-btn:hover,
+  .video-nav-btn:hover {
+    animation: none !important;
+  }
+  
+  /* Keep only essential animations */
+  .menu-btn:hover {
+    transform: scale(1.05) !important;
+    transition: transform 0.15s ease-out !important;
+  }
+  
+  /* Reduce particle count */
+  .bonus-particle {
+    display: none;
+  }
+  
+  .bonus-particle:nth-child(-n+10) {
+    display: block;
+  }
+  
+  /* Simpler ear animation */
+  .ear.active {
+    animation: earPopSimple 0.5s ease-in-out !important;
+  }
+  
+  @keyframes earPopSimple {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+  
+  /* Disable glitch effects on mobile */
+  @keyframes glitchShake {
+    0%, 100% {
+      transform: scale(1.05);
+    }
+  }
+  
+  @keyframes colorShift {
+    0%, 100% {
+      filter: none;
+    }
+  }
+  
+  /* Reduce game container effects */
+  .game-container[data-level] {
+    animation: none !important;
+  }
+  
+  .game-overlay::before,
+  .game-overlay::after {
+    display: none !important;
+  }
+  
+  .game-board::before {
+    opacity: 0 !important;
+  }
+}
+
+/* Touch feedback - vibration */
+@media (hover: none) and (pointer: coarse) {
+  .ear {
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(255, 215, 0, 0.2);
+  }
+  
+  .hole {
+    cursor: pointer;
+  }
+  
+  /* Larger touch targets */
+  .ear,
+  .hole {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Faster transitions on touch */
+  .hole,
+  .ear {
+    transition: transform 0.15s ease-out !important;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .ear,
+  .hole {
+    animation: none !important;
+  }
+}
+
+/* Performance hints */
+.ear,
+.hole,
+.bonus-particle,
+.game-board {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Prevent scroll bounce on iOS */
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.game-container,
+.game-overlay {
+  overscroll-behavior: contain;
+}
+
+/* Orientation lock hint (optional) */
+@media (max-width: 768px) and (orientation: landscape) {
+  .game-container {
+    /* Game works in landscape but may add warning */
+  }
+}

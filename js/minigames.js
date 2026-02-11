@@ -2,6 +2,31 @@
 
 const MiniGames = {
   
+  // 🔥 MOBILE: Universal hover/touch helper
+  addUniversalHover(element, scaleValue = 1.1) {
+    if (!element) return;
+    
+    const isMobile = 'ontouchstart' in window;
+    
+    if (isMobile) {
+      element.addEventListener('touchstart', () => {
+        element.style.transform = `scale(${scaleValue})`;
+        if (navigator.vibrate) navigator.vibrate(10);
+      }, {passive: true});
+      
+      element.addEventListener('touchend', () => {
+        element.style.transform = 'scale(1)';
+      }, {passive: true});
+    } else {
+      element.onmouseenter = () => {
+        element.style.transform = `scale(${scaleValue})`;
+      };
+      element.onmouseleave = () => {
+        element.style.transform = 'scale(1)';
+      };
+    }
+  },
+  
   // 🔊 TTS Helper function
   speak(text) {
     if ('speechSynthesis' in window) {
@@ -317,8 +342,8 @@ const MiniGames = {
       const readyBtn = document.getElementById('memoryReadyBtn');
       if (!readyBtn) return;
       
-      readyBtn.onmouseenter = () => { readyBtn.style.transform = 'scale(1.1)'; };
-      readyBtn.onmouseleave = () => { readyBtn.style.transform = 'scale(1)'; };
+      // 🔥 MOBILE FIX: Universal hover
+      MiniGames.addUniversalHover(readyBtn, 1.1);
       
       readyBtn.addEventListener('click', () => {
         overlay.style.display = 'none';
@@ -2351,11 +2376,12 @@ const MiniGames = {
       }
     }
     
-    // Physics - 🐛 FIX MOBILE: Gravité plus forte
+    // Physics - 🐛 FIX MOBILE: Beaucoup plus rapide
     const balls = [];
     let animId = null;
     let totalWin = 0, landed = 0, toLand = 0;
-    const G = isMobile ? 2.5 : 1.5;
+    const G = isMobile ? 4.0 : 1.5;  // 🔥 Gravité 2x plus forte mobile
+    const FRICTION = isMobile ? 0.97 : 0.99;  // Moins de friction mobile
     const BOUNCE = 0.6;
     const BALLR = 12;
     
@@ -2409,6 +2435,10 @@ const MiniGames = {
         b.vy += G;
         b.x += b.vx;
         b.y += b.vy;
+        
+        // 🔥 Friction (surtout mobile)
+        b.vx *= FRICTION;
+        b.vy *= FRICTION;
         
         // Walls
         if (b.x < BALLR) { b.x = BALLR; b.vx = -b.vx * BOUNCE; playBounce(Math.abs(b.vx)); }
@@ -2561,8 +2591,8 @@ const MiniGames = {
           balls.push({
             x: W / 2 + (Math.random() - 0.5) * 120,
             y: 20,
-            vx: (Math.random() - 0.5) * 4,
-            vy: 3,
+            vx: (Math.random() - 0.5) * (isMobile ? 6 : 4),  // 🔥 Plus de variance mobile
+            vy: isMobile ? 5 : 3,  // 🔥 Vélocité initiale plus forte mobile
             done: false
           });
         }, i * 60);
