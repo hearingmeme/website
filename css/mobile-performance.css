@@ -124,8 +124,12 @@
   backface-visibility: hidden;
 }
 
-/* .ear : will-change SANS transform (sinon écrase translate(-50%,-50%) et décale l'emoji) */
+/* 🐛 FIX CRITIQUE: .ear DOIT garder translate(-50%,-50%) comme transform de base */
+/* bundle.optimized.css avait translateZ(0) qui écrasait ce centrage → fixé dans bundle */
+/* Ce fichier est chargé APRÈS bundle, cette règle sert de FILET DE SECURITE */
+/* ⚠️ PAS de !important → sinon ça casse le JS magnet mode qui set ear.style.transform inline */
 .ear {
+  transform: translate(-50%, -50%);
   will-change: transform;
   backface-visibility: hidden;
 }
