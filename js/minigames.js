@@ -2640,482 +2640,899 @@ const MiniGames = {
     loop();
   },
 
-  // ==================== 🎡 ROULETTE ====================
+
+  // ==================== 🎡 ROULETTE DEGEN ULTRA ====================
   showRoulette(game) {
     window.gamePaused = true;
     if (typeof window.setPaused === 'function') window.setPaused(true);
-    this.speak("Roulette time! Place your bets degen!");
 
-    document.querySelectorAll('.ear.active').forEach(ear => {
-      ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-      ear.textContent = '';
+    document.querySelectorAll('.ear.active').forEach(e => {
+      e.classList.remove('active','cabal','echo','power-up'); e.textContent = '';
     });
     if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
 
-    const score = game.score || 0;
-    const bet = Math.max(50, Math.round(score * 0.25));
+    const currentScore = game.score || 0;
+    const bet = Math.max(50, Math.round(currentScore * 0.25));
 
-    const overlay = document.createElement('div');
-    overlay.id = 'rouletteOverlay';
-    overlay.style.cssText = `
-      position: fixed; inset: 0;
-      background: linear-gradient(135deg, #0d1b0d 0%, #1a3a1a 50%, #0d2a0d 100%);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 100005; overflow: hidden; overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    `;
-
+    // ── STYLES ──────────────────────────────────────────────
     const style = document.createElement('style');
-    style.id = 'rouletteStyles';
+    style.id = 'rouletteDegenStyles';
     style.innerHTML = `
-      @keyframes rouletteSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(3600deg); } }
-      @keyframes rouletteFadeIn { from { opacity:0; transform: scale(0.8); } to { opacity:1; transform: scale(1); } }
-      .roulette-bet-btn {
-        padding: clamp(10px,2vw,14px) clamp(16px,3vw,24px);
-        font-size: clamp(14px,3vw,20px);
-        border-radius: 10px; border: 3px solid transparent;
-        cursor: pointer; font-family: 'Luckiest Guy', cursive;
-        transition: all 0.2s; min-height: 48px; touch-action: manipulation;
+      @keyframes rlGridAnim { 0%{opacity:0.15} 50%{opacity:0.3} 100%{opacity:0.15} }
+      @keyframes rlPulse { 0%,100%{text-shadow:0 0 20px #FFD700,0 0 40px #FFD700,3px 3px 0 #000}
+        50%{text-shadow:0 0 40px #FFD700,0 0 80px #FF6600,3px 3px 0 #000} }
+      @keyframes rlSlideIn { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+      @keyframes rlParticle { 0%{transform:translate(0,0) scale(1);opacity:1}
+        100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0} }
+      @keyframes rlWinFlash { 0%,100%{background:rgba(255,215,0,0.1)} 50%{background:rgba(255,215,0,0.3)} }
+      .rl-bet-btn {
+        padding: clamp(9px,1.8vw,13px) clamp(12px,2.5vw,20px);
+        font-size: clamp(12px,2.5vw,17px); border-radius: 10px;
+        border: 3px solid #444; cursor: pointer; font-family: 'Luckiest Guy', cursive;
+        transition: all 0.15s; min-height: 46px; touch-action: manipulation;
+        position: relative; overflow: hidden;
       }
-      .roulette-bet-btn:active, .roulette-bet-btn.selected {
-        transform: scale(1.1); border-color: #FFD700 !important;
-        box-shadow: 0 0 20px #FFD700;
-      }
+      .rl-bet-btn::after { content:''; position:absolute; inset:0;
+        background:rgba(255,255,255,0); transition:background 0.15s; }
+      .rl-bet-btn:active::after, .rl-bet-btn.rl-selected::after { background:rgba(255,255,255,0.15); }
+      .rl-bet-btn.rl-selected { border-color:#FFD700 !important; transform:scale(1.08);
+        box-shadow:0 0 20px #FFD700,0 0 40px rgba(255,215,0,0.4); }
+      .rl-history-dot { width:28px; height:28px; border-radius:50%; display:inline-flex;
+        align-items:center; justify-content:center; font-size:10px; font-weight:bold;
+        font-family:'Luckiest Guy',cursive; border:2px solid rgba(255,255,255,0.3); }
     `;
     document.head.appendChild(style);
 
-    const isMobile = window.innerWidth < 768;
-    for (let i = 0; i < (isMobile ? 15 : 25); i++) {
-      const p = document.createElement('div');
-      p.textContent = ['🎡','💚','🔴','⚫','💰','✨'][Math.floor(Math.random()*6)];
-      p.style.cssText = `position:absolute;font-size:${18+Math.random()*22}px;
-        left:${Math.random()*100}%;top:${Math.random()*100}%;
-        opacity:${0.1+Math.random()*0.2};pointer-events:none;`;
-      overlay.appendChild(p);
-    }
+    // ── OVERLAY ──────────────────────────────────────────────
+    const ov = document.createElement('div');
+    ov.id = 'rouletteDegenOverlay';
+    ov.style.cssText = `position:fixed;inset:0;background:#0a0a0a;display:flex;
+      flex-direction:column;align-items:center;z-index:100005;overflow-y:auto;
+      -webkit-overflow-scrolling:touch;padding:10px 8px 20px;`;
 
+    // Neon grid background
+    const gridBg = document.createElement('canvas');
+    gridBg.style.cssText = `position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.18;`;
+    gridBg.width = window.innerWidth; gridBg.height = window.innerHeight;
+    const gridCtx = gridBg.getContext('2d');
+    gridCtx.strokeStyle = '#00ff88'; gridCtx.lineWidth = 0.5;
+    for (let x = 0; x < gridBg.width; x += 40) { gridCtx.beginPath(); gridCtx.moveTo(x,0); gridCtx.lineTo(x,gridBg.height); gridCtx.stroke(); }
+    for (let y = 0; y < gridBg.height; y += 40) { gridCtx.beginPath(); gridCtx.moveTo(0,y); gridCtx.lineTo(gridBg.width,y); gridCtx.stroke(); }
+    ov.appendChild(gridBg);
+
+    const inner = document.createElement('div');
+    inner.style.cssText = `position:relative;z-index:1;display:flex;flex-direction:column;
+      align-items:center;width:100%;max-width:600px;`;
+
+    // Title
     const title = document.createElement('div');
     title.innerHTML = '🎡 HEARING ROULETTE 🎡';
-    title.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(24px,5vw,42px);
-      color:#00ff88;text-shadow:0 0 20px #00ff88,3px 3px 0 #000;
-      margin-bottom:10px;text-align:center;animation:rouletteFadeIn 0.4s;`;
-    overlay.appendChild(title);
+    title.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(22px,5vw,38px);
+      color:#FFD700;animation:rlPulse 2s infinite,rlSlideIn 0.4s ease-out;
+      text-align:center;margin-bottom:6px;`;
+    inner.appendChild(title);
 
-    const betInfo = document.createElement('div');
-    betInfo.innerHTML = `Bet: <span style="color:#FFD700">${bet} pts</span> — Pick a color or range!`;
-    betInfo.style.cssText = `color:#fff;font-family:'Luckiest Guy',cursive;
-      font-size:clamp(13px,2.5vw,18px);margin-bottom:16px;text-align:center;`;
-    overlay.appendChild(betInfo);
+    const subTitle = document.createElement('div');
+    subTitle.innerHTML = `Bet: <span style="color:#FF6600;font-size:1.2em">${bet}</span> pts — Pick & Spin!`;
+    subTitle.style.cssText = `font-family:'Luckiest Guy',cursive;color:#aaa;
+      font-size:clamp(12px,2.5vw,16px);margin-bottom:10px;text-align:center;`;
+    inner.appendChild(subTitle);
 
-    const wheelWrap = document.createElement('div');
-    wheelWrap.style.cssText = `font-size:clamp(70px,16vw,110px);margin:8px;text-align:center;`;
-    wheelWrap.innerHTML = '🎡';
-    overlay.appendChild(wheelWrap);
+    // ── CANVAS WHEEL ──────────────────────────────────────────
+    const isMobile = window.innerWidth < 768;
+    const WHEEL_SIZE = Math.min(window.innerWidth * (isMobile ? 0.75 : 0.45), 300);
+    const canvas = document.createElement('canvas');
+    canvas.width = WHEEL_SIZE * 2; canvas.height = WHEEL_SIZE * 2; // retina
+    canvas.style.cssText = `width:${WHEEL_SIZE}px;height:${WHEEL_SIZE}px;display:block;
+      filter:drop-shadow(0 0 20px rgba(255,215,0,0.6));margin-bottom:12px;cursor:pointer;`;
+    inner.appendChild(canvas);
+    const ctx = canvas.getContext('2d');
+    const CX = WHEEL_SIZE, CY = WHEEL_SIZE, R = WHEEL_SIZE * 0.92;
 
-    const betsRow = document.createElement('div');
-    betsRow.style.cssText = `display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0;max-width:480px;padding:0 10px;`;
+    // European roulette order (actual wheel)
+    const wheelOrder = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+    const redNums = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+    const getSectorColor = n => n===0 ? '#1a8a2a' : redNums.has(n) ? '#cc1a00' : '#111';
+    const getLightColor = n => n===0 ? '#2aff44' : redNums.has(n) ? '#ff4422' : '#aaa';
+    const N = wheelOrder.length;
+    const sliceAngle = (Math.PI * 2) / N;
 
-    const betOptions = [
-      { label: '🔴 RED ×2', value: 'red', color: '#cc2200', chance: 18/37 },
-      { label: '⚫ BLACK ×2', value: 'black', color: '#222', chance: 18/37 },
-      { label: '💚 ZERO ×14', value: 'green', color: '#006600', chance: 1/37 },
-      { label: '1-12 ×3', value: 'low', color: '#554400', chance: 12/37 },
-      { label: '13-24 ×3', value: 'mid', color: '#445500', chance: 12/37 },
-      { label: '25-36 ×3', value: 'high', color: '#004455', chance: 12/37 },
-    ];
+    let wheelAngle = 0, ballAngle = 0, spinning = false;
+    let winIndex = -1, animId = null;
 
+    const drawWheel = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save(); ctx.translate(CX, CY);
+
+      // Outer rim glow
+      const rimGrad = ctx.createRadialGradient(0,0,R*0.85,0,0,R);
+      rimGrad.addColorStop(0,'rgba(255,215,0,0)');
+      rimGrad.addColorStop(1,'rgba(255,215,0,0.4)');
+      ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2);
+      ctx.fillStyle = rimGrad; ctx.fill();
+
+      // Sectors
+      for (let i = 0; i < N; i++) {
+        const start = wheelAngle + i * sliceAngle - sliceAngle/2;
+        const end = start + sliceAngle;
+        const num = wheelOrder[i];
+        ctx.beginPath(); ctx.moveTo(0,0);
+        ctx.arc(0,0,R*0.88,start,end);
+        ctx.closePath();
+        // Highlight winning sector
+        if (i === winIndex && !spinning) {
+          ctx.fillStyle = '#FFD700';
+        } else {
+          ctx.fillStyle = getSectorColor(num);
+        }
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,215,0,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+
+        // Number text
+        const midAngle = start + sliceAngle/2;
+        const tx = Math.cos(midAngle) * R * 0.72;
+        const ty = Math.sin(midAngle) * R * 0.72;
+        ctx.save(); ctx.translate(tx, ty); ctx.rotate(midAngle + Math.PI/2);
+        ctx.fillStyle = i===winIndex&&!spinning ? '#000' : '#fff';
+        ctx.font = `bold ${Math.max(10, R/22)}px Arial`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(num, 0, 0);
+        ctx.restore();
+      }
+
+      // Center circle
+      ctx.beginPath(); ctx.arc(0,0,R*0.18,0,Math.PI*2);
+      const cGrad = ctx.createRadialGradient(0,0,0,0,0,R*0.18);
+      cGrad.addColorStop(0,'#FFD700'); cGrad.addColorStop(1,'#FF6600');
+      ctx.fillStyle = cGrad; ctx.fill();
+      ctx.fillStyle = '#000'; ctx.font = `bold ${Math.max(12,R/14)}px 'Luckiest Guy',cursive`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('🎡',0,0);
+
+      ctx.restore();
+    };
+
+    const drawBall = () => {
+      ctx.save(); ctx.translate(CX, CY);
+      const bx = Math.cos(ballAngle) * R * 0.95;
+      const by = Math.sin(ballAngle) * R * 0.95;
+      // Glow
+      const bg = ctx.createRadialGradient(bx,by,0,bx,by,R*0.06);
+      bg.addColorStop(0,'rgba(255,255,255,1)'); bg.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.beginPath(); ctx.arc(bx,by,R*0.06,0,Math.PI*2);
+      ctx.fillStyle=bg; ctx.fill();
+      // Ball
+      ctx.beginPath(); ctx.arc(bx,by,R*0.04,0,Math.PI*2);
+      ctx.fillStyle='#fff'; ctx.fill();
+      ctx.strokeStyle='rgba(255,215,0,0.8)'; ctx.lineWidth=2; ctx.stroke();
+      ctx.restore();
+    };
+
+    let wheelSpeed = 0, ballSpeed = 0, winAngle = 0, phase = 'idle';
+    let startTime = 0, spinDuration = 4000;
+
+    const animateSpin = (ts) => {
+      if (!startTime) startTime = ts;
+      const elapsed = ts - startTime;
+      const progress = Math.min(elapsed / spinDuration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      wheelAngle += 0.08 * (1 - eased * 0.9);
+      ballAngle -= 0.12 * (1 - eased * 0.85);
+
+      drawWheel(); drawBall();
+
+      if (progress < 1) {
+        animId = requestAnimationFrame(animateSpin);
+      } else {
+        // Snap ball to winning slot
+        spinning = false;
+        winIndex = wheelOrder.indexOf(winNumber);
+        const slotAngle = wheelAngle + winIndex * sliceAngle;
+        ballAngle = slotAngle;
+        drawWheel(); drawBall();
+        showRouletteResult();
+      }
+    };
+
+    let winNumber = 0;
     let selectedBet = null;
-    betOptions.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'roulette-bet-btn';
-      btn.textContent = opt.label;
-      btn.style.cssText = `background:${opt.color};color:#fff;border-color:#555;`;
-      btn.onclick = () => {
-        document.querySelectorAll('.roulette-bet-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedBet = opt;
-      };
-      betsRow.appendChild(btn);
-    });
-    overlay.appendChild(betsRow);
+    const history = [];
 
-    const spinBtn = document.createElement('button');
-    spinBtn.textContent = '🎯 SPIN!';
-    spinBtn.style.cssText = `padding:14px 36px;font-size:clamp(18px,3vw,26px);
-      background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;
+    const spinBtnEl = document.createElement('button');
+    spinBtnEl.textContent = '🎯 NO MORE BETS — SPIN!';
+    spinBtnEl.style.cssText = `padding:14px 30px;font-size:clamp(16px,3vw,22px);
+      background:linear-gradient(135deg,#FFD700,#FF6600);color:#000;
       border:none;border-radius:12px;cursor:pointer;min-height:52px;
-      font-family:'Luckiest Guy',cursive;margin-top:8px;
-      box-shadow:0 0 20px #FFD700;touch-action:manipulation;`;
-    overlay.appendChild(spinBtn);
+      font-family:'Luckiest Guy',cursive;box-shadow:0 0 25px #FFD700;
+      touch-action:manipulation;transition:all 0.2s;margin:8px 0;
+      display:none;width:90%;max-width:400px;`;
+    
+    const resultDiv = document.createElement('div');
+    resultDiv.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(18px,4vw,28px);
+      color:#FFD700;min-height:50px;text-align:center;margin:6px 0;`;
 
-    const result = document.createElement('div');
-    result.style.cssText = `min-height:56px;text-align:center;font-family:'Luckiest Guy',cursive;
-      font-size:clamp(18px,4vw,28px);color:#FFD700;margin-top:12px;`;
-    overlay.appendChild(result);
-    document.body.appendChild(overlay);
+    const historyDiv = document.createElement('div');
+    historyDiv.style.cssText = `display:flex;gap:4px;flex-wrap:wrap;justify-content:center;
+      margin:6px 0;min-height:32px;max-width:400px;`;
 
-    const closeOverlay = (winAmt, msg) => {
-      if (winAmt > 0) game.score = (game.score || 0) + winAmt;
-      else if (winAmt < 0) game.score = Math.max(0, (game.score || 0) + winAmt);
-      if (typeof game.updateUI === 'function') game.updateUI();
-      result.innerHTML = msg;
+    const updateHistory = (n) => {
+      const dot = document.createElement('div');
+      dot.className = 'rl-history-dot';
+      dot.textContent = n;
+      dot.style.background = getSectorColor(n);
+      dot.style.color = '#fff';
+      dot.style.boxShadow = `0 0 8px ${getLightColor(n)}`;
+      historyDiv.appendChild(dot);
+      if (historyDiv.children.length > 10) historyDiv.removeChild(historyDiv.firstChild);
+    };
+
+    const closeGame = () => {
+      if (animId) cancelAnimationFrame(animId);
       setTimeout(() => {
-        overlay.style.transition = 'opacity 0.5s';
-        overlay.style.opacity = '0';
+        ov.style.transition = 'opacity 0.5s'; ov.style.opacity = '0';
         setTimeout(() => {
-          overlay.remove(); style.remove();
+          ov.remove(); style.remove();
           window.gamePaused = false;
           if (typeof window.setPaused === 'function') window.setPaused(false);
           if (typeof window.startSpawning === 'function') setTimeout(() => window.startSpawning(), 100);
         }, 500);
-      }, 2000);
+      }, 3000);
     };
 
-    const redNums = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-    spinBtn.onclick = () => {
-      if (!selectedBet) { result.innerHTML = '<span style="color:#ff4444">⚠️ Pick a bet first!</span>'; return; }
-      spinBtn.disabled = true;
-      spinBtn.textContent = '🌀 Spinning...';
-      wheelWrap.style.animation = 'rouletteSpin 1.5s ease-out forwards';
-      setTimeout(() => {
-        const num = Math.floor(Math.random() * 37);
-        const isRed = redNums.includes(num);
-        const color = num === 0 ? 'green' : isRed ? 'red' : 'black';
-        const emoji = num === 0 ? '💚' : isRed ? '🔴' : '⚫';
-        let won = false, mult = 0;
-        if (selectedBet.value === color) { won = true; mult = selectedBet.value === 'green' ? 14 : 2; }
-        else if (selectedBet.value === 'low' && num >= 1 && num <= 12) { won = true; mult = 3; }
-        else if (selectedBet.value === 'mid' && num >= 13 && num <= 24) { won = true; mult = 3; }
-        else if (selectedBet.value === 'high' && num >= 25 && num <= 36) { won = true; mult = 3; }
-        if (won) {
-          const winAmt = bet * mult;
-          if (typeof window.speechSynthesis !== 'undefined') { const u = new SpeechSynthesisUtterance(`${num}! You win!`); window.speechSynthesis.speak(u); }
-          closeOverlay(winAmt, `${emoji} ${num} — 🏆 WIN! +${winAmt} pts!`);
-        } else {
-          if (typeof window.speechSynthesis !== 'undefined') { const u = new SpeechSynthesisUtterance(`${num}! Better luck next time!`); window.speechSynthesis.speak(u); }
-          closeOverlay(-bet, `${emoji} ${num} — 💀 LOSE! -${bet} pts`);
-        }
-      }, 1600);
+    const spawnParticles = (container) => {
+      const emojis = ['🏆','⭐','💎','🔥','✨','💰','🎉'];
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        const dx = (Math.random()-0.5)*300, dy = -(100+Math.random()*200);
+        p.style.cssText = `position:fixed;font-size:${20+Math.random()*20}px;
+          left:${20+Math.random()*60}%;top:50%;pointer-events:none;z-index:100010;
+          --dx:${dx}px;--dy:${dy}px;animation:rlParticle 1s ease-out ${i*0.05}s forwards;`;
+        container.appendChild(p);
+        setTimeout(()=>p.remove(), 1200);
+      }
+    };
+
+    const showRouletteResult = () => {
+      const isRed = redNums.has(winNumber);
+      const color = winNumber===0 ? 'green' : isRed ? 'red' : 'black';
+      const emoji = winNumber===0 ? '💚' : isRed ? '🔴' : '⚫';
+      updateHistory(winNumber);
+
+      let won = false, mult = 0;
+      if (selectedBet.value === color) { won=true; mult = color==='green'?14:2; }
+      else if (selectedBet.value==='low' && winNumber>=1 && winNumber<=12) { won=true; mult=3; }
+      else if (selectedBet.value==='mid' && winNumber>=13 && winNumber<=24) { won=true; mult=3; }
+      else if (selectedBet.value==='high' && winNumber>=25 && winNumber<=36) { won=true; mult=3; }
+      else if (selectedBet.value==='odd' && winNumber%2===1 && winNumber>0) { won=true; mult=2; }
+      else if (selectedBet.value==='even' && winNumber%2===0 && winNumber>0) { won=true; mult=2; }
+
+      if (won) {
+        const winAmt = bet * mult;
+        game.score = (game.score||0) + winAmt;
+        resultDiv.innerHTML = `${emoji} <span style="font-size:1.5em">${winNumber}</span> — 🏆 +${winAmt} pts!`;
+        ov.style.animation = 'rlWinFlash 0.5s 3';
+        this.speak(`${winNumber}! Massive payout! You win ${winAmt} points!`);
+        spawnParticles(ov);
+      } else {
+        game.score = Math.max(0,(game.score||0)-bet);
+        resultDiv.innerHTML = `${emoji} <span style="font-size:1.5em">${winNumber}</span> — 💀 -${bet} pts`;
+        this.speak(`${winNumber}! You're broke! Better luck next time!`);
+      }
+      if (typeof game.updateUI==='function') game.updateUI();
+
+      closeGame();
+    };
+
+    // Bet options
+    const betOptions = [
+      {label:'🔴 RED ×2', value:'red', bg:'#8B0000'},
+      {label:'⚫ BLACK ×2', value:'black', bg:'#111'},
+      {label:'💚 ZERO ×14', value:'green', bg:'#005500'},
+      {label:'1-12 ×3', value:'low', bg:'#3d2200'},
+      {label:'13-24 ×3', value:'mid', bg:'#003d22'},
+      {label:'25-36 ×3', value:'high', bg:'#00223d'},
+      {label:'ODD ×2', value:'odd', bg:'#3d003d'},
+      {label:'EVEN ×2', value:'even', bg:'#003d3d'},
+    ];
+    const betsWrap = document.createElement('div');
+    betsWrap.style.cssText = `display:flex;flex-wrap:wrap;gap:7px;justify-content:center;
+      margin:8px 0;max-width:500px;width:100%;`;
+    betOptions.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'rl-bet-btn';
+      btn.textContent = opt.label;
+      btn.style.cssText += `background:${opt.bg};color:#fff;`;
+      btn.onclick = () => {
+        document.querySelectorAll('.rl-bet-btn').forEach(b=>b.classList.remove('rl-selected'));
+        btn.classList.add('rl-selected');
+        selectedBet = opt;
+        spinBtnEl.style.display = 'block';
+        this.speak(`Place your bets! ${opt.label}!`);
+      };
+      betsWrap.appendChild(btn);
+    });
+
+    inner.appendChild(canvas);
+    inner.appendChild(betsWrap);
+    inner.appendChild(spinBtnEl);
+    inner.appendChild(resultDiv);
+    inner.appendChild(historyDiv);
+    ov.appendChild(inner);
+    document.body.appendChild(ov);
+
+    drawWheel();
+    this.speak("Place your bets! Round and round she goes!");
+
+    spinBtnEl.onclick = () => {
+      if (spinning || !selectedBet) return;
+      spinning = true;
+      spinBtnEl.disabled = true;
+      spinBtnEl.textContent = '🌀 NO MORE BETS!';
+      document.querySelectorAll('.rl-bet-btn').forEach(b=>b.disabled=true);
+      resultDiv.textContent = '';
+      winNumber = Math.floor(Math.random() * 37);
+      startTime = 0; phase = 'spin';
+      this.speak("No more bets! Watch the wheel!");
+      animId = requestAnimationFrame(animateSpin);
     };
   },
 
-  // ==================== 🎲 CRAPS ====================
+  // ==================== 🎲 CRAPS 3D DEGEN ====================
   showCraps(game) {
     window.gamePaused = true;
     if (typeof window.setPaused === 'function') window.setPaused(true);
-    this.speak("Craps! Roll the dice degen!");
 
-    document.querySelectorAll('.ear.active').forEach(ear => {
-      ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-      ear.textContent = '';
+    document.querySelectorAll('.ear.active').forEach(e => {
+      e.classList.remove('active','cabal','echo','power-up'); e.textContent='';
     });
     if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
 
-    const score = game.score || 0;
-    const bet = Math.max(50, Math.round(score * 0.25));
+    const currentScore = game.score || 0;
+    const bet = Math.max(50, Math.round(currentScore * 0.25));
 
-    const overlay = document.createElement('div');
-    overlay.id = 'crapsOverlay';
-    overlay.style.cssText = `
-      position:fixed;inset:0;
-      background:linear-gradient(135deg,#1a0a00 0%,#3a1500 50%,#2a0f00 100%);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      z-index:100005;overflow-y:auto;-webkit-overflow-scrolling:touch;
-    `;
-
+    // ── STYLES ──
     const style = document.createElement('style');
-    style.id = 'crapsStyles';
+    style.id = 'crapsDegenStyles';
     style.innerHTML = `
-      @keyframes diceRoll { 0%,100%{transform:rotate(0deg) scale(1)} 25%{transform:rotate(-15deg) scale(1.1)} 75%{transform:rotate(15deg) scale(1.1)} }
-      @keyframes diceBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-18px)} }
-      .craps-die { font-size:clamp(60px,15vw,90px);display:inline-block;user-select:none; }
+      @keyframes crTableGlow { 0%,100%{box-shadow:0 0 40px rgba(0,200,100,0.3),inset 0 0 60px rgba(0,100,50,0.2)}
+        50%{box-shadow:0 0 80px rgba(0,200,100,0.5),inset 0 0 100px rgba(0,150,70,0.3)} }
+      @keyframes crTitlePulse { 0%,100%{color:#FF6600;text-shadow:0 0 20px #FF6600,3px 3px 0 #000}
+        50%{color:#FFD700;text-shadow:0 0 40px #FFD700,3px 3px 0 #000} }
+      @keyframes crSlideIn { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+      @keyframes crParticle { from{opacity:1;transform:translate(0,0) scale(1.5)}
+        to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)} }
+      @keyframes crWin { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+      .cr-die-wrapper { perspective: 500px; width:clamp(80px,16vw,110px); height:clamp(80px,16vw,110px); }
+      .cr-die { width:100%; height:100%; transform-style:preserve-3d;
+        transform:rotateX(0) rotateY(0); transition:transform 1.2s cubic-bezier(0.17,0.67,0.12,1.02); }
+      .cr-face {
+        position:absolute; width:100%; height:100%;
+        background:linear-gradient(135deg,#f8f8f8,#d0d0d0);
+        border-radius:clamp(8px,1.5vw,14px);
+        box-shadow:inset 0 -4px 8px rgba(0,0,0,0.2), inset 0 4px 8px rgba(255,255,255,0.8);
+        border:2px solid rgba(255,255,255,0.6);
+        display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+        padding:clamp(6px,1.2vw,10px); gap:2px; box-sizing:border-box;
+      }
+      .cr-face.cr-glow { box-shadow:0 0 30px #FFD700, 0 0 60px rgba(255,215,0,0.5),
+        inset 0 -4px 8px rgba(0,0,0,0.2); border-color:#FFD700; }
+      .cr-dot { width:100%; height:100%; border-radius:50%;
+        background:radial-gradient(circle at 35% 35%,#555,#111);
+        box-shadow:inset 0 2px 4px rgba(0,0,0,0.4), 0 1px 2px rgba(255,255,255,0.3);
+      }
+      .cr-dot.cr-empty { background:transparent; box-shadow:none; }
+      .cr-face.cr-face-front  { transform: translateZ(50%); }
+      .cr-face.cr-face-back   { transform: rotateY(180deg) translateZ(50%); }
+      .cr-face.cr-face-right  { transform: rotateY(90deg) translateZ(50%); }
+      .cr-face.cr-face-left   { transform: rotateY(-90deg) translateZ(50%); }
+      .cr-face.cr-face-top    { transform: rotateX(90deg) translateZ(50%); }
+      .cr-face.cr-face-bottom { transform: rotateX(-90deg) translateZ(50%); }
     `;
     document.head.appendChild(style);
 
-    const isMobile = window.innerWidth < 768;
-    for (let i = 0; i < (isMobile ? 12 : 20); i++) {
-      const p = document.createElement('div');
-      p.textContent = ['🎲','💰','🔥','⭐','💎'][Math.floor(Math.random()*5)];
-      p.style.cssText = `position:absolute;font-size:${16+Math.random()*20}px;
-        left:${Math.random()*100}%;top:${Math.random()*100}%;
-        opacity:${0.1+Math.random()*0.15};pointer-events:none;`;
-      overlay.appendChild(p);
-    }
+    const ov = document.createElement('div');
+    ov.id = 'crapsDegenOverlay';
+    ov.style.cssText = `position:fixed;inset:0;
+      background:radial-gradient(ellipse at center, #0a1f0a 0%, #050f05 100%);
+      display:flex;flex-direction:column;align-items:center;
+      z-index:100005;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 8px 20px;`;
+
+    const inner = document.createElement('div');
+    inner.style.cssText = `display:flex;flex-direction:column;align-items:center;width:100%;max-width:580px;`;
 
     const title = document.createElement('div');
     title.innerHTML = '🎲 HEARING CRAPS 🎲';
-    title.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(24px,5vw,42px);
-      color:#FF6600;text-shadow:0 0 20px #FF6600,3px 3px 0 #000;
-      margin-bottom:8px;text-align:center;`;
-    overlay.appendChild(title);
+    title.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(24px,5vw,40px);
+      animation:crTitlePulse 2s infinite,crSlideIn 0.4s ease-out;
+      text-align:center;margin-bottom:6px;`;
+    inner.appendChild(title);
 
-    const rulesDiv = document.createElement('div');
-    rulesDiv.innerHTML = `Bet: <b style="color:#FFD700">${bet} pts</b> | 7/11=WIN | 2/3/12=LOSE | else set Point`;
-    rulesDiv.style.cssText = `color:#ccc;font-size:clamp(11px,2vw,15px);margin-bottom:16px;
-      text-align:center;font-family:'Luckiest Guy',cursive;padding:0 10px;`;
-    overlay.appendChild(rulesDiv);
+    const rulesEl = document.createElement('div');
+    rulesEl.id = 'crapsRules';
+    rulesEl.innerHTML = `Bet: <b style="color:#FFD700">${bet} pts</b> — 7/11=WIN | 2/3/12=LOSE | else Point`;
+    rulesEl.style.cssText = `font-family:'Luckiest Guy',cursive;color:#aaa;
+      font-size:clamp(11px,2.2vw,15px);margin-bottom:14px;text-align:center;
+      background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:8px;border:1px solid rgba(255,215,0,0.2);`;
+    inner.appendChild(rulesEl);
 
+    // Casino table surface
+    const table = document.createElement('div');
+    table.style.cssText = `background:linear-gradient(135deg,#0a2e0a,#1a4a1a,#0a2e0a);
+      border-radius:20px;border:3px solid rgba(255,215,0,0.4);padding:20px 24px;
+      animation:crTableGlow 3s infinite;margin:4px 0;width:100%;box-sizing:border-box;
+      display:flex;flex-direction:column;align-items:center;gap:12px;`;
+
+    // Dice row
     const diceRow = document.createElement('div');
-    diceRow.style.cssText = `display:flex;gap:20px;justify-content:center;margin:10px 0;`;
-    const die1 = document.createElement('span'); die1.className = 'craps-die'; die1.textContent = '⚄';
-    const die2 = document.createElement('span'); die2.className = 'craps-die'; die2.textContent = '⚂';
-    diceRow.appendChild(die1); diceRow.appendChild(die2);
-    overlay.appendChild(diceRow);
+    diceRow.style.cssText = `display:flex;gap:clamp(20px,5vw,40px);justify-content:center;align-items:center;`;
 
-    const sumDisplay = document.createElement('div');
-    sumDisplay.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(20px,4vw,30px);
-      color:#FFD700;margin:10px 0;min-height:40px;text-align:center;`;
-    sumDisplay.textContent = 'Press ROLL!';
-    overlay.appendChild(sumDisplay);
+    // Dot patterns per face value [row][col] = filled?
+    const dotPatterns = {
+      1: [[0,0,0],[0,1,0],[0,0,0]],
+      2: [[0,0,1],[0,0,0],[1,0,0]],
+      3: [[0,0,1],[0,1,0],[1,0,0]],
+      4: [[1,0,1],[0,0,0],[1,0,1]],
+      5: [[1,0,1],[0,1,0],[1,0,1]],
+      6: [[1,0,1],[1,0,1],[1,0,1]],
+    };
+
+    // Face value assignment (standard die: 1 opp 6, 2 opp 5, 3 opp 4)
+    // front=1, back=6, right=2, left=5, top=3, bottom=4
+    const faceValues = { front:1, back:6, right:2, left:5, top:3, bottom:4 };
+    const faceToShow = { 1:{x:0,y:0}, 2:{x:0,y:-90}, 3:{x:90,y:0}, 4:{x:-90,y:0}, 5:{x:0,y:90}, 6:{x:0,y:180} };
+
+    const makeDie = () => {
+      const wrapper = document.createElement('div'); wrapper.className = 'cr-die-wrapper';
+      const die = document.createElement('div'); die.className = 'cr-die';
+      Object.entries(faceValues).forEach(([faceName, val]) => {
+        const face = document.createElement('div');
+        face.className = `cr-face cr-face-${faceName}`;
+        const pattern = dotPatterns[val];
+        for (let r=0;r<3;r++) for (let c=0;c<3;c++) {
+          const dot = document.createElement('div');
+          dot.className = pattern[r][c] ? 'cr-dot' : 'cr-dot cr-empty';
+          face.appendChild(dot);
+        }
+        die.appendChild(face);
+      });
+      wrapper.appendChild(die);
+      return { wrapper, die };
+    };
+
+    const die1 = makeDie(), die2 = makeDie();
+    diceRow.appendChild(die1.wrapper); diceRow.appendChild(die2.wrapper);
+    table.appendChild(diceRow);
+
+    const sumEl = document.createElement('div');
+    sumEl.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(22px,4.5vw,32px);
+      color:#FFD700;text-align:center;min-height:40px;text-shadow:0 0 15px #FFD700;`;
+    sumEl.textContent = 'Roll the dice!';
+    table.appendChild(sumEl);
+
+    inner.appendChild(table);
 
     const rollBtn = document.createElement('button');
     rollBtn.textContent = '🎲 ROLL!';
-    rollBtn.style.cssText = `padding:14px 44px;font-size:clamp(18px,3vw,26px);
+    rollBtn.style.cssText = `padding:14px 50px;font-size:clamp(20px,4vw,28px);
       background:linear-gradient(135deg,#FF6600,#FF3300);color:#fff;
-      border:none;border-radius:12px;cursor:pointer;min-height:52px;
-      font-family:'Luckiest Guy',cursive;box-shadow:0 0 20px #FF6600;margin:10px;
-      touch-action:manipulation;`;
-    overlay.appendChild(rollBtn);
+      border:none;border-radius:14px;cursor:pointer;min-height:56px;
+      font-family:'Luckiest Guy',cursive;box-shadow:0 0 25px #FF6600;
+      touch-action:manipulation;margin:12px 0;transition:all 0.2s;
+      text-shadow:1px 1px 0 #000;`;
+    inner.appendChild(rollBtn);
 
-    const result = document.createElement('div');
-    result.style.cssText = `min-height:48px;text-align:center;font-family:'Luckiest Guy',cursive;
-      font-size:clamp(18px,3.5vw,28px);color:#FFD700;margin-top:8px;`;
-    overlay.appendChild(result);
-    document.body.appendChild(overlay);
+    const resultEl = document.createElement('div');
+    resultEl.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(18px,4vw,28px);
+      color:#FFD700;min-height:48px;text-align:center;`;
+    inner.appendChild(resultEl);
+
+    const historyEl = document.createElement('div');
+    historyEl.style.cssText = `font-family:'Luckiest Guy',cursive;color:#888;
+      font-size:clamp(10px,2vw,14px);text-align:center;min-height:20px;`;
+    inner.appendChild(historyEl);
+
+    ov.appendChild(inner);
+    document.body.appendChild(ov);
+
+    const spawnWinParticles = (container) => {
+      const emojis = ['🏆','⭐','💎','🔥','✨','💰','🎉','🎲'];
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        const dx = (Math.random()-0.5)*300, dy = -(100+Math.random()*200);
+        p.style.cssText = `position:fixed;font-size:${20+Math.random()*20}px;
+          left:${20+Math.random()*60}%;top:50%;pointer-events:none;z-index:100010;
+          --dx:${dx}px;--dy:${dy}px;animation:crParticle 1s ease-out ${i*0.05}s forwards;`;
+        container.appendChild(p);
+        setTimeout(()=>p.remove(), 1200);
+      }
+    };
 
     let point = null, rolling = false;
-    const diceFaces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+    const rollHistory = [];
 
-    const closeOverlay = (delta, msg) => {
-      game.score = Math.max(0, (game.score || 0) + delta);
-      if (typeof game.updateUI === 'function') game.updateUI();
-      result.innerHTML = msg; rollBtn.disabled = true;
-      setTimeout(() => {
-        overlay.style.transition = 'opacity 0.5s'; overlay.style.opacity = '0';
-        setTimeout(() => {
-          overlay.remove(); style.remove();
-          window.gamePaused = false;
-          if (typeof window.setPaused === 'function') window.setPaused(false);
-          if (typeof window.startSpawning === 'function') setTimeout(() => window.startSpawning(), 100);
-        }, 500);
-      }, 2200);
+    const rotateDieTo = (die, value, extraSpins = 3) => {
+      const r = faceToShow[value];
+      const rx = extraSpins * 360 + r.x;
+      const ry = extraSpins * 360 + r.y;
+      die.die.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
     };
 
-    rollBtn.onclick = () => {
-      if (rolling) return;
-      rolling = true;
-      rollBtn.textContent = '🌀 Rolling...';
-      die1.style.animation = 'diceRoll 0.5s ease-in-out';
-      die2.style.animation = 'diceRoll 0.5s ease-in-out 0.1s';
-      setTimeout(() => {
-        const v1 = Math.floor(Math.random()*6)+1, v2 = Math.floor(Math.random()*6)+1, sum = v1+v2;
-        die1.textContent = diceFaces[v1-1]; die2.textContent = diceFaces[v2-1];
-        die1.style.animation = 'diceBounce 0.4s ease-out';
-        die2.style.animation = 'diceBounce 0.4s ease-out 0.1s';
-        sumDisplay.textContent = `${v1} + ${v2} = ${sum}`;
-        rolling = false;
-        if (!point) {
-          if (sum===7||sum===11) closeOverlay(bet, `🎲 ${sum} — NATURAL! 🏆 +${bet} pts!`);
-          else if (sum===2||sum===3||sum===12) closeOverlay(-bet, `🎲 ${sum} — CRAPS! 💀 -${bet} pts`);
-          else { point=sum; rulesDiv.innerHTML=`<b style="color:#FF6600">POINT: ${sum}</b> | Roll ${sum} to WIN | Roll 7 to LOSE`; rollBtn.textContent='🎲 ROLL AGAIN!'; }
-        } else {
-          if (sum===point) closeOverlay(bet, `🎲 ${sum} — POINT HIT! 🏆 +${bet} pts!`);
-          else if (sum===7) closeOverlay(-bet, `🎲 7 — SEVEN OUT! 💀 -${bet} pts`);
-          else { sumDisplay.textContent=`${sum} — Keep rolling for ${point}...`; rollBtn.textContent='🎲 ROLL AGAIN!'; }
-        }
-      }, 600);
-    };
-  },
-
-  // ==================== 🃏 CASINO POKER ====================
-  showCasinoPoker(game) {
-    window.gamePaused = true;
-    if (typeof window.setPaused === 'function') window.setPaused(true);
-    this.speak("Poker time! Five card draw degen style!");
-
-    document.querySelectorAll('.ear.active').forEach(ear => {
-      ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-      ear.textContent = '';
-    });
-    if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
-
-    const score = game.score || 0;
-    const bet = Math.max(50, Math.round(score * 0.25));
-
-    const overlay = document.createElement('div');
-    overlay.id = 'pokerOverlay';
-    overlay.style.cssText = `
-      position:fixed;inset:0;
-      background:linear-gradient(135deg,#001a10 0%,#003320 50%,#001a10 100%);
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      z-index:100005;overflow-y:auto;-webkit-overflow-scrolling:touch;
-    `;
-
-    const style = document.createElement('style');
-    style.id = 'pokerStyles';
-    style.innerHTML = `
-      @keyframes cardDeal { from{transform:translateY(-80px) rotate(-8deg);opacity:0} to{transform:translateY(0) rotate(0);opacity:1} }
-      @keyframes cardHold { 0%,100%{box-shadow:0 0 12px #FFD700} 50%{box-shadow:0 0 28px #FFD700,0 0 50px #FFD700} }
-      .poker-card {
-        background:linear-gradient(135deg,#fff 0%,#f0f0f0 100%);
-        border-radius:10px;border:3px solid #ccc;
-        width:clamp(50px,11vw,70px);height:clamp(70px,15vw,98px);
-        display:flex;flex-direction:column;align-items:center;justify-content:center;
-        cursor:pointer;transition:all 0.2s;font-size:clamp(16px,3.5vw,24px);
-        font-weight:bold;user-select:none;position:relative;
-        animation:cardDeal 0.3s ease-out backwards;touch-action:manipulation;
-      }
-      .poker-card.held { border-color:#FFD700;transform:translateY(-12px);
-        box-shadow:0 0 18px #FFD700;animation:cardHold 1s infinite;
-        background:linear-gradient(135deg,#fff9e0,#fff3c0); }
-      .poker-card .hold-label { position:absolute;top:-20px;left:50%;transform:translateX(-50%);
-        background:#FFD700;color:#000;font-size:10px;font-weight:bold;
-        padding:2px 5px;border-radius:4px;font-family:'Luckiest Guy',cursive;white-space:nowrap; }
-    `;
-    document.head.appendChild(style);
-
-    const suits = ['♠️','♥️','♦️','♣️'];
-    const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-    const suitColors = {'♠️':'#111','♥️':'#cc0000','♦️':'#cc0000','♣️':'#111'};
-    const makeDeck = () => {
-      const d = [];
-      for (const s of suits) for (const r of ranks) d.push({r,s,v:ranks.indexOf(r)});
-      return d.sort(()=>Math.random()-0.5);
-    };
-
-    const isMobile = window.innerWidth < 768;
-    for (let i = 0; i < (isMobile ? 12 : 20); i++) {
-      const p = document.createElement('div');
-      p.textContent = ['🃏','♠️','♥️','💰','⭐'][Math.floor(Math.random()*5)];
-      p.style.cssText = `position:absolute;font-size:${16+Math.random()*22}px;
-        left:${Math.random()*100}%;top:${Math.random()*100}%;
-        opacity:${0.08+Math.random()*0.12};pointer-events:none;`;
-      overlay.appendChild(p);
-    }
-
-    const title = document.createElement('div');
-    title.innerHTML = '🃏 HEARING POKER 🃏';
-    title.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(24px,5vw,42px);
-      color:#00ff88;text-shadow:0 0 20px #00ff88,3px 3px 0 #000;
-      margin-bottom:8px;text-align:center;`;
-    overlay.appendChild(title);
-
-    const betInfo = document.createElement('div');
-    betInfo.innerHTML = `Bet: <b style="color:#FFD700">${bet} pts</b> — Tap cards to HOLD, then draw`;
-    betInfo.id = 'pokerBetInfo';
-    betInfo.style.cssText = `color:#ccc;font-size:clamp(12px,2vw,16px);margin-bottom:12px;
-      text-align:center;font-family:'Luckiest Guy',cursive;`;
-    overlay.appendChild(betInfo);
-
-    const cardsRow = document.createElement('div');
-    cardsRow.style.cssText = `display:flex;gap:clamp(5px,1.5vw,10px);justify-content:center;margin:8px 0;`;
-    overlay.appendChild(cardsRow);
-
-    const handResult = document.createElement('div');
-    handResult.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(15px,3vw,22px);
-      color:#FFD700;min-height:32px;text-align:center;margin:6px 0;`;
-    overlay.appendChild(handResult);
-
-    const actionBtn = document.createElement('button');
-    actionBtn.textContent = '🃏 DEAL';
-    actionBtn.style.cssText = `padding:14px 40px;font-size:clamp(18px,3vw,26px);
-      background:linear-gradient(135deg,#00aa55,#007733);color:#fff;
-      border:none;border-radius:12px;cursor:pointer;min-height:52px;
-      font-family:'Luckiest Guy',cursive;box-shadow:0 0 20px #00ff88;margin:8px;
-      touch-action:manipulation;`;
-    overlay.appendChild(actionBtn);
-
-    const payTable = document.createElement('div');
-    payTable.innerHTML = `RF/SF×20 | 4K×8 | FH×6 | Flush×5 | Str×4 | 3K×3 | 2P×2 | JJ+×1.5`;
-    payTable.style.cssText = `color:#666;font-size:clamp(9px,1.8vw,12px);text-align:center;
-      font-family:'Luckiest Guy',cursive;max-width:380px;margin-top:4px;padding:0 8px;`;
-    overlay.appendChild(payTable);
-    document.body.appendChild(overlay);
-
-    let deck=[], hand=[], held=[], phase='deal';
-
-    const evalHand = (cards) => {
-      const vs = cards.map(c=>c.v).sort((a,b)=>a-b);
-      const ss = cards.map(c=>c.s);
-      const isFlush = ss.every(s=>s===ss[0]);
-      const isStraight = (vs[4]-vs[0]===4 && new Set(vs).size===5) ||
-        (vs[0]===0&&vs[1]===9&&vs[2]===10&&vs[3]===11&&vs[4]===12);
-      const counts={};
-      vs.forEach(v=>counts[v]=(counts[v]||0)+1);
-      const freqs=Object.values(counts).sort((a,b)=>b-a);
-      if (isFlush&&isStraight&&vs[0]===8) return ['🔥 ROYAL FLUSH!',20];
-      if (isFlush&&isStraight) return ['⚡ STRAIGHT FLUSH!',20];
-      if (freqs[0]===4) return ['💎 FOUR OF A KIND!',8];
-      if (freqs[0]===3&&freqs[1]===2) return ['🏠 FULL HOUSE!',6];
-      if (isFlush) return ['🌊 FLUSH!',5];
-      if (isStraight) return ['📈 STRAIGHT!',4];
-      if (freqs[0]===3) return ['🎯 THREE OF A KIND!',3];
-      if (freqs[0]===2&&freqs[1]===2) return ['👥 TWO PAIR!',2];
-      const pairs=Object.entries(counts).filter(([v,c])=>c>=2).map(([v])=>parseInt(v));
-      if (pairs.some(v=>v>=9||v===0)) return ['💪 JACKS OR BETTER!',1.5];
-      return ['💀 NO HAND',0];
-    };
-
-    const renderHand = () => {
-      cardsRow.innerHTML = '';
-      hand.forEach((card,i) => {
-        const el = document.createElement('div');
-        el.className = 'poker-card';
-        el.style.animationDelay = `${i*0.08}s`;
-        el.style.color = suitColors[card.s];
-        el.innerHTML = `<div>${card.r}</div><div>${card.s}</div>`;
-        if (held[i]) {
-          el.classList.add('held');
-          const lbl = document.createElement('div');
-          lbl.className = 'hold-label'; lbl.textContent = 'HOLD';
-          el.appendChild(lbl);
-        }
-        el.onclick = () => {
-          if (phase!=='draw') return;
-          held[i]=!held[i]; renderHand();
-          handResult.textContent = evalHand(hand)[0];
-        };
-        cardsRow.appendChild(el);
+    const glowDice = () => {
+      [die1.die, die2.die].forEach(d => {
+        d.querySelectorAll('.cr-face').forEach(f => f.classList.add('cr-glow'));
       });
     };
 
-    const closeOverlay = () => {
+    const closeGame = () => {
       setTimeout(() => {
-        overlay.style.transition='opacity 0.5s'; overlay.style.opacity='0';
-        setTimeout(() => {
-          overlay.remove(); style.remove();
+        ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
+        setTimeout(()=>{ ov.remove(); style.remove();
           window.gamePaused=false;
           if (typeof window.setPaused==='function') window.setPaused(false);
           if (typeof window.startSpawning==='function') setTimeout(()=>window.startSpawning(),100);
         },500);
-      },2500);
+      }, 2800);
     };
 
-    actionBtn.onclick = () => {
+    this.speak("Craps! Roll the dice! Come on, let's go degen!");
+
+    rollBtn.onclick = () => {
+      if (rolling) return;
+      rolling = true;
+      rollBtn.disabled = true;
+      rollBtn.textContent = '🌀 Rolling...';
+      [die1.die, die2.die].forEach(d => d.querySelectorAll('.cr-face').forEach(f=>f.classList.remove('cr-glow')));
+
+      this.speak("Rolling the dice!");
+      const v1 = Math.floor(Math.random()*6)+1;
+      const v2 = Math.floor(Math.random()*6)+1;
+      const sum = v1 + v2;
+
+      // Slow-mo: delay die landing for drama
+      setTimeout(()=>rotateDieTo(die1, v1, 4), 50);
+      setTimeout(()=>rotateDieTo(die2, v2, 4), 150);
+
+      setTimeout(()=>{
+        rollHistory.push(sum);
+        historyEl.textContent = `History: ${rollHistory.join(' → ')}`;
+        sumEl.textContent = `${v1} + ${v2} = ${sum}`;
+        glowDice();
+        rolling = false;
+
+        if (!point) {
+          // Come-out
+          if (sum===7||sum===11) {
+            game.score=(game.score||0)+bet;
+            if (typeof game.updateUI==='function') game.updateUI();
+            resultEl.innerHTML=`🎉 NATURAL ${sum}! +${bet} pts!`;
+            rollBtn.style.display='none';
+            this.speak(`Natural ${sum}! You win! Double six! Insane!`);
+            spawnWinParticles(ov);
+            closeGame();
+          } else if (sum===2||sum===3||sum===12) {
+            game.score=Math.max(0,(game.score||0)-bet);
+            if (typeof game.updateUI==='function') game.updateUI();
+            resultEl.innerHTML=`💀 CRAPS ${sum}! -${bet} pts`;
+            rollBtn.style.display='none';
+            this.speak(`Craps ${sum}! You lost! Better luck next time!`);
+            closeGame();
+          } else {
+            point=sum;
+            rulesEl.innerHTML=`<b style="color:#FF6600;font-size:1.3em">POINT: ${sum}</b> — Roll ${sum} to WIN | Roll 7 to LOSE`;
+            resultEl.innerHTML=`⭐ POINT SET: ${sum} — Roll it again!`;
+            rollBtn.textContent='🎲 ROLL AGAIN!';
+            rollBtn.disabled=false;
+            this.speak(`Point set at ${sum}! Roll it again!`);
+          }
+        } else {
+          if (sum===point) {
+            game.score=(game.score||0)+bet;
+            if (typeof game.updateUI==='function') game.updateUI();
+            resultEl.innerHTML=`🏆 POINT ${sum} HIT! +${bet} pts!`;
+            rollBtn.style.display='none';
+            this.speak(`Point hit! ${sum}! You win! Incredible!`);
+            spawnWinParticles(ov);
+            closeGame();
+          } else if (sum===7) {
+            game.score=Math.max(0,(game.score||0)-bet);
+            if (typeof game.updateUI==='function') game.updateUI();
+            resultEl.innerHTML=`💀 SEVEN OUT! -${bet} pts`;
+            rollBtn.style.display='none';
+            this.speak(`Seven out! You lost everything!`);
+            closeGame();
+          } else {
+            resultEl.innerHTML=`${sum} — Keep rolling for ${point}...`;
+            rollBtn.textContent='🎲 ROLL AGAIN!';
+            rollBtn.disabled=false;
+          }
+        }
+      }, 1400);
+    };
+  },
+
+  // ==================== 🃏 POKER DEGEN ULTRA ====================
+  showCasinoPoker(game) {
+    window.gamePaused = true;
+    if (typeof window.setPaused === 'function') window.setPaused(true);
+
+    document.querySelectorAll('.ear.active').forEach(e => {
+      e.classList.remove('active','cabal','echo','power-up'); e.textContent='';
+    });
+    if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
+
+    const currentScore = game.score || 0;
+    const bet = Math.max(50, Math.round(currentScore * 0.25));
+
+    const style = document.createElement('style');
+    style.id = 'pokerDegenStyles';
+    style.innerHTML = `
+      @keyframes pkTitleGlow { 0%,100%{text-shadow:0 0 20px #00ff88,3px 3px 0 #000}
+        50%{text-shadow:0 0 50px #00ff88,0 0 100px #00ff88,3px 3px 0 #000} }
+      @keyframes pkCardDeal { from{transform:translateY(-120px) rotateY(180deg) scale(0.5);opacity:0}
+        to{transform:translateY(0) rotateY(0) scale(1);opacity:1} }
+      @keyframes pkCardFlip { 0%{transform:rotateY(0)} 100%{transform:rotateY(180deg)} }
+      @keyframes pkCardHold { 0%,100%{box-shadow:0 0 15px #FFD700,0 0 30px rgba(255,215,0,0.5)}
+        50%{box-shadow:0 0 30px #FFD700,0 0 60px rgba(255,215,0,0.8)} }
+      @keyframes pkJackpot { 0%{transform:scale(1) rotate(0)} 25%{transform:scale(1.15) rotate(-3deg)}
+        50%{transform:scale(1.2) rotate(3deg)} 75%{transform:scale(1.15) rotate(-2deg)} 100%{transform:scale(1) rotate(0)} }
+      @keyframes pkBgPulse { 0%,100%{background:radial-gradient(ellipse at 30% 50%,#001f14 0%,#000 100%)}
+        50%{background:radial-gradient(ellipse at 70% 50%,#002a1e 0%,#000a06 100%)} }
+      @keyframes pkSlideIn { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+      .pk-card-wrap {
+        perspective: 800px;
+        width: clamp(56px,12vw,78px);
+        height: clamp(80px,17vw,110px);
+        cursor: pointer; position: relative;
+        touch-action: manipulation;
+      }
+      .pk-card-inner {
+        width:100%; height:100%;
+        transform-style: preserve-3d;
+        transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+        position:relative;
+      }
+      .pk-card-wrap.pk-held .pk-card-inner { transform: translateY(-16px) !important; }
+      .pk-card-face, .pk-card-back {
+        position:absolute; inset:0; border-radius:10px;
+        backface-visibility:hidden; -webkit-backface-visibility:hidden;
+        border:3px solid rgba(255,255,255,0.3);
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+      }
+      .pk-card-face {
+        background:linear-gradient(135deg,#fefefe,#f0f0f0);
+        font-weight:bold; padding:4px;
+        box-shadow:0 4px 15px rgba(0,0,0,0.4);
+      }
+      .pk-card-back {
+        background:linear-gradient(135deg,#1a0033,#330055);
+        transform: rotateY(180deg);
+        background-image: repeating-linear-gradient(45deg,rgba(255,215,0,0.1) 0,rgba(255,215,0,0.1) 1px,transparent 0,transparent 50%);
+        background-size:12px 12px;
+      }
+      .pk-card-wrap.pk-held .pk-card-face {
+        border-color:#FFD700;
+        box-shadow:0 0 20px #FFD700, 0 0 40px rgba(255,215,0,0.6);
+        animation:pkCardHold 1s infinite;
+      }
+      .pk-card-wrap.pk-jackpot { animation:pkJackpot 0.6s ease-in-out; }
+      .pk-hold-label {
+        position:absolute; top:-24px; left:50%; transform:translateX(-50%);
+        background:#FFD700; color:#000; font-size:11px; font-weight:bold;
+        padding:2px 7px; border-radius:4px; font-family:'Luckiest Guy',cursive;
+        white-space:nowrap; box-shadow:0 0 10px #FFD700;
+      }
+      .pk-suit-spades { color:#111; } .pk-suit-hearts { color:#cc0000; }
+      .pk-suit-diamonds { color:#cc0000; } .pk-suit-clubs { color:#111; }
+    `;
+    document.head.appendChild(style);
+
+    const ov = document.createElement('div');
+    ov.id = 'pokerDegenOverlay';
+    ov.style.cssText = `position:fixed;inset:0;animation:pkBgPulse 4s infinite;
+      display:flex;flex-direction:column;align-items:center;
+      z-index:100005;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px 8px 20px;`;
+
+    const inner = document.createElement('div');
+    inner.style.cssText = `display:flex;flex-direction:column;align-items:center;
+      width:100%;max-width:600px;animation:pkSlideIn 0.4s ease-out;`;
+
+    const title = document.createElement('div');
+    title.innerHTML = '🃏 HEARING POKER 🃏';
+    title.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(24px,5vw,38px);
+      color:#00ff88;animation:pkTitleGlow 2s infinite;text-align:center;margin-bottom:6px;`;
+    inner.appendChild(title);
+
+    const betInfoEl = document.createElement('div');
+    betInfoEl.id='pkBetInfo';
+    betInfoEl.innerHTML=`Bet: <span style="color:#FFD700;font-size:1.2em">${bet}</span> pts — Tap cards to HOLD`;
+    betInfoEl.style.cssText=`font-family:'Luckiest Guy',cursive;color:#aaa;
+      font-size:clamp(12px,2.5vw,16px);margin-bottom:10px;text-align:center;`;
+    inner.appendChild(betInfoEl);
+
+    // Card table
+    const tableEl = document.createElement('div');
+    tableEl.style.cssText = `background:linear-gradient(135deg,#0a2318,#0d3020,#0a2318);
+      border-radius:24px;border:3px solid rgba(0,255,136,0.3);padding:20px 16px;
+      width:100%;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:14px;
+      box-shadow:0 0 40px rgba(0,255,136,0.2),inset 0 0 60px rgba(0,0,0,0.4);`;
+
+    const cardsRow = document.createElement('div');
+    cardsRow.style.cssText=`display:flex;gap:clamp(6px,1.5vw,12px);justify-content:center;align-items:flex-end;`;
+    tableEl.appendChild(cardsRow);
+
+    const handResultEl = document.createElement('div');
+    handResultEl.style.cssText=`font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,24px);
+      color:#00ff88;min-height:34px;text-align:center;text-shadow:0 0 15px #00ff88;`;
+    tableEl.appendChild(handResultEl);
+
+    inner.appendChild(tableEl);
+
+    const actionBtn = document.createElement('button');
+    actionBtn.textContent = '🃏 DEAL';
+    actionBtn.style.cssText=`padding:14px 44px;font-size:clamp(20px,4vw,28px);
+      background:linear-gradient(135deg,#00cc66,#008844);color:#fff;
+      border:none;border-radius:14px;cursor:pointer;min-height:56px;
+      font-family:'Luckiest Guy',cursive;box-shadow:0 0 25px rgba(0,255,136,0.5);
+      touch-action:manipulation;margin:10px 0;transition:all 0.2s;`;
+    inner.appendChild(actionBtn);
+
+    const payTableEl = document.createElement('div');
+    payTableEl.innerHTML=`<span style="color:#FFD700">RF/SF</span>×20 | <span style="color:#FF6600">4K</span>×8 | FH×6 | Flush×5 | Str×4 | 3K×3 | 2P×2 | JJ+×1.5`;
+    payTableEl.style.cssText=`color:#555;font-size:clamp(9px,1.8vw,12px);text-align:center;
+      font-family:'Luckiest Guy',cursive;max-width:380px;padding:0 8px;margin-top:4px;`;
+    inner.appendChild(payTableEl);
+
+    ov.appendChild(inner);
+    document.body.appendChild(ov);
+
+    const spawnWinParticles = (container) => {
+      const emojis = ['🃏','🏆','⭐','💎','♠️','♥️','💰','🎉'];
+      for (let i = 0; i < 22; i++) {
+        const p = document.createElement('div');
+        p.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        const dx = (Math.random()-0.5)*340, dy = -(120+Math.random()*220);
+        p.style.cssText = `position:fixed;font-size:${18+Math.random()*22}px;
+          left:${15+Math.random()*70}%;top:50%;pointer-events:none;z-index:100010;
+          --dx:${dx}px;--dy:${dy}px;animation:pkParticle 1s ease-out ${i*0.04}s forwards;`;
+        container.appendChild(p);
+        setTimeout(()=>p.remove(), 1200);
+      }
+    };
+
+    // Card deck
+    const suits = [{s:'♠',cls:'pk-suit-spades'},{s:'♥',cls:'pk-suit-hearts'},{s:'♦',cls:'pk-suit-diamonds'},{s:'♣',cls:'pk-suit-clubs'}];
+    const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    const makeDeck = () => {
+      const d = [];
+      for (const su of suits) for (const r of ranks) d.push({r,s:su.s,cls:su.cls,v:ranks.indexOf(r)});
+      return d.sort(()=>Math.random()-0.5);
+    };
+
+    const evalHand = (cards) => {
+      const vs=cards.map(c=>c.v).sort((a,b)=>a-b);
+      const ss=cards.map(c=>c.s);
+      const isFlush=ss.every(s=>s===ss[0]);
+      const isStraight=(vs[4]-vs[0]===4&&new Set(vs).size===5)||(vs[0]===0&&vs[1]===9&&vs[2]===10&&vs[3]===11&&vs[4]===12);
+      const counts={};vs.forEach(v=>counts[v]=(counts[v]||0)+1);
+      const freqs=Object.values(counts).sort((a,b)=>b-a);
+      if(isFlush&&isStraight&&vs[0]===8) return['🔥 ROYAL FLUSH!',20,'jackpot'];
+      if(isFlush&&isStraight) return['⚡ STRAIGHT FLUSH!',20,'jackpot'];
+      if(freqs[0]===4) return['💎 FOUR OF A KIND!',8,'big'];
+      if(freqs[0]===3&&freqs[1]===2) return['🏠 FULL HOUSE!',6,'big'];
+      if(isFlush) return['🌊 FLUSH!',5,'good'];
+      if(isStraight) return['📈 STRAIGHT!',4,'good'];
+      if(freqs[0]===3) return['🎯 THREE OF A KIND!',3,'good'];
+      if(freqs[0]===2&&freqs[1]===2) return['👥 TWO PAIR!',2,'ok'];
+      const pairs=Object.entries(counts).filter(([v,c])=>c>=2).map(([v])=>parseInt(v));
+      if(pairs.some(v=>v>=9||v===0)) return['💪 JACKS OR BETTER!',1.5,'ok'];
+      return['💀 NO HAND',0,'none'];
+    };
+
+    let deck=[],hand=[],held=[],phase='deal';
+    const cardEls = [];
+
+    const buildCard = (card, index) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'pk-card-wrap';
+      wrap.style.animationDelay = `${index*0.1}s`;
+
+      const inner2 = document.createElement('div');
+      inner2.className = 'pk-card-inner';
+
+      const face = document.createElement('div');
+      face.className = 'pk-card-face';
+      face.innerHTML = `
+        <div style="align-self:flex-start;font-size:clamp(11px,2.5vw,16px);line-height:1" class="${card.cls}">
+          ${card.r}<br>${card.s}
+        </div>
+        <div style="font-size:clamp(20px,4.5vw,30px)" class="${card.cls}">${card.s}</div>
+        <div style="align-self:flex-end;font-size:clamp(11px,2.5vw,16px);line-height:1;transform:rotate(180deg)" class="${card.cls}">
+          ${card.r}<br>${card.s}
+        </div>`;
+
+      const back = document.createElement('div'); back.className='pk-card-back';
+      back.innerHTML=`<div style="font-size:clamp(18px,4vw,28px)">🃏</div>`;
+
+      inner2.appendChild(face); inner2.appendChild(back);
+      wrap.appendChild(inner2);
+      return wrap;
+    };
+
+    const renderHand = (isReveal=false) => {
+      cardsRow.innerHTML=''; cardEls.length=0;
+      hand.forEach((card,i)=>{
+        const wrap = buildCard(card,i);
+        if (held[i]) {
+          wrap.classList.add('pk-held');
+          const lbl=document.createElement('div'); lbl.className='pk-hold-label'; lbl.textContent='HOLD';
+          wrap.appendChild(lbl);
+        }
+        wrap.onclick=()=>{
+          if (phase!=='draw') return;
+          held[i]=!held[i];
+          renderHand();
+          handResultEl.textContent=evalHand(hand)[0];
+        };
+        if (isReveal) {
+          wrap.style.animation=`pkCardDeal 0.4s ease-out ${i*0.1}s both`;
+        }
+        cardEls.push(wrap);
+        cardsRow.appendChild(wrap);
+      });
+    };
+
+    const closeOverlay2 = () => {
+      setTimeout(()=>{
+        ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
+        setTimeout(()=>{ ov.remove(); style.remove();
+          window.gamePaused=false;
+          if(typeof window.setPaused==='function') window.setPaused(false);
+          if(typeof window.startSpawning==='function') setTimeout(()=>window.startSpawning(),100);
+        },500);
+      }, 3000);
+    };
+
+    this.speak("Poker time! All in! Let's go degen!");
+
+    actionBtn.onclick=()=>{
       if (phase==='deal') {
         deck=makeDeck(); hand=deck.splice(0,5); held=[false,false,false,false,false];
-        phase='draw'; renderHand();
-        handResult.textContent = evalHand(hand)[0];
+        phase='draw'; renderHand(true);
+        const [name]=evalHand(hand);
+        handResultEl.textContent=name;
         actionBtn.textContent='🔄 DRAW';
-        actionBtn.style.background='linear-gradient(135deg,#aa5500,#773300)';
+        actionBtn.style.background='linear-gradient(135deg,#cc6600,#993300)';
+        this.speak("Cards dealt! Choose what to hold!");
       } else if (phase==='draw') {
         hand=hand.map((c,i)=>held[i]?c:deck.shift());
         held=[false,false,false,false,false]; phase='result';
-        renderHand();
-        const [name,mult]=evalHand(hand);
-        handResult.textContent=name;
-        actionBtn.disabled=true; actionBtn.textContent='✅ Done';
-        if (mult>0) {
-          const winAmt=Math.round(bet*mult);
-          game.score=(game.score||0)+winAmt;
-          document.getElementById('pokerBetInfo').innerHTML=`<span style="color:#00ff88">🏆 ${name} → +${winAmt} pts!</span>`;
-          if (typeof window.speechSynthesis!=='undefined') { const u=new SpeechSynthesisUtterance(`${name}! You win ${winAmt} points!`); window.speechSynthesis.speak(u); }
-        } else {
-          game.score=Math.max(0,(game.score||0)-bet);
-          document.getElementById('pokerBetInfo').innerHTML=`<span style="color:#ff4444">💀 No hand — -${bet} pts</span>`;
-        }
-        if (typeof game.updateUI==='function') game.updateUI();
-        closeOverlay();
+        renderHand(true);
+        const [name,mult,tier]=evalHand(hand);
+        handResultEl.textContent=name;
+        actionBtn.disabled=true; actionBtn.textContent='✅';
+
+        setTimeout(()=>{
+          if (tier==='jackpot'||tier==='big') {
+            cardEls.forEach(c=>c.classList.add('pk-jackpot'));
+            spawnWinParticles(ov);
+          }
+          if (mult>0) {
+            const winAmt=Math.round(bet*mult);
+            game.score=(game.score||0)+winAmt;
+            document.getElementById('pkBetInfo').innerHTML=`<span style="color:#00ff88">🏆 ${name} → +${winAmt} pts!</span>`;
+            this.speak(`${name.replace(/[^a-zA-Z ]/g,'')}! Huge win! ${winAmt} points!`);
+          } else {
+            game.score=Math.max(0,(game.score||0)-bet);
+            document.getElementById('pkBetInfo').innerHTML=`<span style="color:#ff4444">💀 No hand — -${bet} pts</span>`;
+            this.speak("You folded! You lost everything! Better luck!");
+          }
+          if(typeof game.updateUI==='function') game.updateUI();
+          closeOverlay2();
+        }, 600);
       }
     };
   }
