@@ -2614,25 +2614,79 @@ document.addEventListener("DOMContentLoaded", () => {
         // 💰 Bonus points
         score += 300;
         
-        // 🔙 Retour normal après 10 secondes
+        // 🔙 Retour normal après 5 secondes (réduit de 10s)
         setTimeout(() => {
-          grandpaOverlay.style.transition = 'opacity 1s';
-          grandpaOverlay.style.opacity = '0';
+          // Ending screen propre
+          grandpaOverlay.innerHTML = '';
+          grandpaOverlay.style.animation = 'none';
+          grandpaOverlay.style.filter = 'none';
+          grandpaOverlay.style.background = 'rgba(0,0,0,0.95)';
+          grandpaOverlay.style.flexDirection = 'column';
+          grandpaOverlay.style.alignItems = 'center';
+          grandpaOverlay.style.justifyContent = 'center';
           
+          const endTitle = document.createElement('div');
+          endTitle.textContent = '👴 GRANDPA WENT HOME! 👴';
+          endTitle.style.cssText = `
+            font-family: 'Luckiest Guy', cursive;
+            font-size: clamp(30px, 7vw, 60px);
+            color: #FFD700;
+            text-shadow: 3px 3px 0 #000, 0 0 30px #FFD700;
+            margin-bottom: 20px;
+            text-align: center;
+          `;
+          
+          const endBonus = document.createElement('div');
+          endBonus.textContent = '💰 +300 BONUS POINTS! 💰';
+          endBonus.style.cssText = `
+            font-family: 'Luckiest Guy', cursive;
+            font-size: clamp(22px, 5vw, 40px);
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00, 2px 2px 0 #000;
+            margin-bottom: 15px;
+            text-align: center;
+            animation: pulse 0.5s ease-in-out infinite;
+          `;
+          
+          const endScore = document.createElement('div');
+          endScore.textContent = `🎯 SCORE: ${Math.round(score)}`;
+          endScore.style.cssText = `
+            font-family: 'Luckiest Guy', cursive;
+            font-size: clamp(18px, 4vw, 30px);
+            color: #fff;
+            text-shadow: 2px 2px 0 #000;
+            text-align: center;
+          `;
+          
+          grandpaOverlay.appendChild(endTitle);
+          grandpaOverlay.appendChild(endBonus);
+          grandpaOverlay.appendChild(endScore);
+          
+          updateUI();
+          
+          // Disparaître après 2s
           setTimeout(() => {
-            grandpaOverlay.remove();
-            style.remove();
+            grandpaOverlay.style.transition = 'opacity 0.8s';
+            grandpaOverlay.style.opacity = '0';
             
-            // 🐛 FIX: Reprendre le jeu
-            if (!wasGamePaused) {
-              isPaused = false;
-              window.gamePaused = false;
-            }
-          }, 1000);
+            setTimeout(() => {
+              grandpaOverlay.remove();
+              style.remove();
+              
+              // 🐛 FIX: Reprendre le jeu
+              if (!wasGamePaused) {
+                isPaused = false;
+                window.gamePaused = false;
+                if (typeof window.startSpawning === 'function') window.startSpawning();
+              }
+            }, 800);
+            
+            rumorBubble.textContent = "GRANDPA LEFT! BACK TO NORMAL! 🎯";
+            rumorBubble.classList.add("show");
+            setTimeout(() => rumorBubble.classList.remove("show"), 1500);
+          }, 2000);
           
-          rumorBubble.textContent = "GRANDPA LEFT! BACK TO NORMAL! 🎯";
-          setTimeout(() => rumorBubble.classList.remove("show"), 1500);
-        }, 10000);
+        }, 5000); // 5s au lieu de 10s
       },
       '🥤': () => {
         rumorBubble.textContent = "🥤 HEARING HUSTLE! FIND THE EAR! 🥤";
@@ -2724,15 +2778,67 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Subtitle with current score
         const subtitle = document.createElement('div');
-        subtitle.innerHTML = `💰 CURRENT SCORE: <span style="color: #00ff00;">${Math.round(score)}</span> → <span style="color: #FFD700;">${Math.round(score * 2)}</span>? 💰`;
+        subtitle.innerHTML = `💰 YOUR SCORE: <span style="color: #00ff00;">${Math.round(score)}</span> 💰`;
         subtitle.style.cssText = `
           font-size: clamp(18px, 4vw, 28px);
           color: #fff;
           font-family: 'Luckiest Guy', cursive;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
           text-shadow: 2px 2px 0 #000;
           z-index: 10;
         `;
+        
+        // 🔧 STAKE SELECTOR - Choisir la mise
+        let stakePercent = 0.5; // défaut 50%
+        let stakeAmount = Math.round(score * stakePercent);
+        
+        const stakeLabel = document.createElement('div');
+        stakeLabel.style.cssText = `
+          font-size: clamp(16px, 3.5vw, 24px);
+          color: #00ffff;
+          font-family: 'Luckiest Guy', cursive;
+          margin-bottom: 12px;
+          text-shadow: 0 0 15px #00ffff;
+          z-index: 10;
+        `;
+        const updateStakeLabel = () => {
+          stakeAmount = Math.round(score * stakePercent);
+          stakeLabel.innerHTML = `🎲 STAKE: <span style="color:#FFD700">${stakeAmount} PTS</span> — WIN: <span style="color:#00ff00">+${stakeAmount}</span> / LOSE: <span style="color:#ff4444">-${stakeAmount}</span>`;
+        };
+        updateStakeLabel();
+        
+        const stakeButtons = document.createElement('div');
+        stakeButtons.style.cssText = `display: flex; gap: 12px; z-index: 10; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;`;
+        
+        [0.25, 0.5, 0.75, 1.0].forEach(pct => {
+          const sb = document.createElement('button');
+          sb.textContent = `${pct * 100}%`;
+          sb.style.cssText = `
+            padding: 10px 22px;
+            font-size: clamp(16px, 3.5vw, 22px);
+            background: ${pct === 0.5 ? 'linear-gradient(135deg,#FFD700,#ff6600)' : '#222'};
+            color: ${pct === 0.5 ? '#000' : '#fff'};
+            border: 3px solid #FFD700;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Luckiest Guy', cursive;
+            transition: all 0.15s;
+            touch-action: manipulation;
+          `;
+          sb.onclick = () => {
+            stakePercent = pct;
+            stakeButtons.querySelectorAll('button').forEach(b => {
+              b.style.background = '#222';
+              b.style.color = '#fff';
+              b.style.transform = 'scale(1)';
+            });
+            sb.style.background = 'linear-gradient(135deg,#FFD700,#ff6600)';
+            sb.style.color = '#000';
+            sb.style.transform = 'scale(1.1)';
+            updateStakeLabel();
+          };
+          stakeButtons.appendChild(sb);
+        });
         
         // Coin container with 3D perspective
         const coinContainer = document.createElement('div');
@@ -2869,6 +2975,8 @@ document.addEventListener("DOMContentLoaded", () => {
         
         overlay.appendChild(title);
         overlay.appendChild(subtitle);
+        overlay.appendChild(stakeLabel);
+        overlay.appendChild(stakeButtons);
         overlay.appendChild(coinContainer);
         overlay.appendChild(instruction);
         overlay.appendChild(buttons);
@@ -3045,7 +3153,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isEdge) {
               // JACKPOT! Edge landing!
               won = true;
-              score *= 5; // 5x multiplier for edge!
+              score += stakeAmount * 4; // 5x la mise sur EDGE!
               message = '🤯 IMPOSSIBLE! IT LANDED ON THE EDGE! 🤯';
               thumbEmoji = '🙌';
               color = '#ff00ff';
@@ -3092,11 +3200,11 @@ document.addEventListener("DOMContentLoaded", () => {
               
             } else if (choice === result) {
               won = true;
-              score *= 2;
-              message = `${result}! YOU WIN! SCORE DOUBLED!`;
+              score += stakeAmount; // Gagner = +stakeAmount (mise doublée)
+              message = `${result}! YOU WIN! +${stakeAmount} PTS!`;
               thumbEmoji = '👍';
               color = '#00ff00';
-              speak('Winner! Your score has been doubled!');
+              speak('Winner! Your stake has been doubled!');
               
               // Win celebration
               for (let i = 0; i < 30; i++) {
@@ -3119,11 +3227,11 @@ document.addEventListener("DOMContentLoaded", () => {
               
             } else {
               won = false;
-              score = Math.max(0, Math.floor(score / 2));
-              message = `${result}! YOU LOSE! SCORE HALVED!`;
+              score = Math.max(0, score - stakeAmount); // Perdre = -stakeAmount
+              message = `${result}! YOU LOSE! -${stakeAmount} PTS!`;
               thumbEmoji = '👎';
               color = '#ff0000';
-              speak('Oh no! You lost! Score halved!');
+              speak('Oh no! You lost your stake!');
               
               // Lose effect
               overlay.style.animation = 'shake 0.5s';

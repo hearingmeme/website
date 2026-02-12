@@ -171,3 +171,66 @@
     height: 90px !important;
   }
 }
+
+/* ====== OVERLAY GLOBAL MOBILE FIX ====== */
+@media (max-width: 768px) {
+  /* Tous les overlays : scroll si overflow + padding safe area */
+  #memoryOverlay,
+  #coinFlipOverlay,
+  #grandpaOverlay,
+  #pachinkoOverlay,
+  #bonneteauOverlay,
+  #blackjackOverlay,
+  #traderOverlay {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: env(safe-area-inset-bottom, 12px) !important;
+  }
+  
+  /* Coin Flip overlay : stake buttons lisibles mobile */
+  #coinFlipOverlay button {
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+  }
+  
+  /* Grandpa overlay : titre visible */
+  #grandpaOverlay {
+    padding: 20px !important;
+    text-align: center !important;
+  }
+  
+  /* Memory overlay : bouton start centré et visible */
+  #memoryReadyBtn {
+    font-size: clamp(24px, 6vw, 40px) !important;
+    padding: 18px 40px !important;
+  }
+  
+  /* Pachinko slots : texte lisible */
+  .pslot {
+    font-size: clamp(11px, 2.5vw, 16px) !important;
+    padding: 8px 1px !important;
+  }
+  
+  /* Bat swarm : counter visible */
+  #batCounter {
+    font-size: clamp(24px, 6vw, 40px) !important;
+  }
+  
+  /* Score popup mobile : taille adaptée */
+  .score-popup-mobile {
+    font-size: clamp(20px, 5vw, 30px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Très petit écran : réduire encore les overlays */
+  #coinFlipOverlay {
+    padding: 10px !important;
+  }
+  
+  #coinFlipOverlay h1,
+  #coinFlipOverlay > div:first-child {
+    font-size: clamp(28px, 8vw, 45px) !important;
+    margin-bottom: 8px !important;
+  }
+}

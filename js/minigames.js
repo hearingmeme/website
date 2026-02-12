@@ -2176,25 +2176,17 @@ const MiniGames = {
       } catch(e) {}
     };
     
-    // 🎈 HEARINKO SLOTS - Plus de malus + ordre aléatoire à chaque partie
+    // 🎈 HEARINKO SLOTS - Réduit à 9 slots essentiels (lisibles sur mobile)
     const baseSlots = [
-      { mult: 0, label: '💀', color: '#ff0000', width: 10 },      // LOSE ALL
-      { mult: 0, label: '☠️', color: '#cc0000', width: 9 },       // LOSE ALL 2
-      { mult: 0.25, label: '.25x', color: '#ff2200', width: 8 },  // Très mauvais
-      { mult: 0.5, label: '.5x', color: '#ff4400', width: 9 },    // Mauvais
-      { mult: 0.75, label: '.75x', color: '#ff6600', width: 8 },  // Pas terrible
-      { mult: 1, label: '1x', color: '#ff8800', width: 10 },      // Neutre
-      { mult: 1.5, label: '1.5x', color: '#ffaa00', width: 9 },   // Petit gain
-      { mult: 2, label: '2x', color: '#ffcc00', width: 12 },      // Bon
-      { mult: 3, label: '3x', color: '#aaff00', width: 11 },      // Très bon
-      { mult: 5, label: '5x', color: '#66ff00', width: 9 },       // Excellent
-      { mult: 10, label: '👂10x', color: '#00ff88', width: 8 },   // JACKPOT
-      { mult: 3, label: '3x', color: '#aaff00', width: 11 },      // Très bon
-      { mult: 2, label: '2x', color: '#ffcc00', width: 12 },      // Bon
-      { mult: 1, label: '1x', color: '#ff8800', width: 10 },      // Neutre
-      { mult: 0.5, label: '.5x', color: '#ff4400', width: 9 },    // Mauvais
-      { mult: 0.25, label: '.25x', color: '#ff2200', width: 8 },  // Très mauvais
-      { mult: 0, label: '💀', color: '#ff0000', width: 10 }       // LOSE ALL
+      { mult: 0,    label: '💀',    color: '#ff0000', width: 8  },  // LOSE ALL
+      { mult: 0.5,  label: '.5x',   color: '#ff4400', width: 10 },  // Mauvais
+      { mult: 1,    label: '1x',    color: '#ff8800', width: 12 },  // Neutre
+      { mult: 2,    label: '2x',    color: '#ffcc00', width: 14 },  // Bon
+      { mult: 10,   label: '👂10x', color: '#00ff88', width: 8  },  // JACKPOT
+      { mult: 2,    label: '2x',    color: '#ffcc00', width: 14 },  // Bon
+      { mult: 1,    label: '1x',    color: '#ff8800', width: 12 },  // Neutre
+      { mult: 0.5,  label: '.5x',   color: '#ff4400', width: 10 },  // Mauvais
+      { mult: 0,    label: '💀',    color: '#ff0000', width: 8  },  // LOSE ALL
     ];
     
     // 🎲 SHUFFLE pour ordre aléatoire à chaque partie

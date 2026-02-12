@@ -208,15 +208,15 @@ const VisualEffects = {
     const popup = document.createElement('div');
     popup.textContent = `+${points}`;
     popup.style.cssText = `
-      position: absolute;
+      position: fixed;
       left: ${x}px;
       top: ${y}px;
-      font-size: 30px;
+      font-size: clamp(22px, 5vw, 34px);
       font-family: 'Luckiest Guy', cursive;
       color: ${color};
       text-shadow: 0 0 10px ${color}, 2px 2px 0 #000;
       pointer-events: none;
-      z-index: 9999;
+      z-index: 99999;
       font-weight: bold;
     `;
     

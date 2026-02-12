@@ -620,7 +620,7 @@ const MegaBonusEffects = {
     setTimeout(() => notif.remove(), 3000);
     
     let caughtBats = 0;
-    const totalBats = 20;
+    const totalBats = 5;  // 🔧 FIX: 20 → 5 (plus atteignable)
     
     const counter = document.createElement('div');
     counter.textContent = `🦇 0/${totalBats}`;
@@ -645,26 +645,25 @@ const MegaBonusEffects = {
         bat.textContent = '🦇';
         bat.style.cssText = `
           position: fixed;
-          left: ${Math.random() * 100}%;
-          top: ${Math.random() * 100}%;
-          font-size: 40px;
+          left: ${Math.random() * 85}%;
+          top: ${Math.random() * 85}%;
+          font-size: clamp(55px, 12vw, 80px);
           z-index: 99999;
           cursor: pointer;
           animation: batFly ${1.5 + Math.random()}s ease-in-out infinite;
-          filter: drop-shadow(0 0 10px #8b00ff);
+          filter: drop-shadow(0 0 15px #8b00ff);
           transition: transform 0.2s;
           pointer-events: auto;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
         `;
         
-        bat.onmouseenter = () => {
-          bat.style.transform = 'scale(1.3)';
-        };
-        bat.onmouseleave = () => {
-          bat.style.transform = 'scale(1)';
-        };
+        bat.onmouseenter = () => { bat.style.transform = 'scale(1.3)'; };
+        bat.onmouseleave = () => { bat.style.transform = 'scale(1)'; };
         
         let clicked = false;
-        bat.addEventListener('click', () => {
+        const catchBat = () => {
           if (!clicked) {
             clicked = true;
             caughtBats++;
@@ -736,7 +735,10 @@ const MegaBonusEffects = {
               setTimeout(() => perfectMsg.remove(), 2000);
             }
           }
-        });
+        };
+        
+        bat.addEventListener('click', catchBat);
+        bat.addEventListener('touchstart', (e) => { e.preventDefault(); catchBat(); }, { passive: false });
         
         document.body.appendChild(bat);
         setTimeout(() => { 

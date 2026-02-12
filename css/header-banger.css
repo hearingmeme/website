@@ -283,7 +283,28 @@ span[class*="icon"] {
     right: 50%;
     transform: translateX(50%);
     gap: 12px;
-    display: none !important; /* CACHÉ SUR MOBILE pour pas niquer l'affichage */
+    display: none !important; /* CACHÉ SUR MOBILE - sauf le close btn géré séparément */
+  }
+
+  /* 🔧 Close button fixé en haut à droite sur mobile */
+  #closeGameBtn {
+    display: flex !important;
+    position: fixed !important;
+    top: 12px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 24px !important;
+    z-index: 100001 !important;
+    background: rgba(220, 30, 30, 0.9) !important;
+    border: 3px solid #fff !important;
+    border-radius: 50% !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
   }
 
   .header-btn {
