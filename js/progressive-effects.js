@@ -38,20 +38,20 @@ const ProgressiveEffects = {
   applyModerateEffects() {
     this.addSideGlitch(0.4);
     this.setScanlineIntensity(0.4);
-    this.addRandomFlash(5000);
+    this.addRandomFlash(6000);
   },
   
   applyStrongEffects() {
     this.addSideGlitch(0.6);
     this.setScanlineIntensity(0.6);
-    this.addRandomFlash(3000);
+    this.addRandomFlash(3500);
     this.addColorShift();
   },
   
   applyExtremeEffects() {
     this.addSideGlitch(0.8);
     this.setScanlineIntensity(0.8);
-    this.addRandomFlash(2000);
+    if (window.innerWidth >= 768) this.addRandomFlash(2500);
     this.addColorShift();
     this.addScreenDistortion();
   },
@@ -59,7 +59,7 @@ const ProgressiveEffects = {
   applyChaosEffects() {
     this.addSideGlitch(1);
     this.setScanlineIntensity(1);
-    this.addRandomFlash(1000);
+    if (window.innerWidth >= 768) this.addRandomFlash(1500);
     this.addColorShift();
     this.addScreenDistortion();
     this.addChaosParticles();
@@ -84,7 +84,7 @@ const ProgressiveEffects = {
     
     this.flashInterval = setInterval(() => {
       const gameContainer = document.querySelector('.game-container');
-      if (gameContainer && Math.random() < 0.3) {
+      if (gameContainer && Math.random() < 0.3 && window.innerWidth >= 768) {
         const colors = ['#ff0000', '#00ffff', '#ffff00', '#ff00ff'];
         const color = colors[Math.floor(Math.random() * colors.length)];
         

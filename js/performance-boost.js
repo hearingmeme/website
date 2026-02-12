@@ -59,7 +59,7 @@ function optimizedRAF(callback) {
 }
 
 // Limiter les particules
-const MAX_PARTICLES = window.innerWidth <= 768 ? 10 : 30;
+const MAX_PARTICLES = window.innerWidth <= 768 ? 15 : 40;
 let particleCount = 0;
 
 // Override createParticle pour limiter
@@ -82,7 +82,7 @@ setInterval(() => {
       p.remove();
     }
   });
-}, 5000);
+}, 10000);
 
 // Optimiser les shadows
 if (window.innerWidth <= 768) {
@@ -101,23 +101,7 @@ if (window.innerWidth <= 768) {
   });
 }
 
-// Limiter requestAnimationFrame (mais pas bloquer)
-let lastFrameTime = 0;
-const FPS_LIMIT = 60;
-const frameInterval = 1000 / FPS_LIMIT;
-
-const originalRAF = window.requestAnimationFrame;
-window.requestAnimationFrame = function(callback) {
-  return originalRAF(function(time) {
-    if (time - lastFrameTime >= frameInterval) {
-      lastFrameTime = time;
-      callback(time);
-    } else {
-      // Relancer pour le prochain frame au lieu de bloquer
-      window.requestAnimationFrame(callback);
-    }
-  });
-};
+// Note: don't override rAF globally - let browser handle frame timing
 
 // Passive event listeners
 const addEventListenerOriginal = EventTarget.prototype.addEventListener;
@@ -136,3 +120,26 @@ EventTarget.prototype.addEventListener = function(type, listener, options) {
 console.log('🚀 Performance optimizations loaded');
 console.log('📱 Mobile:', window.innerWidth <= 768);
 console.log('🎨 Max particles:', MAX_PARTICLES);
+
+// Cleanup stale GPU layers when ears are removed
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(m => {
+      m.removedNodes.forEach(node => {
+        if (node.nodeType === 1 && node.style) {
+          node.style.willChange = 'auto';
+        }
+      });
+    });
+  });
+  const gameBoard = document.querySelector('.game-board');
+  if (gameBoard) observer.observe(gameBoard, { childList: true, subtree: true });
+});
+
+// Cleanup orphaned fixed-position particles every 8s
+setInterval(() => {
+  const orphans = document.querySelectorAll('[style*="position: fixed"][style*="pointer-events: none"]');
+  orphans.forEach(el => {
+    if (!el.id && !el.className && el.style.opacity === '0') el.remove();
+  });
+}, 8000);

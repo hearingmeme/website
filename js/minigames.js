@@ -2649,7 +2649,14 @@ const MiniGames = {
     document.querySelectorAll('.ear.active').forEach(e => { e.classList.remove('active','cabal','echo','power-up'); e.textContent=''; });
     if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
 
-    const currentScore = game.score || 0;
+    // SCORE FIX: use addScore callback OR window.score directly
+    const _getScore = () => typeof window.score !== 'undefined' ? window.score : (game.score || 0);
+    const _addPts = (pts) => {
+      if (typeof window.score !== 'undefined') { window.score += pts; }
+      if (game.addScore) game.addScore(pts);
+      if (game.updateUI) game.updateUI();
+    };
+    const currentScore = _getScore();
     const bet = Math.max(50, Math.round(currentScore * 0.25));
     this.speak("Place your bets! Round and round she goes!");
 
@@ -2695,6 +2702,52 @@ const MiniGames = {
       -webkit-overflow-scrolling:touch;
       background:radial-gradient(ellipse at center, rgba(20,0,40,0.98) 0%, rgba(0,0,0,0.99) 100%);
       display:flex;flex-direction:column;align-items:center;padding:20px 12px 30px;`;
+
+    // 🎨 ANIMATED CASINO BACKGROUND
+    const casinoBg = document.createElement('div');
+    casinoBg.style.cssText = `position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;`;
+    casinoBg.innerHTML = `
+      <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(0deg,rgba(120,0,0,0.5) 0%,rgba(60,0,30,0.3) 60%,transparent 100%);animation:casinoFloor 3s ease-in-out infinite alternate;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:25%;background:linear-gradient(180deg,rgba(80,0,100,0.6),transparent);"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FFD700,#ff00ff,#00ffff,#FFD700);opacity:0.5;"></div>
+      ${Array.from({length:16},(_,i)=>`<div style="position:absolute;font-size:${14+Math.random()*22}px;opacity:0.07;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${3+Math.random()*5}s ${Math.random()*4}s ease-in-out infinite alternate;pointer-events:none;">${['🎡','🎰','⭕','🔴','⚫','💚','💰','🎲'][i%8]}</div>`).join('')}
+    `;
+    ov.appendChild(casinoBg);
+
+    // 🔊 CASINO AMBIENT SOUND
+    const startCasinoAmbient = () => {
+      try {
+        const ac = new (window.AudioContext||window.webkitAudioContext)();
+        let playing = true;
+        const playChip = () => {
+          if (!playing || !document.getElementById('rlOverlay')) return;
+          const o=ac.createOscillator(), g=ac.createGain();
+          o.connect(g); g.connect(ac.destination);
+          o.frequency.value=[800,1000,1200,900,1100][Math.floor(Math.random()*5)];
+          o.type='sine';
+          g.gain.setValueAtTime(0.04,ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.25);
+          o.start(ac.currentTime); o.stop(ac.currentTime+0.25);
+          setTimeout(playChip, 600+Math.random()*1200);
+        };
+        playChip();
+        ov.addEventListener('remove',()=>{ playing=false; ac.close(); },{once:true});
+        const obs=new MutationObserver(()=>{ if(!document.getElementById('rlOverlay')){ playing=false; try{ac.close();}catch(e){} obs.disconnect(); }});
+        obs.observe(document.body,{childList:true});
+      } catch(e){}
+    };
+    setTimeout(startCasinoAmbient, 200);
+
+    // Inject keyframes if not present
+    if(!document.getElementById('casinoAnimStyles')){
+      const ks=document.createElement('style'); ks.id='casinoAnimStyles';
+      ks.textContent=`
+        @keyframes casinoFloor{0%{opacity:0.4}100%{opacity:0.7}}
+        @keyframes casinoFloat{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(-20px) rotate(15deg)}}
+      `;
+      document.head.appendChild(ks);
+    }
+
 
     // Title block — Bonneteau style
     const titleEl = document.createElement('div');
@@ -2841,12 +2894,24 @@ const MiniGames = {
       if(animId) cancelAnimationFrame(animId);
       setTimeout(()=>{
         ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
-        setTimeout(()=>{ ov.remove(); style.remove();
-          window.gamePaused=false;
+        setTimeout(()=>{ ov.remove(); if(style&&style.parentNode) style.remove();
+          // FORCE FULL RESUME
+          window.gamePaused=false; window.isPaused=false;
           if(typeof window.setPaused==='function') window.setPaused(false);
-          if(typeof window.startSpawning==='function') setTimeout(()=>window.startSpawning(),100);
+          if(typeof window.activeEarsCount!=='undefined') window.activeEarsCount=0;
+          // Clear any stale ear states
+          document.querySelectorAll('.ear').forEach(e=>{
+            if(!e.classList.contains('active')) { e.textContent=''; e.style.cssText=''; }
+          });
+          setTimeout(()=>{
+            if(typeof window.startSpawning==='function'){
+              window.startSpawning();
+              // Force-spawn 2 ears immediately
+              setTimeout(()=>{ if(typeof window.spawnEar==='function'){ window.spawnEar(); window.spawnEar(); }},150);
+            }
+          },100);
         },500);
-      },3000);
+      },2800);
     };
 
     let startTS=0;
@@ -2881,23 +2946,26 @@ const MiniGames = {
       historyEl.appendChild(dot);
 
       let won=false, mult=0;
-      if(selectedBet.v===color){won=true;mult=color==='green'?14:2;}
-      else if(selectedBet.v==='low'&&winNumber>=1&&winNumber<=12){won=true;mult=3;}
-      else if(selectedBet.v==='mid'&&winNumber>=13&&winNumber<=24){won=true;mult=3;}
-      else if(selectedBet.v==='high'&&winNumber>=25&&winNumber<=36){won=true;mult=3;}
-      else if(selectedBet.v==='odd'&&winNumber%2===1&&winNumber>0){won=true;mult=2;}
-      else if(selectedBet.v==='even'&&winNumber%2===0&&winNumber>0){won=true;mult=2;}
+      // GAMBLER multipliers — always feel rewarding
+      if(selectedBet.v===color){won=true;mult=color==='green'?20:3;}
+      else if(selectedBet.v==='low'&&winNumber>=1&&winNumber<=12){won=true;mult=4;}
+      else if(selectedBet.v==='mid'&&winNumber>=13&&winNumber<=24){won=true;mult=4;}
+      else if(selectedBet.v==='high'&&winNumber>=25&&winNumber<=36){won=true;mult=4;}
+      else if(selectedBet.v==='odd'&&winNumber%2===1&&winNumber>0){won=true;mult=3;}
+      else if(selectedBet.v==='even'&&winNumber%2===0&&winNumber>0){won=true;mult=3;}
 
       if(won){
         const w=bet*mult;
-        game.score=(game.score||0)+w;
+        _addPts(w);
         resultEl.innerHTML=`${emoji} <span style="font-size:1.4em">${winNumber}</span> — 🏆 +${w} pts!`;
         this.speak(`${winNumber}! Massive payout! You win ${w} points!`);
         spawnParticles();
       } else {
-        game.score=Math.max(0,(game.score||0)-bet);
-        resultEl.innerHTML=`${emoji} <span style="font-size:1.4em">${winNumber}</span> — 💀 -${bet} pts. You're broke!`;
-        this.speak(`${winNumber}! You're broke! Better luck!`);
+        // Only lose half the bet for fun/gambler feel
+        const loss=Math.round(bet*0.5);
+        _addPts(-loss); if(typeof window.score!=='undefined') window.score=Math.max(0,window.score);
+        resultEl.innerHTML=`${emoji} <span style="font-size:1.4em">${winNumber}</span> — 💀 -${loss} pts. Near miss!`;
+        this.speak(`${winNumber}! So close! Better luck next time!`);
       }
       if(typeof game.updateUI==='function') game.updateUI();
       closeGame();
@@ -2922,7 +2990,13 @@ const MiniGames = {
     document.querySelectorAll('.ear.active').forEach(e=>{ e.classList.remove('active','cabal','echo','power-up'); e.textContent=''; });
     if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
 
-    const currentScore=game.score||0;
+    const _getScore = () => typeof window.score !== 'undefined' ? window.score : (game.score || 0);
+    const _addPts = (pts) => {
+      if (typeof window.score !== 'undefined') { window.score += pts; }
+      if (game.addScore) game.addScore(pts);
+      if (game.updateUI) game.updateUI();
+    };
+    const currentScore=_getScore();
     const bet=Math.max(50, Math.round(currentScore*0.25));
     this.speak("Craps! Roll the dice! Come on degen!");
 
@@ -2974,6 +3048,39 @@ const MiniGames = {
       -webkit-overflow-scrolling:touch;
       background:radial-gradient(ellipse at center, rgba(20,0,40,0.98) 0%, rgba(0,0,0,0.99) 100%);
       display:flex;flex-direction:column;align-items:center;padding:20px 12px 30px;`;
+
+    // 🎨 CRAPS ANIMATED TABLE BACKGROUND
+    const casinoBgCr=document.createElement('div');
+    casinoBgCr.style.cssText=`position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;`;
+    casinoBgCr.innerHTML=`
+      <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(0deg,rgba(0,80,20,0.5) 0%,rgba(0,40,10,0.3) 60%,transparent 100%);animation:casinoFloor 2.5s ease-in-out infinite alternate;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:25%;background:linear-gradient(180deg,rgba(0,60,80,0.5),transparent);"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00ff88,#FFD700,#ff6600,#00ff88);opacity:0.5;"></div>
+      ${Array.from({length:14},(_,i)=>`<div style="position:absolute;font-size:${12+Math.random()*24}px;opacity:0.07;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${3+Math.random()*5}s ${Math.random()*3}s ease-in-out infinite alternate;pointer-events:none;">${['🎲','⚄','⚅','⚂','⚃','💫','🎯','💥'][i%8]}</div>`).join('')}
+    `;
+    ov.appendChild(casinoBgCr);
+
+    // 🔊 CRAPS AMBIENT
+    const startCrapsAmbient=()=>{
+      try{
+        const ac=new(window.AudioContext||window.webkitAudioContext)();
+        let playing=true;
+        const playDiceRoll=()=>{
+          if(!playing||!document.getElementById('crOverlay')) return;
+          // Dice rolling rumble
+          const buf=ac.createBuffer(1,ac.sampleRate*0.15,ac.sampleRate);
+          const d=buf.getChannelData(0);
+          for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/d.length*8)*0.3;
+          const src=ac.createBufferSource(); src.buffer=buf;
+          src.connect(ac.destination); src.start();
+          setTimeout(playDiceRoll,2000+Math.random()*3000);
+        };
+        playDiceRoll();
+        const obs=new MutationObserver(()=>{ if(!document.getElementById('crOverlay')){ playing=false; try{ac.close();}catch(e){} obs.disconnect(); }});
+        obs.observe(document.body,{childList:true});
+      }catch(e){}
+    };
+    setTimeout(startCrapsAmbient,200);
 
     const titleEl=document.createElement('div');
     titleEl.innerHTML='🎲 HEARING CRAPS 🎲';
@@ -3071,10 +3178,22 @@ const MiniGames = {
     const closeGame=()=>{
       setTimeout(()=>{
         ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
-        setTimeout(()=>{ ov.remove(); style.remove();
-          window.gamePaused=false;
+        setTimeout(()=>{ ov.remove(); if(style&&style.parentNode) style.remove();
+          // FORCE FULL RESUME
+          window.gamePaused=false; window.isPaused=false;
           if(typeof window.setPaused==='function') window.setPaused(false);
-          if(typeof window.startSpawning==='function') setTimeout(()=>window.startSpawning(),100);
+          if(typeof window.activeEarsCount!=='undefined') window.activeEarsCount=0;
+          // Clear any stale ear states
+          document.querySelectorAll('.ear').forEach(e=>{
+            if(!e.classList.contains('active')) { e.textContent=''; e.style.cssText=''; }
+          });
+          setTimeout(()=>{
+            if(typeof window.startSpawning==='function'){
+              window.startSpawning();
+              // Force-spawn 2 ears immediately
+              setTimeout(()=>{ if(typeof window.spawnEar==='function'){ window.spawnEar(); window.spawnEar(); }},150);
+            }
+          },100);
         },500);
       },2800);
     };
@@ -3102,18 +3221,18 @@ const MiniGames = {
 
         if(!point){
           if(sum===7||sum===11){
-            game.score=(game.score||0)+bet;
-            if(typeof game.updateUI==='function') game.updateUI();
-            resultEl.innerHTML=`🎉 NATURAL ${sum}! +${bet} pts!`;
+            const crWin=bet*3; // 3x for natural!
+            _addPts(crWin);
+            resultEl.innerHTML=`🎉 NATURAL ${sum}! TRIPLE PAY! +${crWin} pts!`;
             rollBtn.style.display='none';
-            this.speak(`Natural ${sum}! You win! Double six! Insane!`);
+            this.speak(`Natural ${sum}! You win triple! Insane!`);
             spawnParticles(); closeGame();
           } else if(sum===2||sum===3||sum===12){
-            game.score=Math.max(0,(game.score||0)-bet);
-            if(typeof game.updateUI==='function') game.updateUI();
-            resultEl.innerHTML=`💀 CRAPS ${sum}! -${bet} pts`;
+            const crLoss=Math.round(bet*0.3); // Only lose 30%
+            _addPts(-crLoss); if(typeof window.score!=='undefined') window.score=Math.max(0,window.score);
+            resultEl.innerHTML=`💀 CRAPS ${sum}! -${crLoss} pts. Near miss!`;
             rollBtn.style.display='none';
-            this.speak(`Craps ${sum}! You lost!`);
+            this.speak(`Craps ${sum}! Almost had it!`);
             closeGame();
           } else {
             point=sum;
@@ -3124,18 +3243,18 @@ const MiniGames = {
           }
         } else {
           if(sum===point){
-            game.score=(game.score||0)+bet;
-            if(typeof game.updateUI==='function') game.updateUI();
-            resultEl.innerHTML=`🏆 POINT ${sum} HIT! +${bet} pts!`;
+            const crWin=bet*2; // 2x for hitting point
+            _addPts(crWin);
+            resultEl.innerHTML=`🏆 POINT ${sum} HIT! DOUBLE PAY! +${crWin} pts!`;
             rollBtn.style.display='none';
-            this.speak(`Point hit! ${sum}! You win!`);
+            this.speak(`Point hit! ${sum}! Double pay! You win!`);
             spawnParticles(); closeGame();
           } else if(sum===7){
-            game.score=Math.max(0,(game.score||0)-bet);
-            if(typeof game.updateUI==='function') game.updateUI();
-            resultEl.innerHTML=`💀 SEVEN OUT! -${bet} pts`;
+            const crLoss=Math.round(bet*0.4); // Only lose 40%
+            _addPts(-crLoss); if(typeof window.score!=='undefined') window.score=Math.max(0,window.score);
+            resultEl.innerHTML=`💀 SEVEN OUT! -${crLoss} pts. So close!`;
             rollBtn.style.display='none';
-            this.speak("Seven out! You lost everything!");
+            this.speak("Seven out! You almost made it!");
             closeGame();
           } else {
             resultEl.innerHTML=`${sum} — Keep rolling for ${point}...`;
@@ -3153,7 +3272,13 @@ const MiniGames = {
     document.querySelectorAll('.ear.active').forEach(e=>{ e.classList.remove('active','cabal','echo','power-up'); e.textContent=''; });
     if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
 
-    const currentScore=game.score||0;
+    const _getScore = () => typeof window.score !== 'undefined' ? window.score : (game.score || 0);
+    const _addPts = (pts) => {
+      if (typeof window.score !== 'undefined') { window.score += pts; }
+      if (game.addScore) game.addScore(pts);
+      if (game.updateUI) game.updateUI();
+    };
+    const currentScore=_getScore();
     const bet=Math.max(50, Math.round(currentScore*0.25));
     this.speak("Poker time! All in! Five card draw degen style!");
 
@@ -3208,6 +3333,39 @@ const MiniGames = {
       -webkit-overflow-scrolling:touch;
       background:radial-gradient(ellipse at center, rgba(0,30,20,0.98) 0%, rgba(0,0,0,0.99) 100%);
       display:flex;flex-direction:column;align-items:center;padding:20px 12px 30px;`;
+
+    // 🎨 POKER ANIMATED FELT BACKGROUND
+    const casinoBgPk=document.createElement('div');
+    casinoBgPk.style.cssText=`position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;`;
+    casinoBgPk.innerHTML=`
+      <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(0deg,rgba(0,100,30,0.45) 0%,rgba(0,50,15,0.3) 60%,transparent 100%);animation:casinoFloor 4s ease-in-out infinite alternate;"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:25%;background:linear-gradient(180deg,rgba(0,40,20,0.5),transparent);"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00ff44,#00ffff,#00ff44);opacity:0.4;"></div>
+      ${Array.from({length:14},(_,i)=>`<div style="position:absolute;font-size:${12+Math.random()*24}px;opacity:0.07;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${4+Math.random()*4}s ${Math.random()*3}s ease-in-out infinite alternate;pointer-events:none;">${['🃏','♠️','♥️','♦️','♣️','🎴','💎','👑'][i%8]}</div>`).join('')}
+    `;
+    ov.appendChild(casinoBgPk);
+
+    // 🔊 POKER AMBIENT
+    const startPokerAmbient=()=>{
+      try{
+        const ac=new(window.AudioContext||window.webkitAudioContext)();
+        let playing=true;
+        const playCard=()=>{
+          if(!playing||!document.getElementById('pkOverlay')) return;
+          const o=ac.createOscillator(),g=ac.createGain();
+          o.connect(g); g.connect(ac.destination);
+          o.frequency.value=400+Math.random()*200; o.type='sine';
+          g.gain.setValueAtTime(0.03,ac.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.1);
+          o.start(ac.currentTime); o.stop(ac.currentTime+0.1);
+          setTimeout(playCard,1500+Math.random()*2500);
+        };
+        playCard();
+        const obs=new MutationObserver(()=>{ if(!document.getElementById('pkOverlay')){ playing=false; try{ac.close();}catch(e){} obs.disconnect(); }});
+        obs.observe(document.body,{childList:true});
+      }catch(e){}
+    };
+    setTimeout(startPokerAmbient,200);
 
     const titleEl=document.createElement('div');
     titleEl.innerHTML='🃏 HEARING POKER 🃏';
@@ -3272,17 +3430,17 @@ const MiniGames = {
       const isStraight=(vs[4]-vs[0]===4&&new Set(vs).size===5)||(vs[0]===0&&vs[1]===9&&vs[2]===10&&vs[3]===11&&vs[4]===12);
       const cnt={};vs.forEach(v=>cnt[v]=(cnt[v]||0)+1);
       const f=Object.values(cnt).sort((a,b)=>b-a);
-      if(isFlush&&isStraight&&vs[0]===8) return['🔥 ROYAL FLUSH!',20,'jackpot'];
-      if(isFlush&&isStraight) return['⚡ STRAIGHT FLUSH!',20,'jackpot'];
-      if(f[0]===4) return['💎 FOUR OF A KIND!',8,'big'];
-      if(f[0]===3&&f[1]===2) return['🏠 FULL HOUSE!',6,'big'];
-      if(isFlush) return['🌊 FLUSH!',5,'good'];
-      if(isStraight) return['📈 STRAIGHT!',4,'good'];
-      if(f[0]===3) return['🎯 THREE OF A KIND!',3,'good'];
-      if(f[0]===2&&f[1]===2) return['👥 TWO PAIR!',2,'ok'];
+      if(isFlush&&isStraight&&vs[0]===8) return['🔥 ROYAL FLUSH!',50,'jackpot'];
+      if(isFlush&&isStraight) return['⚡ STRAIGHT FLUSH!',30,'jackpot'];
+      if(f[0]===4) return['💎 FOUR OF A KIND!',15,'big'];
+      if(f[0]===3&&f[1]===2) return['🏠 FULL HOUSE!',10,'big'];
+      if(isFlush) return['🌊 FLUSH!',7,'good'];
+      if(isStraight) return['📈 STRAIGHT!',5,'good'];
+      if(f[0]===3) return['🎯 THREE OF A KIND!',4,'good'];
+      if(f[0]===2&&f[1]===2) return['👥 TWO PAIR!',2.5,'ok'];
       const pairs=Object.entries(cnt).filter(([v,c])=>c>=2).map(([v])=>parseInt(v));
       if(pairs.some(v=>v>=9||v===0)) return['💪 JACKS OR BETTER!',1.5,'ok'];
-      return['💀 NO HAND',0,'none'];
+      return['🤏 SMALL HAND — CONSOLATION!',0.3,'none']; // Always give a tiny payout
     };
 
     let deck=[],hand=[],held=[],phase='deal';
@@ -3339,10 +3497,19 @@ const MiniGames = {
     const closeGame=()=>{
       setTimeout(()=>{
         ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
-        setTimeout(()=>{ ov.remove(); style.remove();
-          window.gamePaused=false;
+        setTimeout(()=>{ ov.remove(); if(style&&style.parentNode) style.remove();
+          window.gamePaused=false; window.isPaused=false;
           if(typeof window.setPaused==='function') window.setPaused(false);
-          if(typeof window.startSpawning==='function') setTimeout(()=>window.startSpawning(),100);
+          if(typeof window.activeEarsCount!=='undefined') window.activeEarsCount=0;
+          document.querySelectorAll('.ear').forEach(e=>{
+            if(!e.classList.contains('active')){ e.textContent=''; e.style.cssText=''; }
+          });
+          setTimeout(()=>{
+            if(typeof window.startSpawning==='function'){
+              window.startSpawning();
+              setTimeout(()=>{ if(typeof window.spawnEar==='function'){ window.spawnEar(); window.spawnEar(); }},150);
+            }
+          },100);
         },500);
       },3000);
     };
@@ -3365,15 +3532,18 @@ const MiniGames = {
         actionBtn.disabled=true; actionBtn.innerHTML='✅';
         setTimeout(()=>{
           if(tier==='jackpot'||tier==='big') { cardEls.forEach(c=>c.classList.add('pk-jackpot')); spawnParticles(); }
-          if(mult>0){
-            const w=Math.round(bet*mult);
-            game.score=(game.score||0)+w;
+          const w=Math.round(bet*mult);
+          if(w>0){
+            _addPts(w);
             document.getElementById('pkBetInfo').innerHTML=`<span style="color:#00ff88;font-size:1.1em">🏆 ${name} → +${w} pts!</span>`;
-            this.speak(`${name.replace(/[^\w ]/g,'').trim()}! Huge win! ${w} points!`);
+            this.speak(`${name.replace(/[^\w ]/g,'').trim()}! ${mult>=10?'INSANE WIN!':'Nice win!'} ${w} points!`);
+            if(mult>=5) spawnParticles();
           } else {
-            game.score=Math.max(0,(game.score||0)-bet);
-            document.getElementById('pkBetInfo').innerHTML=`<span style="color:#ff4444">💀 No hand — -${bet} pts. You folded!</span>`;
-            this.speak("You folded! You lost everything!");
+            // Consolation: lose only 20% for gambler feel
+            const loss=Math.round(bet*0.2);
+            _addPts(-loss); if(typeof window.score!=='undefined') window.score=Math.max(0,window.score);
+            document.getElementById('pkBetInfo').innerHTML=`<span style="color:#ff9944">🤏 Bad luck — -${loss} pts. Almost!`;
+            this.speak("So close! Bad luck this time, try again!");
           }
           if(typeof game.updateUI==='function') game.updateUI();
           closeGame();

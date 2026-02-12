@@ -878,3 +878,12 @@ input, button, select, textarea {
 .game-stats {
   display: none !important;
 }
+
+/* === PERF: Disable on mobile === */
+@media (max-width:768px) {
+  .ear.active { filter: none !important; }
+  .power-up-indicator { animation: none !important; }
+  .streak-display { animation: none !important; }
+  .combo-display { animation: none !important; }
+  .level-display { animation: none !important; }
+}

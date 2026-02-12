@@ -949,7 +949,11 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('traderOverlay') ||
         document.getElementById('grandpaOverlay') ||
         document.getElementById('fortuneTellerOverlay') ||
-        document.getElementById('coinFlipOverlay');
+        document.getElementById('coinFlipOverlay') ||
+        document.getElementById('rlOverlay') ||      // Roulette
+        document.getElementById('crOverlay') ||      // Craps
+        document.getElementById('pkOverlay') ||      // Poker
+        document.getElementById('hearingMachineOverlay'); // Slots
       
       if (!ear.textContent || ear.textContent === '') {
         return; // Mini-jeu a démarré pendant l'exécution
@@ -1083,7 +1087,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const x = rect.left + rect.width / 2;
     const y = rect.top + rect.height / 2;
     const particles = ['✨', '💫', '⭐', '🌟', '💥'];
-    const count = 8;
+    // Perf: fewer particles on mobile, also limit DOM particle count
+    const existingParticles = document.querySelectorAll('.particle').length;
+    const count = existingParticles > 20 ? 2 : (window.innerWidth < 768 ? 4 : 8);
     
     for (let i = 0; i < count; i++) {
       const particle = document.createElement('div');
@@ -1159,6 +1165,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const basePoints = 25;
       const earnedPoints = Math.round(basePoints * (combo + permanentComboBonus) * scoreMultiplier * perfectBonus * fireMultiplier);
       score += earnedPoints;
+
+      // 🎰 HUSTLE SYSTEM: rare "hot streak" double + very rare "bust" small deduct
+      // Makes every click feel exciting
+      const hustleRoll = Math.random();
+      if (hustleRoll < 0.04 && combo > 2) { // 4% chance: DOUBLE when on combo
+        const bonus = earnedPoints;
+        score += bonus;
+        const hMsg = document.createElement('div');
+        hMsg.textContent = `🔥 HUSTLE DOUBLE! +${bonus}`;
+        hMsg.style.cssText = `position:fixed;top:28%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4vw,34px);color:#ff6600;font-family:'Luckiest Guy',cursive;font-weight:bold;z-index:10001;pointer-events:none;text-shadow:0 0 15px #ff6600;animation:messagePulse 0.4s ease-out;`;
+        document.body.appendChild(hMsg);
+        setTimeout(() => hMsg.remove(), 700);
+      } else if (hustleRoll > 0.97 && score > 500 && combo < 2) { // 3% when no combo: small penalty
+        const penalty = Math.round(earnedPoints * 0.4);
+        score = Math.max(0, score - penalty);
+        const hMsg = document.createElement('div');
+        hMsg.textContent = `😬 FUMBLE -${penalty}`;
+        hMsg.style.cssText = `position:fixed;top:28%;left:50%;transform:translateX(-50%);font-size:clamp(18px,3vw,26px);color:#ff4444;font-family:'Luckiest Guy',cursive;z-index:10001;pointer-events:none;animation:messagePulse 0.4s ease-out;`;
+        document.body.appendChild(hMsg);
+        setTimeout(() => hMsg.remove(), 600);
+      }
       
       if (isOnFire) {
         const fireText = document.createElement('div');
@@ -2153,7 +2180,7 @@ document.addEventListener("DOMContentLoaded", () => {
               gameContainer.style.filter = '';
               gameContainer.style.animation = '';
             }
-          }, 50);
+          }, 80);
           
           const ears = document.querySelectorAll('.ear');
           ears.forEach((ear, i) => {
@@ -4014,38 +4041,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function updateMagnetMode() {
+  let _lastMagnetFrame = 0;
+  function updateMagnetMode(ts) {
     if (!magnetMode) return;
-    
+    // Throttle to ~30fps max for magnet (was running at full 60-120fps)
+    if (ts - _lastMagnetFrame < 33) {
+      requestAnimationFrame(updateMagnetMode); return;
+    }
+    _lastMagnetFrame = ts;
     const ears = document.querySelectorAll('.ear.active');
     ears.forEach(ear => {
       const rect = ear.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      const dx = window.mouseX - centerX;
-      const dy = window.mouseY - centerY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      if (distance < 200) {
-        const force = (200 - distance) / 200;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = window.mouseX - cx;
+      const dy = window.mouseY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 200) {
+        const force = (200 - dist) / 200;
         ear.style.transform = `translate(${dx * force * 0.3}px, ${dy * force * 0.3}px) scale(${1 + force * 0.2})`;
       } else {
         ear.style.transform = '';
       }
     });
-    
-    if (magnetMode) {
-      requestAnimationFrame(updateMagnetMode);
-    }
+    if (magnetMode) requestAnimationFrame(updateMagnetMode);
   }
 
   window.mouseX = 0;
   window.mouseY = 0;
+  let _mouseMoveThrottle = 0;
   document.addEventListener('mousemove', (e) => {
+    const now = Date.now();
+    if (now - _mouseMoveThrottle < 16) return; // max 60fps
+    _mouseMoveThrottle = now;
     window.mouseX = e.clientX;
     window.mouseY = e.clientY;
-  });
+  }, { passive: true });
 
   // Export startGame function globally for retry button
   window.startGame = startGame;

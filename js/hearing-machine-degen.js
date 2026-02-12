@@ -6,7 +6,8 @@ let machineInterval = null;
 let casinoAmbiance = null;
 let suspenseSound = null;
 
-const symbols = ['👂', '💀', '🔥', '💎', '⚡', '🎮', '💰', '🎯', '🚀', '🤑'];
+// 👂 All ear skin tones — jackpot only for ears!
+const symbols = ['👂', '👂🏻', '👂🏼', '👂🏽', '👂🏾', '👂🏿'];
 
 // Audio Context for casino sounds
 let audioCtx = null;
@@ -734,59 +735,66 @@ function checkWin(results) {
   let isJackpot = false;
   let isWin = false;
   
-  if (results[0] === results[1] && results[1] === results[2]) {
-    // JACKPOT!
+  // All symbols are ear skin tones — triple same = JACKPOT, triple any ear = BIG WIN
+  const earSymbols = ['👂', '👂🏻', '👂🏼', '👂🏽', '👂🏾', '👂🏿'];
+  const allEars = results.every(r => earSymbols.includes(r));
+  const tripleMatch = results[0] === results[1] && results[1] === results[2];
+
+  if (tripleMatch) {
+    // JACKPOT — same ear x3
     isJackpot = true;
     isWin = true;
-    
-    // Special jackpots
-    if (results[0] === '👂') {
-      winAmount = 1000;
-      resultDiv.innerHTML = `
-        <div style="font-size: 35px; animation: rainbow 0.5s infinite;">🎰💎 LEGENDARY EARS JACKPOT! 💎🎰</div>
-        <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
-        <div style="font-size: 16px; color: #ff00ff;">ABSOLUTELY BASED AND EARPILLED!</div>
-      `;
-    } else if (results[0] === '💰') {
-      winAmount = 777;
-      resultDiv.innerHTML = `
-        <div style="font-size: 35px; animation: rainbow 0.5s infinite;">🎰💰 MONEY PRINTER GO BRRR! 💰🎰</div>
-        <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
-        <div style="font-size: 16px; color: #00ff00;">WE'RE ALL GONNA MAKE IT!</div>
-      `;
-    } else {
-      winAmount = 500;
-      resultDiv.innerHTML = `
-        <div style="font-size: 35px; animation: rainbow 0.5s infinite;">🎰🔥 JACKPOT DEGEN! 🔥🎰</div>
-        <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
-        <div style="font-size: 16px; color: #ff00ff;">LFG!!! 🚀🚀🚀</div>
-      `;
-    }
-    
+    const jackpotMessages = [
+      ['👂👂👂 TRIPLE HEARING JACKPOT! 👂👂👂', 2000, 'EARPILLED TO THE MAX!'],
+      ['👂🏻👂🏻👂🏻 LIGHT SKIN JACKPOT! 👂🏻👂🏻👂🏻', 2000, 'HEAR EVERYTHING!'],
+      ['👂🏾👂🏾👂🏾 MEGA JACKPOT SER! 👂🏾👂🏾👂🏾', 2000, 'LFG FREN!!!'],
+    ];
+    const [title, pts, sub] = jackpotMessages[Math.floor(Math.random() * jackpotMessages.length)];
+    winAmount = pts;
+    resultDiv.innerHTML = `
+      <div style="font-size: 35px; animation: rainbow 0.4s infinite;">${title}</div>
+      <div style="font-size: 28px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS SER!</div>
+      <div style="font-size: 16px; color: #ff00ff;">${sub}</div>
+    `;
     playJackpotSound();
     createJackpotCelebration();
-    
-  } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
-    // Small win
+
+  } else if (allEars) {
+    // 3 different ear variants = big win (hearing rainbow!)
     isWin = true;
-    winAmount = 150;
+    winAmount = 750;
     resultDiv.innerHTML = `
-      <div style="font-size: 28px; color: #00ff00;">👂✨ SMOL WIN BUT STILL WINNING! ✨👂</div>
-      <div style="font-size: 22px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS!</div>
-      <div style="font-size: 14px; color: #00ffff;">NGMI? NAH U GMI SER!</div>
+      <div style="font-size: 32px; animation: rainbow 0.5s infinite;">👂🏻👂🏽👂🏿 HEARING RAINBOW! 👂🏿👂🏽👂🏻</div>
+      <div style="font-size: 26px; color: #00ffff; margin-top: 10px;">+${winAmount} POINTS!</div>
+      <div style="font-size: 14px; color: #FFD700;">ALL EARS ARE BEAUTIFUL! 🌈</div>
     `;
-    
+    playJackpotSound();
+    createSmallWinEffect();
+
+  } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+    // Two matching ears = medium win
+    isWin = true;
+    winAmount = 300;
+    resultDiv.innerHTML = `
+      <div style="font-size: 28px; color: #00ff00;">👂✨ EAR PAIR! STILL WINNING! ✨👂</div>
+      <div style="font-size: 22px; color: #FFD700; margin-top: 10px;">+${winAmount} POINTS!</div>
+      <div style="font-size: 14px; color: #00ffff;">THE EARS ARE SPEAKING TO YOU!</div>
+    `;
     playWinSound();
     createSmallWinEffect();
-    
+
   } else {
-    // Loss
+    // Loss — but always encouraging
+    const loseMsgs = [
+      ['Almost! The ears heard you coming...', '👂 Try again, the jackpot is near!'],
+      ['So close! One ear away from glory!', '🎰 Spin again and claim destiny!'],
+      ['The ears are testing your patience!', '💪 Keep spinning, ser!'],
+    ];
+    const [l1, l2] = loseMsgs[Math.floor(Math.random() * loseMsgs.length)];
     resultDiv.innerHTML = `
-      <div style="font-size: 30px; color: #ff0000; animation: textShake 0.5s;">💀 REKT! 💀</div>
-      <div style="font-size: 18px; color: #ff6666; margin-top: 10px;">NGMI... JK TRY AGAIN FREN!</div>
-      <div style="font-size: 14px; color: #888;">Down bad but never out! 🫡</div>
+      <div style="font-size: 26px; color: #ff6666;">${l1}</div>
+      <div style="font-size: 18px; color: #888; margin-top: 8px;">${l2}</div>
     `;
-    
     playLoseSound();
   }
   

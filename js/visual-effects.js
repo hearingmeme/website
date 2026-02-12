@@ -4,7 +4,7 @@ const VisualEffects = {
   screenShake(intensity = 5, duration = 200) {
     const gameContainer = document.querySelector('.game-container');
     let elapsed = 0;
-    const interval = 16;
+    const interval = window.innerWidth < 768 ? 50 : 25;
     
     const shake = setInterval(() => {
       elapsed += interval;
@@ -39,7 +39,7 @@ const VisualEffects = {
     setTimeout(() => flash.remove(), duration);
   },
 
-  particleExplosion(x, y, count = 20, color = '#fff') {
+  particleExplosion(x, y, count = 8, color = '#fff') {
     const container = document.querySelector('.game-overlay');
     for (let i = 0; i < count; i++) {
       const particle = document.createElement('div');

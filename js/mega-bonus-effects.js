@@ -32,7 +32,7 @@ const MegaBonusEffects = {
     const ears = document.querySelectorAll('.ear.active');
     const startTime = Date.now();
     
-    const tornadoInterval = setInterval(() => {
+    const tornadoInterval = setInterval(() => { // 50ms
       const elapsed = Date.now() - startTime;
       const angle = (elapsed / 50) * (Math.PI / 180); // Speed of rotation
       
@@ -60,7 +60,7 @@ const MegaBonusEffects = {
           hole.style.transition = '';
         });
       }
-    }, 16);
+    }, 50);
   },
   
   slotMachine(game) {
@@ -148,7 +148,7 @@ const MegaBonusEffects = {
           
           slotContainer.style.animation = 'jackpotShake 0.5s infinite';
           
-          for (let i = 0; i < 50; i++) {
+          const _scc = window.innerWidth<768?6:12; for (let i = 0; i < _scc; i++) {
             setTimeout(() => {
               const confetti = document.createElement('div');
               confetti.textContent = ['🎉', '💎', '⭐', '✨', '👂'][Math.floor(Math.random() * 5)];
@@ -258,7 +258,7 @@ const MegaBonusEffects = {
           }
         }
       });
-    }, 16);
+    }, 50);
     
     setTimeout(() => {
       clearInterval(magnetInterval);
@@ -594,189 +594,177 @@ const MegaBonusEffects = {
   },
   
   batSwarm(game) {
+    // BAT CONFIG: 3 size tiers — small = hard = big reward | large = easy = small reward
+    const isMobile = window.innerWidth < 768;
+    const BAT_CONFIGS = isMobile ? [
+      // Mobile: 2 medium + 3 large + 2 giant (no tiny, touch targets need to be reachable)
+      { size: 48, pts: 250, label: '+250', color: '#ff00ff', speed: 1.0 },
+      { size: 48, pts: 250, label: '+250', color: '#ff00ff', speed: 1.1 },
+      { size: 65, pts: 125, label: '+125', color: '#FFD700', speed: 1.3 },
+      { size: 65, pts: 125, label: '+125', color: '#FFD700', speed: 1.4 },
+      { size: 65, pts: 125, label: '+125', color: '#FFD700', speed: 1.5 },
+      { size: 80, pts: 60,  label: '+60',  color: '#00ffff', speed: 1.7 },
+      { size: 80, pts: 60,  label: '+60',  color: '#00ffff', speed: 1.8 },
+    ] : [
+      // Desktop: 1 tiny + 2 small + 2 medium + 2 large + 1 giant
+      { size: 44, pts: 400, label: '+400', color: '#ff00ff', speed: 0.7 },  // tiny = epic
+      { size: 56, pts: 250, label: '+250', color: '#ff6600', speed: 0.9 },  // small
+      { size: 56, pts: 250, label: '+250', color: '#ff6600', speed: 1.0 },  // small
+      { size: 70, pts: 125, label: '+125', color: '#FFD700', speed: 1.2 },  // medium
+      { size: 70, pts: 125, label: '+125', color: '#FFD700', speed: 1.3 },  // medium
+      { size: 90, pts: 60,  label: '+60',  color: '#00ffff', speed: 1.6 },  // large
+      { size: 90, pts: 60,  label: '+60',  color: '#00ffff', speed: 1.7 },  // large
+      { size: 110, pts: 30, label: '+30',  color: '#888888', speed: 2.0 },  // giant = cheap
+    ];
+    const totalBats = BAT_CONFIGS.length;
+
     const notif = document.createElement('div');
     notif.innerHTML = `
-      <div style="font-size: 50px; margin-bottom: 10px;">🦇 BAT SWARM! 🦇</div>
-      <div style="font-size: 30px; color: #FFD700;">CATCH THEM FOR +100 POINTS EACH!</div>
-      <div style="font-size: 25px; margin-top: 10px;">🏃 GOTTA CATCH 'EM ALL! 🏃</div>
+      <div style="font-size:${isMobile?'34px':'46px'};margin-bottom:6px">🦇 BAT SWARM! 🦇</div>
+      <div style="font-size:${isMobile?'16px':'20px'};color:#FFD700">Petites chauves → GROS points!</div>
+      <div style="font-size:${isMobile?'14px':'17px'};color:#ff00ff;margin-top:4px">⚡ 5 clics rapides = GIGA BONUS!</div>
     `;
-    notif.style.cssText = `
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(45deg, #000, #1a0033, #000);
-      border: 4px solid #ff00ff;
-      padding: 20px 40px;
-      font-size: 30px;
-      font-family: 'Luckiest Guy', cursive;
-      color: #fff;
-      text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff;
-      z-index: 99999;
-      border-radius: 10px;
-      box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
-    `;
+    notif.style.cssText = `position:fixed;top:70px;left:50%;transform:translateX(-50%);background:linear-gradient(45deg,#000,#1a0033,#000);border:4px solid #ff00ff;padding:14px 28px;font-family:'Luckiest Guy',cursive;color:#fff;text-shadow:-2px 0 #ff00ff,2px 0 #00ffff;z-index:100000;border-radius:10px;box-shadow:0 0 30px rgba(255,0,255,0.6);text-align:center;pointer-events:none;`;
     document.body.appendChild(notif);
     setTimeout(() => notif.remove(), 3000);
-    
+
     let caughtBats = 0;
-    const totalBats = 5;  // 🔧 FIX: 20 → 5 (plus atteignable)
-    
+    let totalEarned = 0;
+    let recentClicks = [];
+    let gigaBonusTriggered = false;
+
     const counter = document.createElement('div');
     counter.textContent = `🦇 0/${totalBats}`;
-    counter.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 40px;
-      color: #FFD700;
-      font-weight: bold;
-      z-index: 99999;
-      text-shadow: 0 0 20px #FFD700;
-      font-family: 'Luckiest Guy', cursive;
-      pointer-events: none;
-    `;
+    counter.style.cssText = `position:fixed;top:14px;left:50%;transform:translateX(-50%);font-size:${isMobile?'26px':'34px'};color:#FFD700;font-weight:bold;z-index:100001;text-shadow:0 0 20px #FFD700;font-family:'Luckiest Guy',cursive;pointer-events:none;`;
     document.body.appendChild(counter);
-    
-    for (let i = 0; i < totalBats; i++) {
+
+    const triggerGigaBonus = () => {
+      if (gigaBonusTriggered) return;
+      gigaBonusTriggered = true;
+      const bonus = 2500;
+      totalEarned += bonus;
+      if (game.addScore) game.addScore(bonus);
+      else if (typeof window.score !== 'undefined') {
+        window.score += bonus;
+        const el = document.getElementById('score');
+        if (el) el.textContent = Math.round(window.score);
+      }
+      if (game.updateUI) game.updateUI();
+
+      const giga = document.createElement('div');
+      giga.innerHTML = `
+        <div style="font-size:clamp(38px,9vw,65px)">🦇🦇🦇🦇🦇</div>
+        <div style="font-size:clamp(26px,5.5vw,44px);color:#FFD700;margin-top:8px">GIGA BONUS! +${bonus} PTS!</div>
+        <div style="font-size:clamp(16px,3vw,22px);color:#ff00ff;margin-top:6px">5 BATS EN RAFALE!</div>
+      `;
+      giga.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#1a0033,#330000);border:6px solid #FFD700;padding:28px 44px;font-family:'Luckiest Guy',cursive;color:#fff;z-index:100005;border-radius:20px;text-align:center;box-shadow:0 0 60px #FFD700,0 0 120px #ff00ff;animation:jackpotShake 0.3s infinite;pointer-events:none;`;
+      document.body.appendChild(giga);
+      setTimeout(() => giga.remove(), 2800);
+    };
+
+    BAT_CONFIGS.forEach((cfg, i) => {
       setTimeout(() => {
         const bat = document.createElement('div');
         bat.textContent = '🦇';
         bat.style.cssText = `
-          position: fixed;
-          left: ${Math.random() * 85}%;
-          top: ${Math.random() * 85}%;
-          font-size: clamp(55px, 12vw, 80px);
-          z-index: 99999;
-          cursor: pointer;
-          animation: batFly ${1.5 + Math.random()}s ease-in-out infinite;
-          filter: drop-shadow(0 0 15px #8b00ff);
-          transition: transform 0.2s;
-          pointer-events: auto;
-          touch-action: manipulation;
-          -webkit-tap-highlight-color: transparent;
-          user-select: none;
+          position:fixed;
+          left:${8 + Math.random() * 78}%;
+          top:${isMobile ? 12 + Math.random() * 65 : 8 + Math.random() * 75}%;
+          font-size:${cfg.size}px;
+          z-index:99999;cursor:pointer;
+          animation:batFly ${cfg.speed + Math.random() * 0.3}s ease-in-out infinite;
+          filter:drop-shadow(0 0 ${Math.round(cfg.size / 6)}px ${cfg.color});
+          transition:transform 0.15s;
+          pointer-events:auto;touch-action:manipulation;
+          -webkit-tap-highlight-color:transparent;user-select:none;
         `;
-        
-        bat.onmouseenter = () => { bat.style.transform = 'scale(1.3)'; };
-        bat.onmouseleave = () => { bat.style.transform = 'scale(1)'; };
-        
+        bat.onmouseenter = () => bat.style.transform = 'scale(1.2)';
+        bat.onmouseleave = () => bat.style.transform = 'scale(1)';
+
         let clicked = false;
         const catchBat = () => {
-          if (!clicked) {
-            clicked = true;
-            caughtBats++;
-            
-            game.score += 100;
-            game.updateUI();
-            
-            counter.textContent = `🦇 ${caughtBats}/${totalBats}`;
-            counter.style.animation = 'none';
-            setTimeout(() => { counter.style.animation = 'pulse 0.3s'; }, 10);
-            
-            const plus = document.createElement('div');
-            plus.textContent = '+100';
-            plus.style.cssText = `
-              position: fixed;
-              left: ${bat.style.left};
-              top: ${bat.style.top};
-              font-size: 30px;
-              color: #FFD700;
-              font-weight: bold;
-              z-index: 10002;
-              pointer-events: none;
-              animation: floatUp 1s ease-out;
-              font-family: 'Luckiest Guy', cursive;
-            `;
-            document.body.appendChild(plus);
-            setTimeout(() => plus.remove(), 1000);
-            
-            for (let j = 0; j < 5; j++) {
-              const particle = document.createElement('div');
-              particle.textContent = '✨';
-              particle.style.cssText = `
-                position: fixed;
-                left: ${bat.style.left};
-                top: ${bat.style.top};
-                font-size: 20px;
-                z-index: 10000;
-                pointer-events: none;
-                animation: explode${j} 0.6s ease-out;
-              `;
-              document.body.appendChild(particle);
-              setTimeout(() => particle.remove(), 600);
-            }
-            
-            bat.remove();
-            
-            if (caughtBats === totalBats) {
-              const perfectMsg = document.createElement('div');
-              perfectMsg.innerHTML = `
-                <div style="font-size: 60px; margin-bottom: 20px;">🎉 PERFECT! 🎉</div>
-                <div style="font-size: 40px;">ALL ${totalBats} BATS CAUGHT!</div>
-                <div style="font-size: 35px; color: #FFD700; margin-top: 10px;">+${totalBats * 100} POINTS TOTAL!</div>
-              `;
-              perfectMsg.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: #8b00ff;
-                font-weight: bold;
-                z-index: 10003;
-                text-align: center;
-                text-shadow: 0 0 30px #8b00ff;
-                font-family: 'Luckiest Guy', cursive;
-                pointer-events: none;
-                animation: fadeOut 2s;
-              `;
-              document.body.appendChild(perfectMsg);
-              setTimeout(() => perfectMsg.remove(), 2000);
-            }
+          if (clicked) return;
+          clicked = true;
+          caughtBats++;
+          totalEarned += cfg.pts;
+          bat.remove();
+
+          if (game.addScore) game.addScore(cfg.pts);
+          else if (typeof window.score !== 'undefined') {
+            window.score += cfg.pts;
+            const el = document.getElementById('score');
+            if (el) el.textContent = Math.round(window.score);
+          }
+          if (game.updateUI) game.updateUI();
+
+          counter.textContent = `🦇 ${caughtBats}/${totalBats} +${totalEarned}`;
+
+          // Floating label
+          const plus = document.createElement('div');
+          plus.textContent = cfg.label;
+          plus.style.cssText = `position:fixed;left:${bat.style.left};top:${bat.style.top};font-size:${Math.round(cfg.size * 0.35)}px;color:${cfg.color};font-weight:bold;z-index:100002;pointer-events:none;animation:floatUp 1s ease-out forwards;font-family:'Luckiest Guy',cursive;text-shadow:0 0 10px ${cfg.color};`;
+          document.body.appendChild(plus);
+          setTimeout(() => plus.remove(), 1000);
+
+          // Particles (only 3 — perf)
+          for (let j = 0; j < 3; j++) {
+            const p = document.createElement('div');
+            p.textContent = j % 2 === 0 ? '✨' : '🦇';
+            p.style.cssText = `position:fixed;left:${bat.style.left};top:${bat.style.top};font-size:16px;z-index:100000;pointer-events:none;animation:explode${j % 5} 0.5s ease-out forwards;`;
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 500);
+          }
+
+          // Giga bonus detection: 5 clicks within 450ms
+          const now = Date.now();
+          recentClicks.push(now);
+          recentClicks = recentClicks.filter(t => now - t < 450);
+          if (recentClicks.length >= 5 && !gigaBonusTriggered) triggerGigaBonus();
+
+          // All caught
+          if (caughtBats === totalBats) {
+            const bonus = 600;
+            totalEarned += bonus;
+            if (game.addScore) game.addScore(bonus);
+            else if (typeof window.score !== 'undefined') { window.score += bonus; const el = document.getElementById('score'); if (el) el.textContent = Math.round(window.score); }
+            if (game.updateUI) game.updateUI();
+
+            const msg = document.createElement('div');
+            msg.innerHTML = `<div style="font-size:clamp(34px,8vw,54px)">🦇 TOUTES ATTRAPÉES! 🦇</div><div style="font-size:clamp(20px,4vw,32px);color:#FFD700;margin-top:6px">+${totalEarned} POINTS TOTAL!</div>`;
+            msg.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#8b00ff;font-family:'Luckiest Guy',cursive;z-index:100003;text-align:center;text-shadow:0 0 30px #8b00ff;pointer-events:none;animation:fadeOut 2.5s forwards;`;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2500);
           }
         };
-        
+
         bat.addEventListener('click', catchBat);
         bat.addEventListener('touchstart', (e) => { e.preventDefault(); catchBat(); }, { passive: false });
-        
         document.body.appendChild(bat);
-        setTimeout(() => { 
-          if (bat.parentNode && !clicked) {
-            bat.style.animation = 'flyAway 0.5s ease-in forwards';
-            setTimeout(() => bat.remove(), 500);
+
+        // Auto-escape after 4s
+        setTimeout(() => {
+          if (!clicked && bat.parentNode) {
+            bat.style.animation = 'flyAway 0.4s ease-in forwards';
+            setTimeout(() => bat.remove(), 400);
           }
-        }, 4000);
-      }, i * 150);
-    }
-    
+        }, 4500);
+      }, i * 220);
+    });
+
+    // Cleanup counter
     setTimeout(() => {
       counter.remove();
-      
-      if (caughtBats > 0) {
-        const finalMsg = document.createElement('div');
-        finalMsg.textContent = `🦇 ${caughtBats}/${totalBats} BATS CAUGHT! +${caughtBats * 100} POINTS! 🦇`;
-        finalMsg.style.cssText = `
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 40px;
-          color: #8b00ff;
-          font-weight: bold;
-          z-index: 10001;
-          text-align: center;
-          text-shadow: 0 0 20px #8b00ff;
-          font-family: 'Luckiest Guy', cursive;
-          pointer-events: none;
-          animation: fadeOut 2s;
-        `;
-        document.body.appendChild(finalMsg);
-        setTimeout(() => finalMsg.remove(), 2000);
+      if (totalEarned > 0 && caughtBats < totalBats) {
+        const msg = document.createElement('div');
+        msg.textContent = `🦇 ${caughtBats}/${totalBats} bats! +${totalEarned} pts!`;
+        msg.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(22px,4.5vw,36px);color:#8b00ff;font-weight:bold;z-index:100001;text-align:center;text-shadow:0 0 20px #8b00ff;font-family:'Luckiest Guy',cursive;pointer-events:none;animation:fadeOut 2s forwards;`;
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2000);
       }
-    }, totalBats * 150 + 4500);
+    }, totalBats * 220 + 5000);
   },
-  
+
+
   mineField(game) {
     const duration = 8000;
     
