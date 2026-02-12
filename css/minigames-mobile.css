@@ -234,3 +234,39 @@
     margin-bottom: 8px !important;
   }
 }
+
+/* ==================== CASINO GAMES MOBILE - OMEGA 1.0 ==================== */
+
+/* Global overlay scroll */
+#rouletteOverlay, #crapsOverlay, #pokerOverlay {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: env(safe-area-inset-bottom, 16px) !important;
+}
+
+@media (max-width: 768px) {
+  .roulette-bet-btn {
+    padding: 10px 12px !important;
+    font-size: clamp(12px, 3vw, 17px) !important;
+    min-height: 48px !important;
+    touch-action: manipulation !important;
+  }
+  .craps-die {
+    font-size: clamp(65px, 17vw, 95px) !important;
+  }
+  .poker-card {
+    width: clamp(46px, 11.5vw, 65px) !important;
+    height: clamp(66px, 16vw, 92px) !important;
+    font-size: clamp(13px, 3.3vw, 22px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .poker-card {
+    width: clamp(40px, 11vw, 54px) !important;
+    height: clamp(58px, 16vw, 78px) !important;
+    font-size: clamp(11px, 3vw, 17px) !important;
+  }
+  .craps-die { font-size: clamp(54px, 15vw, 78px) !important; }
+  .roulette-bet-btn { font-size: clamp(11px, 2.8vw, 15px) !important; min-width: 70px !important; }
+}

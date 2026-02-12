@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
   
   const rareBonuses = [
-    '🏴‍☠️', '🪙'  // Treasure Chest + Coin Flip
+    '🏴‍☠️', '🪙', '🎡', '🎲', '🃏'  // Treasure Chest + Coin Flip + Casino
   ];
   
   // Ancienne array pour compatibilité (pas utilisée maintenant)
@@ -885,6 +885,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (level >= 12 && Math.random() < 0.03) {
       // Hearing Slots spawn chance after level 12
       emoji = '🎰';
+    } else if (level >= 10 && Math.random() < 0.025) {
+      emoji = '🎡'; // Roulette
+    } else if (level >= 8 && Math.random() < 0.025) {
+      emoji = '🎲'; // Craps
+    } else if (level >= 12 && Math.random() < 0.02) {
+      emoji = '🃏'; // Poker
     } else if (Math.random() < getBonusChance()) {
       // 🎯 SYSTÈME 2-TIERS (V6) - Distribution intelligente
       const roll = Math.random();
@@ -3694,13 +3700,33 @@ document.addEventListener("DOMContentLoaded", () => {
       '🏴‍☠️': () => {
         rumorBubble.textContent = "🏴‍☠️ PIRATE TREASURE! 🏴‍☠️";
         vibrate([100, 50, 100, 50, 200]);
-        
         if (typeof MiniGames !== 'undefined') {
           setTimeout(() => MiniGames.showTreasureChest({score, updateUI}), 500);
-        } else {
-          score += 200;
-          updateUI();
-        }
+        } else { score += 200; updateUI(); }
+      },
+
+      '🎡': () => {
+        rumorBubble.textContent = "🎡 ROULETTE! PLACE YOUR BETS! 🎡";
+        vibrate([100, 50, 200]);
+        if (typeof MiniGames !== 'undefined' && MiniGames.showRoulette) {
+          setTimeout(() => MiniGames.showRoulette({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }}), 500);
+        } else { score += 100; updateUI(); }
+      },
+
+      '🎲': () => {
+        rumorBubble.textContent = "🎲 CRAPS! ROLL THE DICE! 🎲";
+        vibrate([100, 50, 150]);
+        if (typeof MiniGames !== 'undefined' && MiniGames.showCraps) {
+          setTimeout(() => MiniGames.showCraps({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }}), 500);
+        } else { score += 100; updateUI(); }
+      },
+
+      '🃏': () => {
+        rumorBubble.textContent = "🃏 POKER! FIVE CARD DRAW! 🃏";
+        vibrate([100, 50, 100, 50, 100]);
+        if (typeof MiniGames !== 'undefined' && MiniGames.showCasinoPoker) {
+          setTimeout(() => MiniGames.showCasinoPoker({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }}), 500);
+        } else { score += 100; updateUI(); }
       }
     };
 

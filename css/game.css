@@ -762,9 +762,12 @@
   }
 
   .rumor-bubble {
-    top: -60px;
-    font-size: 1.8rem;
-    padding: 10px 20px;
+    bottom: 80px;
+    top: auto;
+    font-size: 1.6rem;
+    padding: 10px 18px;
+    white-space: normal;
+    max-width: 85%;
   }
 
   .game-stats {
