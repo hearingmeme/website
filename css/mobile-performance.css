@@ -87,9 +87,14 @@
   }
   
   /* Faster transitions on touch */
-  .hole,
-  .ear {
+  .hole {
     transition: transform 0.15s ease-out !important;
+  }
+  
+  /* 🐛 FIX: .ear NE doit PAS avoir de transition sur transform */
+  /* Elle utilise translate(-50%,-50%) pour se centrer → transition = glissement au spawn */
+  .ear {
+    transition: none !important;
   }
 }
 
