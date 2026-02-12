@@ -110,12 +110,18 @@
 }
 
 /* Performance hints */
-.ear,
+/* 🐛 FIX: NE PAS mettre transform sur .ear — il utilise déjà translate(-50%,-50%) pour se centrer */
 .hole,
 .bonus-particle,
 .game-board {
   will-change: transform;
   transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* .ear : will-change SANS transform (sinon écrase translate(-50%,-50%) et décale l'emoji) */
+.ear {
+  will-change: transform;
   backface-visibility: hidden;
 }
 
