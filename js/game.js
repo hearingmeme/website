@@ -273,40 +273,29 @@ document.addEventListener("DOMContentLoaded", () => {
                    type === 'rocket' ? ['🚀','🔥','💥','✨'] :
                    ['🎉','⭐','🌟','⚡','👑'];
     
-    for (let i = 0; i < 50; i++) {
+    const rainCount = window.innerWidth < 768 ? 8 : 15;
+    for (let i = 0; i < rainCount; i++) {
       const e = document.createElement('div');
-      e.innerHTML = emojis[randomInt(0, emojis.length-1)];
-      e.style.cssText = `
-        position: fixed;
-        left: ${randomInt(10, 90)}%;
-        top: -10%;
-        font-size: ${1.5 + Math.random()*3}rem;
-        pointer-events: none;
-        z-index: 10002;
-        opacity: 0.9;
-        animation: rainFall ${1.2 + Math.random()*1.5}s linear forwards;
-      `;
+      e.textContent = emojis[randomInt(0, emojis.length-1)];
+      e.style.cssText = `position:fixed;left:${randomInt(10,90)}%;top:-10%;
+        font-size:${1.5+Math.random()*2}rem;pointer-events:none;z-index:10002;
+        will-change:transform;animation:rainFall ${1.2+Math.random()*1.5}s linear forwards;`;
       document.body.appendChild(e);
-      setTimeout(() => e.remove(), 3000);
+      setTimeout(() => e.remove(), 2800);
     }
   }
 
   function spiralConfetti() {
-    const emojis = ['👂','💀','🚀','💲','✨','🔥','⚡','🐶','❄️'];
-    for (let i = 0; i < 40; i++) {
+    const emojis = ['👂','💀','🚀','💲','✨','🔥','⚡','🐶'];
+    const count = window.innerWidth < 768 ? 8 : 12;
+    for (let i = 0; i < count; i++) {
       const e = document.createElement('div');
-      e.innerHTML = emojis[randomInt(0, emojis.length-1)];
-      e.style.cssText = `
-        position: fixed;
-        left: 50%;
-        top: 50%;
-        font-size: ${2 + Math.random()*3.5}rem;
-        pointer-events: none;
-        z-index: 10001;
-        transform: translate(-50%, -50%);
-        animation: spiralOut ${1.5 + Math.random()*1}s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-      `;
-      e.style.setProperty('--angle', `${randomInt(-720, 720)}deg`);
+      e.textContent = emojis[randomInt(0, emojis.length-1)];
+      e.style.cssText = `position:fixed;left:50%;top:50%;
+        font-size:${2+Math.random()*2.5}rem;pointer-events:none;z-index:10001;
+        will-change:transform;transform:translate(-50%,-50%);
+        animation:spiralOut ${1.5+Math.random()*0.8}s cubic-bezier(0.22,0.61,0.36,1) forwards;`;
+      e.style.setProperty('--angle', `${randomInt(-720,720)}deg`);
       document.body.appendChild(e);
       setTimeout(() => e.remove(), 2500);
     }
@@ -377,18 +366,13 @@ document.addEventListener("DOMContentLoaded", () => {
     celebration.appendChild(content);
     document.body.appendChild(celebration);
     
-    for (let i = 0; i < 30; i++) {
+    const pCount = window.innerWidth < 768 ? 6 : 10;
+    for (let i = 0; i < pCount; i++) {
       const particle = document.createElement('div');
-      particle.textContent = ['⭐', '🎉', '💫', '✨', '🔥'][Math.floor(Math.random() * 5)];
-      particle.style.cssText = `
-        position: fixed;
-        font-size: ${20 + Math.random() * 30}px;
-        left: ${Math.random() * 100}%;
-        top: -50px;
-        z-index: 10001;
-        pointer-events: none;
-        animation: confettiFall ${2 + Math.random() * 2}s linear forwards;
-      `;
+      particle.textContent = ['⭐','🎉','💫','✨','🔥'][Math.floor(Math.random()*5)];
+      particle.style.cssText = `position:fixed;font-size:${18+Math.random()*22}px;
+        left:${Math.random()*100}%;top:-50px;z-index:10001;pointer-events:none;
+        will-change:transform;animation:confettiFall ${2+Math.random()*1.5}s linear forwards;`;
       celebration.appendChild(particle);
     }
     
@@ -2753,7 +2737,8 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         
         // Add animated background particles
-        for (let i = 0; i < 30; i++) {
+        const _bp = window.innerWidth < 768 ? 6 : 10;
+        for (let i = 0; i < _bp; i++) {
           const particle = document.createElement('div');
           particle.textContent = ['✨', '💫', '⭐', '🪙'][Math.floor(Math.random() * 4)];
           particle.style.cssText = `
@@ -3167,7 +3152,7 @@ document.addEventListener("DOMContentLoaded", () => {
               speak('OH MY GOD! IT LANDED ON THE EDGE! JACKPOT!');
               
               // Rain coins and celebration
-              for (let i = 0; i < 100; i++) {
+              for (let i = 0; i < 15; i++) {
                 setTimeout(() => {
                   const rainCoin = document.createElement('div');
                   rainCoin.textContent = ['🪙', '💰', '💎', '✨'][Math.floor(Math.random() * 4)];
@@ -3186,7 +3171,7 @@ document.addEventListener("DOMContentLoaded", () => {
               }
               
               // Celebration emojis
-              for (let i = 0; i < 20; i++) {
+              for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
                   const celebEmoji = document.createElement('div');
                   celebEmoji.textContent = ['🙌', '🎉', '🎊', '🤑', '👐'][Math.floor(Math.random() * 5)];
@@ -3213,7 +3198,7 @@ document.addEventListener("DOMContentLoaded", () => {
               speak('Winner! Your stake has been doubled!');
               
               // Win celebration
-              for (let i = 0; i < 30; i++) {
+              for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
                   const sparkle = document.createElement('div');
                   sparkle.textContent = ['✨', '⭐', '💫', '🌟'][Math.floor(Math.random() * 4)];
@@ -3373,7 +3358,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Particules mystiques (réduit sur mobile)
         const isMobile = window.innerWidth < 768;
-        const particleCount = isMobile ? 15 : 30;
+        const particleCount = isMobile ? 8 : 15;
         
         for (let i = 0; i < particleCount; i++) {
           const particle = document.createElement('div');

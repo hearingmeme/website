@@ -1,9 +1,7 @@
 /* 🔥💀 DEGEN EFFECTS CSS 💀🔥 */
 
 /* Game container pulsing glow */
-#gameArea {
-  animation: gameAreaPulse 3s infinite;
-}
+#gameArea { /* box-shadow static for perf */ }
 
 @keyframes gameAreaPulse {
   0%, 100% {
@@ -16,7 +14,7 @@
 
 /* Ears with glowing effect */
 .ear {
-  filter: drop-shadow(0 0 10px rgba(255,215,0,0.6));
+  /* filter removed for perf */);
   /* 🐛 FIX: "transition: all" causait un glissement au spawn car transform change */
   /* On garde transition seulement sur filter, pas sur transform */
   transition: filter 0.3s;
@@ -43,7 +41,7 @@
 
 /* Score display ultra degen */
 #score {
-  animation: scoreGlow 2s infinite, scoreFloat 3s infinite;
+  animation: none;
   text-shadow: 
     0 0 10px #FFD700,
     0 0 20px #FFD700,
@@ -77,7 +75,7 @@
 
 /* High score with rainbow effect */
 #highScore {
-  animation: rainbow 5s infinite, textPulse 1.5s infinite;
+  animation: rainbow 8s infinite;
 }
 
 @keyframes rainbow {
@@ -101,7 +99,7 @@
 
 /* Combo multiplier effects */
 #combo {
-  animation: comboShine 1s infinite;
+  animation: comboShine 2s infinite;
   font-weight: bold;
 }
 
