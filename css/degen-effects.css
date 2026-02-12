@@ -17,21 +17,27 @@
 /* Ears with glowing effect */
 .ear {
   filter: drop-shadow(0 0 10px rgba(255,215,0,0.6));
-  transition: all 0.3s;
-  animation: earFloat 2s infinite ease-in-out;
+  /* 🐛 FIX: "transition: all" causait un glissement au spawn car transform change */
+  /* On garde transition seulement sur filter, pas sur transform */
+  transition: filter 0.3s;
+  /* 🐛 FIX: earFloat retiré — translateY(0) dans les keyframes n'incluait pas translate(-50%,-50%) */
+  /* Résultat: l'ear sortait de son hole. L'animation earPop de game.css gère déjà ça. */
 }
 
 .ear:hover {
   filter: drop-shadow(0 0 20px rgba(255,215,0,1)) drop-shadow(0 0 30px #FFD700);
-  transform: scale(1.1) rotate(5deg);
+  /* 🐛 FIX: Inclure translate(-50%,-50%) pour ne pas écraser le centrage */
+  transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
 }
 
+/* 🐛 FIX: earFloat désactivé — translateY seul écrasait translate(-50%,-50%) */
+/* L'animation earPop dans game.css gère déjà le mouvement des ears correctement */
 @keyframes earFloat {
   0%, 100% {
-    transform: translateY(0px);
+    /* transform: translateY(0px); ← SUPPRIMÉ: cassait le centrage */
   }
   50% {
-    transform: translateY(-5px);
+    /* transform: translateY(-5px); ← SUPPRIMÉ */
   }
 }
 
@@ -679,7 +685,8 @@ input, button, select, textarea {
 }
 
 /* Optimisation GPU pour animations */
-.hole, .ear, .control-btn {
+/* 🐛 FIX: .ear retiré — translateZ(0) écrasait translate(-50%,-50%) et décalait l'emoji */
+.hole, .control-btn {
   will-change: transform;
   transform: translateZ(0);
 }
