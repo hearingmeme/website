@@ -130,7 +130,7 @@ const MegaBonusEffects = {
         const resultDiv = document.getElementById('slotResult');
         
         if (results[0] === results[1] && results[1] === results[2]) {
-          game.score += 5000;
+          if (game.addScore) game.addScore(5000); else if (typeof window.score !== 'undefined') window.score += 5000;
           
           if (window.addLife && typeof window.lives !== 'undefined') {
             const currentLives = window.lives || 1;
@@ -171,7 +171,7 @@ const MegaBonusEffects = {
           }
           
         } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
-          game.score += 1500;
+          if (game.addScore) game.addScore(1500); else if (typeof window.score !== 'undefined') window.score += 1500;
           resultDiv.textContent = '✨ TWO EARS! +1500 ✨';
           resultDiv.style.color = '#00ff00';
           
@@ -179,7 +179,7 @@ const MegaBonusEffects = {
             SoundSystem.bonus();
           }
         } else {
-          game.score += 300;
+          if (game.addScore) game.addScore(300); else if (typeof window.score !== 'undefined') window.score += 300;
           resultDiv.textContent = '🎲 BETTER LUCK! +300 🎲';
           resultDiv.style.color = '#fff';
         }
@@ -254,7 +254,7 @@ const MegaBonusEffects = {
           
           if (distance < 50) {
             game.hitEar(ear);
-            game.score += 100; // Bonus for magnet hit
+            if (game.addScore) game.addScore(100); else if (typeof window.score !== 'undefined') window.score += 100; // Bonus for magnet hit
           }
         }
       });
@@ -459,8 +459,7 @@ const MegaBonusEffects = {
           if (game.setScore) {
             game.setScore(game.score + 1000);
           } else {
-            game.score += 1000;
-            game.updateUI();
+            if (game.addScore) game.addScore(1000); else if (typeof window.score !== 'undefined') { window.score += 1000; } game.updateUI();
           }
           if (game.setStreak) game.setStreak(0);
           else game.streak = 0; // Reset misses
@@ -581,8 +580,7 @@ const MegaBonusEffects = {
       `;
       
       ear.addEventListener('click', () => {
-        game.score += 100;
-        game.updateUI();
+        if (game.addScore) game.addScore(100); else if (typeof window.score !== 'undefined') { window.score += 100; } game.updateUI();
         ear.remove();
       });
       

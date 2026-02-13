@@ -137,31 +137,36 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getSpawnInterval() {
-    // Difficulté progressive plus douce
     if (level <= 5) {
-      return Math.max(1800 - level * 80, 1200); // Débute plus lent
+      return Math.max(1800 - level * 80, 1200);
     }
     if (level <= 15) {
-      return Math.max(1200 - level * 40, 600); // Progression medium
+      return Math.max(1200 - level * 40, 600);
     }
-    // Après niveau 15, ça devient vraiment intense
-    let base = Math.max(800 - level * 20, 200);
+    // Level 16-17: moderate
+    if (level <= 17) {
+      return Math.max(800 - level * 20, 400);
+    }
+    // Level 18+: CAPPED — never faster than 500ms to stay playable
+    let base = Math.max(900 - level * 15, 500);
     if (powerUpActive && powerUpActive.type === 'speed') {
-      base = Math.max(300, base * 0.5);
+      base = Math.max(400, base * 0.6);
     }
     return base;
   }
 
   function getEarUpTime() {
-    // Temps d'affichage plus long au début
     if (level <= 5) {
       return Math.max(3000 - level * 80, 2200) + randomInt(0, 500);
     }
     if (level <= 15) {
       return Math.max(2200 - level * 60, 1200) + randomInt(0, 400);
     }
-    // Après niveau 15, très rapide
-    return Math.max(1200 - level * 30, 400) + randomInt(0, 300);
+    if (level <= 17) {
+      return Math.max(1200 - level * 30, 600) + randomInt(0, 300);
+    }
+    // Level 18+: ear stays visible longer — more time to react
+    return Math.max(1400 - level * 20, 700) + randomInt(0, 400);
   }
 
   function getEarLifetime() {
@@ -552,6 +557,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       
+      // UNICORN TEST: Trigger once at level 3
+      if (level === 3 && !window._unicornLevel3Done) {
+        window._unicornLevel3Done = true;
+        hasMinigame = true;
+        setTimeout(() => {
+          if (typeof window.triggerBonusSymbol === 'function') window.triggerBonusSymbol('🦄');
+        }, 1200);
+      }
+
       // Award extra life at certain levels
       if (level === 3 || level === 15 || level === 25) {
         lives++;
@@ -3748,7 +3762,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       '🌪️': () => {
         if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.tornado({score, level, updateUI, hitEar: hitEar.bind(this)});
+          MegaBonusEffects.tornado({score, level, updateUI, hitEar: hitEar.bind(this), addScore: (pts) => { score += pts; updateUI(); }});
         }
       },
       
@@ -3763,7 +3777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       
       '🧲': () => {
         if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.magnet({hitEar, score, updateUI});
+          MegaBonusEffects.magnet({hitEar, score, updateUI, addScore: (pts) => { score += pts; updateUI(); }});
         }
       },
       
@@ -3777,25 +3791,25 @@ document.addEventListener("DOMContentLoaded", () => {
       
       '🎭': () => {
         if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.mimic({score, updateUI});
+          MegaBonusEffects.mimic({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }});
         }
       },
       
       '🎪': () => {
         if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.circus({score, updateUI});
+          MegaBonusEffects.circus({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }});
         }
       },
       
       '🦇': () => {
         if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.batSwarm({score, updateUI});
+          MegaBonusEffects.batSwarm({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }});
         }
       },
       
       '💣': () => {
         if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.mineField({score, updateUI});
+          MegaBonusEffects.mineField({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }});
         }
       },
       '🏴‍☠️': () => {
@@ -4096,6 +4110,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       },
 
+    };
+
+    // Export trigger for external use (level events)
+    window.triggerBonusSymbol = (sym) => {
+      const act = bonusActions[sym];
+      if (act) { act(); rumorBubble.classList.add("show"); setTimeout(() => rumorBubble.classList.remove("show"), 1800); }
     };
 
     const action = bonusActions[symbol];

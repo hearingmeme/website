@@ -2700,7 +2700,7 @@ const MiniGames = {
 
     // Title block — Bonneteau style
     const titleEl = document.createElement('div');
-    titleEl.innerHTML = '🎡 HEARING ROULETTE 🎡';
+    titleEl.innerHTML = '🎡 RUG WHEEL 🎡';
     titleEl.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(32px,7vw,58px);
       color:#FFD700;animation:rlTitlePulse 2s infinite,rlGlitch 5s infinite;
       letter-spacing:3px;text-align:center;margin-bottom:8px;`;
@@ -3302,7 +3302,20 @@ const MiniGames = {
 
     const betInfoEl=document.createElement('div');
     betInfoEl.id='pkBetInfo';
-    betInfoEl.innerHTML=`🃏 BET: <span style="color:#FFD700;font-size:1.3em">${bet}</span> PTS — TAP CARDS TO HOLD`;
+    betInfoEl.innerHTML=`
+          <div style="color:#FFD700;font-size:clamp(14px,3vw,18px);margin-bottom:6px">💰 BET: <strong>${bet} PTS</strong> | WIN UP TO <strong style="color:#00ff88">${bet*50} PTS</strong></div>
+          <div style="font-size:clamp(10px,2vw,13px);color:#aaa;display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;text-align:left;max-width:300px;margin:0 auto">
+            <span>🔥 Royal Flush</span><span style="color:#FFD700">×50</span>
+            <span>⚡ Straight Flush</span><span style="color:#FFD700">×30</span>
+            <span>💎 Four of a Kind</span><span style="color:#00ff88">×15</span>
+            <span>🏠 Full House</span><span style="color:#00ff88">×10</span>
+            <span>🌊 Flush</span><span style="color:#00ffff">×7</span>
+            <span>📈 Straight</span><span style="color:#00ffff">×5</span>
+            <span>🎯 Three of a Kind</span><span style="color:#fff">×4</span>
+            <span>👥 Two Pair</span><span style="color:#fff">×2.5</span>
+            <span>💪 Jacks or Better</span><span style="color:#aaa">×1.5</span>
+            <span>💀 Fold/Nothing</span><span style="color:#ff4444">-40%</span>
+          </div>`;
     betInfoEl.style.cssText=`font-family:'Luckiest Guy',cursive;font-size:clamp(14px,2.8vw,20px);
       color:#00ffff;text-shadow:0 0 15px #00ffff;text-align:center;margin-bottom:20px;
       animation:pkRainbow 3s infinite;`;
@@ -3367,7 +3380,7 @@ const MiniGames = {
       if(f[0]===2&&f[1]===2) return['👥 TWO PAIR!',2.5,'ok'];
       const pairs=Object.entries(cnt).filter(([v,c])=>c>=2).map(([v])=>parseInt(v));
       if(pairs.some(v=>v>=9||v===0)) return['💪 JACKS OR BETTER!',1.5,'ok'];
-      return['🤏 SMALL HAND — CONSOLATION!',0.3,'none']; // Always give a tiny payout
+      return['💀 FOLD! NOTHING!',0,'none']; // Lose the bet
     };
 
     let deck=[],hand=[],held=[],phase='deal';
@@ -3457,10 +3470,10 @@ const MiniGames = {
             this.speak(`${name.replace(/[^\w ]/g,'').trim()}! ${mult>=10?'INSANE WIN!':'Nice win!'} ${w} points!`);
             if(mult>=5) spawnParticles();
           } else {
-            // Consolation: lose only 20% for gambler feel
-            const loss=Math.round(bet*0.2);
+            // Real stakes: lose 40% for a sting, degen!
+            const loss=Math.round(bet*0.4);
             _addPts(-loss); if(typeof window.score!=='undefined') window.score=Math.max(0,window.score);
-            document.getElementById('pkBetInfo').innerHTML=`<span style="color:#ff9944">🤏 Bad luck — -${loss} pts. Almost!`;
+            document.getElementById('pkBetInfo').innerHTML=`<span style="color:#ff4444;font-size:1.1em">💀 REKT! -${loss} pts. NGMI!</span>`;
             this.speak("So close! Bad luck this time, try again!");
           }
           if(typeof game.updateUI==='function') game.updateUI();
