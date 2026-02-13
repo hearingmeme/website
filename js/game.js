@@ -557,15 +557,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       
-      // UNICORN TEST: Trigger once at level 3
-      if (level === 3 && !window._unicornLevel3Done) {
-        window._unicornLevel3Done = true;
-        hasMinigame = true;
-        setTimeout(() => {
-          if (typeof window.triggerBonusSymbol === 'function') window.triggerBonusSymbol('🦄');
-        }, 1200);
-      }
-
       // Award extra life at certain levels
       if (level === 3 || level === 15 || level === 25) {
         lives++;
@@ -591,6 +582,20 @@ document.addEventListener("DOMContentLoaded", () => {
       
       if (!hasMinigame) {
         startSpawning();
+        // Level 3: spawn one 🦄 ear so player can test uniswap
+        if (level === 3 && !window._unicornSpawned) {
+          window._unicornSpawned = true;
+          setTimeout(() => {
+            const holes = Array.from(document.querySelectorAll('.hole'));
+            const free = holes.filter(h => !h.querySelector('.ear').classList.contains('active'));
+            if (free.length > 0) {
+              const ear = free[0].querySelector('.ear');
+              ear.textContent = '🦄';
+              ear.classList.add('active');
+              activeEarsCount++;
+            }
+          }, 600);
+        }
       }
 
       if (typeof BossFights !== 'undefined') {
