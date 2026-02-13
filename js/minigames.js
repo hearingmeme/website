@@ -2600,8 +2600,9 @@ const MiniGames = {
     // SCORE FIX: use addScore callback OR window.score directly
     const _getScore = () => typeof window.score !== 'undefined' ? window.score : (game.score || 0);
     const _addPts = (pts) => {
-      if (typeof window.score !== 'undefined') { window.score += pts; }
-      if (game.addScore) game.addScore(pts);
+      const safePts = isNaN(pts) ? 0 : pts; // 🐛 NaN guard
+      if (typeof window.score !== 'undefined') { window.score = (isNaN(window.score) ? 0 : window.score) + safePts; }
+      if (game.addScore) game.addScore(safePts);
       if (game.updateUI) game.updateUI();
     };
     const currentScore = _getScore();
@@ -2928,8 +2929,9 @@ const MiniGames = {
 
     const _getScore = () => typeof window.score !== 'undefined' ? window.score : (game.score || 0);
     const _addPts = (pts) => {
-      if (typeof window.score !== 'undefined') { window.score += pts; }
-      if (game.addScore) game.addScore(pts);
+      const safePts = isNaN(pts) ? 0 : pts; // 🐛 NaN guard
+      if (typeof window.score !== 'undefined') { window.score = (isNaN(window.score) ? 0 : window.score) + safePts; }
+      if (game.addScore) game.addScore(safePts);
       if (game.updateUI) game.updateUI();
     };
     const currentScore=_getScore();
@@ -3198,8 +3200,9 @@ const MiniGames = {
 
     const _getScore = () => typeof window.score !== 'undefined' ? window.score : (game.score || 0);
     const _addPts = (pts) => {
-      if (typeof window.score !== 'undefined') { window.score += pts; }
-      if (game.addScore) game.addScore(pts);
+      const safePts = isNaN(pts) ? 0 : pts; // 🐛 NaN guard
+      if (typeof window.score !== 'undefined') { window.score = (isNaN(window.score) ? 0 : window.score) + safePts; }
+      if (game.addScore) game.addScore(safePts);
       if (game.updateUI) game.updateUI();
     };
     const currentScore=_getScore();

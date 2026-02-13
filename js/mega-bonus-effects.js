@@ -730,7 +730,7 @@ const MegaBonusEffects = {
             if (game.updateUI) game.updateUI();
 
             const msg = document.createElement('div');
-            msg.innerHTML = `<div style="font-size:clamp(34px,8vw,54px)">🦇 TOUTES ATTRAPÉES! 🦇</div><div style="font-size:clamp(20px,4vw,32px);color:#FFD700;margin-top:6px">+${totalEarned} POINTS TOTAL!</div>`;
+            msg.innerHTML = `<div style="font-size:clamp(34px,8vw,54px)">🦇 ALL BATS CAUGHT! 🦇</div><div style="font-size:clamp(20px,4vw,32px);color:#FFD700;margin-top:6px">+${totalEarned} POINTS TOTAL!</div>`;
             msg.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#8b00ff;font-family:'Luckiest Guy',cursive;z-index:100003;text-align:center;text-shadow:0 0 30px #8b00ff;pointer-events:none;animation:fadeOut 2.5s forwards;`;
             document.body.appendChild(msg);
             setTimeout(() => msg.remove(), 2500);

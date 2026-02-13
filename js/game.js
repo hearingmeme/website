@@ -229,6 +229,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateUI() {
+    if (isNaN(score)) score = 0; // 🐛 NaN guard
+    window.score = score;        // 🐛 Keep window.score in sync
     scoreEl.textContent = Math.round(score);
     comboEl.textContent = `x${(combo + permanentComboBonus).toFixed(1)}`;
     missesEl.textContent = `${streak}/${maxStreak}`;
@@ -769,6 +771,7 @@ document.addEventListener("DOMContentLoaded", () => {
     levelMisses = 0;
     isPaused = false;
     powerUpActive = null;
+    window.score = 0; // 🐛 FIX NaN: always initialize so minigames don't get undefined+n=NaN
 
     if (typeof ProgressiveEffects !== 'undefined') {
       ProgressiveEffects.init(1);
@@ -929,12 +932,12 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (level >= 12 && Math.random() < 0.03) {
       // Hearing Slots spawn chance after level 12
       emoji = '🎰';
-    } else if (level >= 10 && Math.random() < 0.025) {
+    } else if (level >= 10 && Math.random() < 0.035) {
       emoji = '🎡'; // Roulette
-    } else if (level >= 8 && Math.random() < 0.025) {
+    } else if (level >= 8 && Math.random() < 0.035) {
       emoji = '🎲'; // Craps
-    } else if (level >= 12 && Math.random() < 0.02) {
-      emoji = '🃏'; // Poker
+    } else if (level >= 12 && Math.random() < 0.05) {
+      emoji = '🃏'; // Poker - increased from 0.02
     } else if (Math.random() < getBonusChance()) {
       // 🎯 SYSTÈME 2-TIERS (V6) - Distribution intelligente
       const roll = Math.random();
@@ -3832,6 +3835,12 @@ document.addEventListener("DOMContentLoaded", () => {
         rumorBubble.textContent = "🦄 UNISWAP LSD! SWAP YOUR STATS! WEN MOON? 🌈";
         vibrate([50, 30, 80, 30, 120]);
         window.gamePaused = true; setPaused(true);
+        // Clear ears so pending timeouts don't fire miss penalties or remove holes
+        document.querySelectorAll('.ear').forEach(e => {
+          e.classList.remove('active','cabal','echo','power-up');
+          e.textContent = '';
+        });
+        activeEarsCount = 0;
 
         const ov = document.createElement('div');
         ov.id = 'unicornSwapOv';
@@ -3857,7 +3866,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
             ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff00ff;">❤️ → 💰 Trade 1 life for +${lifeToPoints} pts</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">❤️ Need 2+ lives to trade</div>`}
             ${pointsToLife > 0 ? `<button id="swapP2L" style="background:linear-gradient(90deg,#9400d3,#6a0dad);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #9400d3;">💰 → ❤️ Spend ${pointsToLife} pts for +1 life</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">💰 Need ${500-score} more pts to trade</div>`}
-            <button id="swapBonus" style="background:linear-gradient(90deg,#ff6600,#ff0000);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff6600;">🌈 BONUS +500 PTS GRATUIT!</button>
+            <button id="swapBonus" style="background:linear-gradient(90deg,#ff6600,#ff0000);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff6600;">🌈 🌈 FREE +500 PTS BONUS!</button>
           </div>
           <button id="swapSkip" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:8px 24px;font-family:'Luckiest Guy',cursive;font-size:16px;color:#ffe0ff;cursor:pointer;">SKIP (auto-closes 8s)</button>
         `;
@@ -3909,7 +3918,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const scoreBar = document.createElement('div');
         scoreBar.style.cssText = `position:fixed;top:16px;left:50%;transform:translateX(-50%) translateZ(0);font-size:clamp(16px,3.5vw,22px);color:#FFD700;font-family:'Luckiest Guy',cursive;z-index:100015;pointer-events:none;text-shadow:0 0 10px #FFD700;background:rgba(0,0,0,0.7);padding:4px 12px;border-radius:8px;`;
-        scoreBar.textContent = `💩 0/${total} FUD fermées — +0 pts`;
+        scoreBar.textContent = `💩 0/${total} FUD killed — +0 pts`;
         document.body.appendChild(scoreBar);
 
         const autoEnd = setTimeout(() => {
@@ -3942,7 +3951,7 @@ document.addEventListener("DOMContentLoaded", () => {
               totalPts += tweet.pts;
               score += tweet.pts;
               updateUI();
-              scoreBar.textContent = `💩 ${closed}/${total} FUD fermées — +${totalPts} pts`;
+              scoreBar.textContent = `💩 ${closed}/${total} FUD killed — +${totalPts} pts`;
               card.style.animation = 'fadeOut 0.3s forwards';
               setTimeout(() => card.remove(), 300);
               if (closed >= total) {
@@ -3969,11 +3978,11 @@ document.addEventListener("DOMContentLoaded", () => {
           score += pts;
           updateUI();
           const msg = document.createElement('div');
-          msg.innerHTML = `💉 Not yet, bro! +${pts} pts consolation`;
+          msg.innerHTML = `💉 Not yet, ser! +${pts} pts. Touch grass first.`;
           msg.style.cssText = `position:fixed;top:30%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4vw,32px);color:#ff9900;font-family:'Luckiest Guy',cursive;z-index:100010;pointer-events:none;animation:messagePulse 0.4s ease-out;text-shadow:0 0 15px #ff9900;`;
           document.body.appendChild(msg);
           setTimeout(() => msg.remove(), 1800);
-          rumorBubble.textContent = "💉 Déjà dopé récemment! +300 pts consolation";
+          rumorBubble.textContent = "💉 Already juiced! Take the +300 pts and walk it off.";
           return;
         }
 
@@ -4043,7 +4052,7 @@ document.addEventListener("DOMContentLoaded", () => {
               </div>
               <div style="background:rgba(0,255,0,0.1);border-radius:10px;padding:10px">
                 <div style="font-size:28px">📊</div>
-                <div style="font-size:clamp(16px,3.5vw,22px);color:#00ff88">NV.${level}</div>
+                <div style="font-size:clamp(16px,3.5vw,22px);color:#00ff88">LVL ${level}</div>
                 <div style="font-size:12px;color:#aaa">LEVEL</div>
               </div>
             </div>`;
