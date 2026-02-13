@@ -84,11 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🎯 SYSTÈME 2-TIERS POUR BONUS (V6)
   const regularBonuses = [
     '🐶', '🚀', '💎', '🤑', '🔥', '💀', '🕵️‍♂️', '🤡', '⚡', '💊', 
-    '❄️', '🌙', '☄️', '🎯', '🎲', '🍀', '⭐', '🦻', '📺'
+    '❄️', '🌙', '☄️', '🎯', '🎲', '🍀', '⭐', '🦻', '📺',
+    '💩', '💉', '🥫'  // Crypto troll | Syringe life | Pause can
   ];
   
   const megaBonuses = [
-    '🌪️', '🎰', '🧲', '🔮', '🎭', '🎪', '🦇'
+    '🌪️', '🎰', '🧲', '🔮', '🎭', '🎪', '🦇',
+    '🦄'  // UniSwap LSD overlay
   ];
   
   const minigameBonuses = [
@@ -821,6 +823,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     window.adjustInterval = adjustInterval;
     window.startSpawning = startSpawning; // Expose globally for mini-games
+
+  // 🛡️ WATCHDOG: ensure spawning never gets stuck after any minigame
+  window.ensureGameRunning = function() {
+    isPaused = false;
+    window.gamePaused = false;
+    if (typeof window.setPaused === 'function') window.setPaused(false);
+    if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
+    // Clean stale ears
+    document.querySelectorAll('.ear').forEach(e => {
+      if (!e.classList.contains('active')) { e.textContent = ''; e.style.cssText = ''; }
+    });
+    startSpawning();
+    setTimeout(() => {
+      if (typeof spawnEar === 'function') { spawnEar(); spawnEar(); }
+    }, 200);
+    // 2s safety net: if still no ears, force spawn
+    setTimeout(() => {
+      if (!isPaused && !window.gamePaused && typeof window.activeEarsCount !== 'undefined' && window.activeEarsCount === 0) {
+        startSpawning();
+        if (typeof spawnEar === 'function') { spawnEar(); spawnEar(); spawnEar(); }
+      }
+    }, 2000);
+  };
 
     gameInterval = setInterval(spawnEar, getSpawnInterval());
     
@@ -1707,6 +1732,30 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (typeof SoundSystem !== 'undefined') {
           SoundSystem.fire();
+        }
+
+        // 🔥 SIDE FIRE OVERLAYS — CSS-only, perf-safe
+        if (!document.getElementById('fireOverlayL')) {
+          const fireKeyframes = `@keyframes fireSide{0%,100%{opacity:0.55;transform:scaleY(1)}30%{opacity:0.8;transform:scaleY(1.05)}70%{opacity:0.4;transform:scaleY(0.97)}}@keyframes fireParticle{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-80px) scale(0.5);opacity:0}}`;
+          const fks = document.createElement('style'); fks.id='fireKF'; fks.textContent=fireKeyframes; document.head.appendChild(fks);
+          
+          ['L','R'].forEach((side, idx) => {
+            const el = document.createElement('div');
+            el.id = 'fireOverlay'+side;
+            el.style.cssText = `position:fixed;${idx===0?'left':'right'}:0;top:0;bottom:0;width:clamp(40px,8vw,80px);pointer-events:none;z-index:9998;overflow:hidden;`;
+            const isMob = window.innerWidth < 768;
+            for (let i = 0; i < (isMob ? 5 : 9); i++) {
+              const flame = document.createElement('div');
+              flame.textContent = ['🔥','🟠','🟡'][i%3];
+              flame.style.cssText = `position:absolute;font-size:${20+Math.random()*18}px;left:${Math.random()*60}%;bottom:${Math.random()*100}%;animation:fireSide ${0.7+Math.random()*0.8}s ${Math.random()*0.5}s ease-in-out infinite,fireParticle ${1.5+Math.random()}s ${Math.random()*0.5}s ease-out infinite;`;
+              el.appendChild(flame);
+            }
+            document.body.appendChild(el);
+          });
+
+          setTimeout(() => {
+            ['fireOverlayL','fireOverlayR','fireKF'].forEach(id => { const e=document.getElementById(id); if(e) e.remove(); });
+          }, 3000);
         }
         
         const instruction = document.createElement('div');
@@ -3739,7 +3788,268 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof MiniGames !== 'undefined' && MiniGames.showCasinoPoker) {
           setTimeout(() => MiniGames.showCasinoPoker({score, updateUI, addScore: (pts) => { score += pts; updateUI(); }}), 500);
         } else { score += 100; updateUI(); }
-      }
+      },
+
+      // ================== 🦄 UNISWAP LSD — Swap vie ↔ points ==================
+      '🦄': () => {
+        rumorBubble.textContent = "🦄 UNISWAP DEGEN! SWAP YOUR STATS! 🌈";
+        vibrate([50, 30, 80, 30, 120]);
+        window.gamePaused = true; setPaused(true);
+
+        const ov = document.createElement('div');
+        ov.id = 'unicornSwapOv';
+        ov.style.cssText = `position:fixed;inset:0;z-index:100010;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(255,0,200,0.97),rgba(100,0,180,0.99));overflow:hidden;`;
+
+        // Glitter background
+        const glitter = document.createElement('div');
+        glitter.style.cssText = `position:absolute;inset:0;pointer-events:none;`;
+        glitter.innerHTML = Array.from({length: 20}, () =>
+          `<div style="position:absolute;font-size:${16+Math.random()*20}px;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:0.4;animation:casinoFloat ${2+Math.random()*3}s ${Math.random()*2}s ease-in-out infinite alternate;pointer-events:none;">${['✨','💜','🌈','💫','🦄','⭐'][Math.floor(Math.random()*6)]}</div>`
+        ).join('');
+        ov.appendChild(glitter);
+
+        const box = document.createElement('div');
+        box.style.cssText = `position:relative;background:linear-gradient(135deg,#ff69b4,#9400d3,#ff1493);border:4px solid #fff;border-radius:24px;padding:30px 36px;text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:340px;width:90%;box-shadow:0 0 60px #ff00ff,0 0 120px #9400d3;`;
+
+        const lifeToPoints = Math.min(lives - 1, 1) > 0 ? 750 : 0; // trade 1 life for pts
+        const pointsToLife = score >= 500 ? 500 : 0; // trade 500 pts for life
+
+        box.innerHTML = `
+          <div style="font-size:clamp(40px,10vw,60px);margin-bottom:10px">🦄 UNISWAP</div>
+          <div style="font-size:clamp(14px,3vw,18px);color:#ffe0ff;margin-bottom:20px">SWAPEZ VOS STATS, DEGEN!</div>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
+            ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff00ff;">❤️ → 💰 Vie contre +${lifeToPoints} pts</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">❤️ Besoin de +2 vies pour swap</div>`}
+            ${pointsToLife > 0 ? `<button id="swapP2L" style="background:linear-gradient(90deg,#9400d3,#6a0dad);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #9400d3;">💰 → ❤️ -${pointsToLife} pts pour +1 vie</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">💰 Besoin de ${500-score} pts supplémentaires</div>`}
+            <button id="swapBonus" style="background:linear-gradient(90deg,#ff6600,#ff0000);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff6600;">🌈 BONUS +500 PTS GRATUIT!</button>
+          </div>
+          <button id="swapSkip" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:8px 24px;font-family:'Luckiest Guy',cursive;font-size:16px;color:#ffe0ff;cursor:pointer;">SKIP (auto ferme 8s)</button>
+        `;
+        ov.appendChild(box);
+        document.body.appendChild(ov);
+
+        if (typeof this !== 'undefined' && this.speak) this.speak("Unicorn swap! Trade your stats! LFG!");
+
+        const closeUni = () => {
+          ov.style.opacity = '0'; ov.style.transition = 'opacity 0.4s';
+          setTimeout(() => { ov.remove(); window.gamePaused=false; setPaused(false); startSpawning(); }, 400);
+        };
+
+        const l2pBtn = document.getElementById('swapL2P');
+        if (l2pBtn) l2pBtn.onclick = () => { lives = Math.max(1, lives - 1); score += lifeToPoints; updateUI(); closeUni(); };
+        const p2lBtn = document.getElementById('swapP2L');
+        if (p2lBtn) p2lBtn.onclick = () => { score = Math.max(0, score - pointsToLife); lives++; updateUI(); closeUni(); };
+        document.getElementById('swapBonus').onclick = () => { score += 500; updateUI(); closeUni(); };
+        document.getElementById('swapSkip').onclick = closeUni;
+        setTimeout(closeUni, 8000);
+      },
+
+      // ================== 💩 CRYPTO TROLL TWEETS ==================
+      '💩': () => {
+        rumorBubble.textContent = "💩 CRYPTO SCAM ALERT! CLOSE THE FUD! 💩";
+        vibrate([200, 100, 200]);
+        window.gamePaused = true; setPaused(true);
+
+        const FAKE_TWEETS = [
+          { handle: '@CryptoGuru99', text: 'NGL fam my EARS bag just 100x\'d overnight 👂🚀 wen lambo ser??', pts: 150 },
+          { handle: '@EarWhale666', text: 'Just aped $500k into $EARS. This is NOT financial advice but DO IT NOW', pts: 200 },
+          { handle: '@DeFiLegend', text: 'My cousin works at the hearing lab. BIG announcement incoming 🤫 Not saying anything but... 👂👂👂', pts: 175 },
+          { handle: '@TrustMeBro', text: 'EARS token is the new BTC. Change my mind. Already up 40000%', pts: 150 },
+          { handle: '@NFTKing2024', text: 'Bought an Ear NFT for 50 ETH. My friends think I\'m crazy. My ears think I\'m based.', pts: 125 },
+          { handle: '@AlwaysRightBTC', text: 'Breaking: Elon just DMed me about $EARS. Can\'t say more. Buy the dip.', pts: 250 },
+          { handle: '@HearingThingsVC', text: 'We\'re incubating the next 1000x ear project. Whitelist closes in 3 MINUTES', pts: 200 },
+          { handle: '@FUDkiller', text: 'Haters said ears were useless. Now look at them. Cope harder. 👂👂', pts: 125 },
+        ];
+
+        const container = document.createElement('div');
+        container.id = 'trollTweetContainer';
+        container.style.cssText = `position:fixed;inset:0;z-index:100010;pointer-events:none;`;
+        document.body.appendChild(container);
+
+        let closed = 0;
+        const total = window.innerWidth < 768 ? 3 : 5;
+        const used = FAKE_TWEETS.sort(() => Math.random()-0.5).slice(0, total);
+        let totalPts = 0;
+
+        const scoreBar = document.createElement('div');
+        scoreBar.style.cssText = `position:fixed;top:16px;left:50%;transform:translateX(-50%);font-size:clamp(18px,4vw,26px);color:#FFD700;font-family:'Luckiest Guy',cursive;z-index:100015;pointer-events:none;text-shadow:0 0 10px #FFD700;`;
+        scoreBar.textContent = `💩 0/${total} FUD fermées — +0 pts`;
+        document.body.appendChild(scoreBar);
+
+        const autoEnd = setTimeout(() => {
+          container.remove(); scoreBar.remove();
+          window.gamePaused=false; setPaused(false); startSpawning();
+        }, 10000);
+
+        used.forEach((tweet, i) => {
+          setTimeout(() => {
+            if (!document.getElementById('trollTweetContainer')) return;
+            const card = document.createElement('div');
+            const isMob = window.innerWidth < 768;
+            const left = isMob ? 5 + Math.random()*30 : 10 + Math.random()*60;
+            const top = isMob ? 15 + (i*18) : 10 + Math.random()*65;
+            card.style.cssText = `position:fixed;left:${left}%;top:${top}%;background:#15202b;border:2px solid #1d9bf0;border-radius:16px;padding:14px 16px;max-width:${isMob?'85vw':'320px'};font-family:Arial,sans-serif;z-index:100011;pointer-events:auto;cursor:pointer;box-shadow:0 4px 24px rgba(29,155,240,0.4);animation:slideInDown 0.3s ease-out;transform:rotate(${(Math.random()-0.5)*4}deg);`;
+            card.innerHTML = `
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <div style="width:36px;height:36px;background:linear-gradient(135deg,#1d9bf0,#0052cc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;">👤</div>
+                <div style="color:#e7e9ea;font-weight:bold;font-size:14px">${tweet.handle}</div>
+                <div style="background:#1d9bf0;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;">✓ Verified Degen</div>
+              </div>
+              <div style="color:#e7e9ea;font-size:${isMob?13:15}px;line-height:1.4;margin-bottom:10px">${tweet.text}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div style="color:#71767b;font-size:12px">🔁 4.2K ❤️ 12.8K</div>
+                <div style="background:#ff4444;color:#fff;border-radius:8px;padding:4px 12px;font-size:13px;font-weight:bold;">🗑️ +${tweet.pts}pts</div>
+              </div>
+            `;
+            card.onclick = () => {
+              closed++;
+              totalPts += tweet.pts;
+              score += tweet.pts;
+              updateUI();
+              scoreBar.textContent = `💩 ${closed}/${total} FUD fermées — +${totalPts} pts`;
+              card.style.animation = 'fadeOut 0.3s forwards';
+              setTimeout(() => card.remove(), 300);
+              if (closed >= total) {
+                clearTimeout(autoEnd);
+                setTimeout(() => {
+                  container.remove(); scoreBar.remove();
+                  window.gamePaused=false; setPaused(false); startSpawning();
+                }, 500);
+              }
+            };
+            container.appendChild(card);
+            container.style.pointerEvents = 'auto';
+          }, i * 800);
+        });
+      },
+
+      // ================== 💉 SYRINGE — +1 VIE ==================
+      '💉': () => {
+        // Max 1x par 10 niveaux
+        const lastLifeLevel = parseInt(localStorage.getItem('lastSyringeLevel') || '0');
+        if (level - lastLifeLevel < 10 && lastLifeLevel > 0) {
+          // Too soon — consolation points instead
+          const pts = 300;
+          score += pts;
+          updateUI();
+          const msg = document.createElement('div');
+          msg.innerHTML = `💉 Trop tôt! +${pts} pts consolation`;
+          msg.style.cssText = `position:fixed;top:30%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4vw,32px);color:#ff9900;font-family:'Luckiest Guy',cursive;z-index:100010;pointer-events:none;animation:messagePulse 0.4s ease-out;text-shadow:0 0 15px #ff9900;`;
+          document.body.appendChild(msg);
+          setTimeout(() => msg.remove(), 1800);
+          rumorBubble.textContent = "💉 Déjà dopé récemment! +300 pts consolation";
+          return;
+        }
+
+        try { localStorage.setItem('lastSyringeLevel', level); } catch(e) {}
+        lives++;
+        updateUI();
+        rumorBubble.textContent = "💉 DOPING! +1 VIE! CHEATING IS BASED!";
+        vibrate([50, 30, 200]);
+
+        // 🎬 Syringe animation
+        const syringe = document.createElement('div');
+        syringe.innerHTML = `
+          <div style="font-size:clamp(60px,15vw,100px);animation:syringeInject 0.6s ease-in-out">💉</div>
+          <div style="font-size:clamp(24px,5vw,40px);color:#ff0066;margin-top:10px;animation:messagePulse 0.4s ease-out">❤️ +1 VIE!</div>
+          <div style="font-size:clamp(14px,2.5vw,20px);color:#ffcc00;margin-top:8px">DOPAGE ACCEPTÉ PAR LA FDA</div>
+        `;
+        syringe.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;z-index:100010;pointer-events:none;text-shadow:0 0 20px #ff0066;`;
+        document.body.appendChild(syringe);
+
+        // Inject keyframes if needed
+        if (!document.getElementById('syringeKF')) {
+          const ks = document.createElement('style'); ks.id='syringeKF';
+          ks.textContent = `@keyframes syringeInject{0%{transform:scale(0.5) rotate(-45deg)}50%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0)}}`;
+          document.head.appendChild(ks);
+        }
+
+        if (typeof SoundSystem !== 'undefined') SoundSystem.bonus();
+        setTimeout(() => syringe.remove(), 2000);
+      },
+
+      // ================== 🥫 CAN — PAUSE 10s avec stats ==================
+      '🥫': () => {
+        if (window.gamePaused || isPaused) return; // Don't double-pause
+        window.gamePaused = true; setPaused(true);
+        rumorBubble.textContent = "🥫 PAUSE! 10 SECONDES DE RÉPIT!";
+
+        const ov = document.createElement('div');
+        ov.id = 'canPauseOv';
+        ov.style.cssText = `position:fixed;inset:0;z-index:100010;background:rgba(0,0,0,0.92);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;`;
+
+        let timeLeft = 10;
+        const box = document.createElement('div');
+        box.style.cssText = `background:linear-gradient(135deg,#0a0a0a,#1a1a2a);border:4px solid #FFD700;border-radius:20px;padding:28px 36px;text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:360px;width:90%;box-shadow:0 0 50px rgba(255,215,0,0.4);`;
+
+        const render = () => {
+          const h = document.querySelector('#canPauseOv .can-header');
+          const s = document.querySelector('#canPauseOv .can-stats');
+          const t = document.querySelector('#canPauseOv .can-timer');
+          if (!h) return;
+          h.textContent = `🥫 PAUSE — ${timeLeft}s`;
+          s.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0">
+              <div style="background:rgba(255,215,0,0.1);border-radius:10px;padding:10px">
+                <div style="font-size:28px">🏆</div>
+                <div style="font-size:clamp(16px,3.5vw,22px);color:#FFD700">${Math.round(score)}</div>
+                <div style="font-size:12px;color:#aaa">SCORE</div>
+              </div>
+              <div style="background:rgba(255,0,0,0.1);border-radius:10px;padding:10px">
+                <div style="font-size:28px">❤️</div>
+                <div style="font-size:clamp(16px,3.5vw,22px);color:#ff4444">${lives}</div>
+                <div style="font-size:12px;color:#aaa">VIES</div>
+              </div>
+              <div style="background:rgba(0,255,255,0.1);border-radius:10px;padding:10px">
+                <div style="font-size:28px">🔥</div>
+                <div style="font-size:clamp(16px,3.5vw,22px);color:#00ffff">${combo.toFixed(1)}x</div>
+                <div style="font-size:12px;color:#aaa">COMBO</div>
+              </div>
+              <div style="background:rgba(0,255,0,0.1);border-radius:10px;padding:10px">
+                <div style="font-size:28px">📊</div>
+                <div style="font-size:clamp(16px,3.5vw,22px);color:#00ff88">NV.${level}</div>
+                <div style="font-size:12px;color:#aaa">NIVEAU</div>
+              </div>
+            </div>`;
+        };
+
+        box.innerHTML = `
+          <div class="can-header" style="font-size:clamp(22px,5vw,34px);color:#FFD700;margin-bottom:6px">🥫 PAUSE — ${timeLeft}s</div>
+          <div class="can-stats"></div>
+          <button id="canResume" style="background:linear-gradient(90deg,#00ff88,#00cc66);border:3px solid #fff;border-radius:12px;padding:12px 30px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#000;cursor:pointer;margin-top:10px;box-shadow:0 0 20px #00ff88;">▶️ REPRENDRE</button>
+        `;
+        ov.appendChild(box);
+        document.body.appendChild(ov);
+
+        render();
+
+        const countdownInterval = setInterval(() => {
+          timeLeft--;
+          const h = document.querySelector('#canPauseOv .can-header');
+          if (h) h.textContent = `🥫 PAUSE — ${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            closeCan();
+          }
+        }, 1000);
+
+        const closeCan = () => {
+          clearInterval(countdownInterval);
+          const o = document.getElementById('canPauseOv');
+          if (o) { o.style.opacity='0'; o.style.transition='opacity 0.3s'; setTimeout(() => o.remove(), 300); }
+          window.gamePaused = false; setPaused(false); startSpawning();
+        };
+
+        document.getElementById('canResume').onclick = closeCan;
+
+        // TTS summary
+        if (typeof SoundSystem !== 'undefined' && SoundSystem.speak) {
+          setTimeout(() => SoundSystem.speak(`Pause! You have ${lives} lives and ${Math.round(score)} points! Level ${level}! Keep going!`), 300);
+        } else if (window.speechSynthesis) {
+          const utt = new SpeechSynthesisUtterance(`Pause! Level ${level}. Score ${Math.round(score)}. ${lives} lives. LFG!`);
+          utt.rate = 1.1; window.speechSynthesis.speak(utt);
+        }
+      },
+
     };
 
     const action = bonusActions[symbol];

@@ -2894,22 +2894,10 @@ const MiniGames = {
       if(animId) cancelAnimationFrame(animId);
       setTimeout(()=>{
         ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
-        setTimeout(()=>{ ov.remove(); if(style&&style.parentNode) style.remove();
-          // FORCE FULL RESUME
-          window.gamePaused=false; window.isPaused=false;
-          if(typeof window.setPaused==='function') window.setPaused(false);
-          if(typeof window.activeEarsCount!=='undefined') window.activeEarsCount=0;
-          // Clear any stale ear states
-          document.querySelectorAll('.ear').forEach(e=>{
-            if(!e.classList.contains('active')) { e.textContent=''; e.style.cssText=''; }
-          });
-          setTimeout(()=>{
-            if(typeof window.startSpawning==='function'){
-              window.startSpawning();
-              // Force-spawn 2 ears immediately
-              setTimeout(()=>{ if(typeof window.spawnEar==='function'){ window.spawnEar(); window.spawnEar(); }},150);
-            }
-          },100);
+        setTimeout(()=>{
+          ov.remove(); if(style&&style.parentNode) style.remove();
+          if(typeof window.ensureGameRunning==='function') window.ensureGameRunning();
+          else if(typeof window.startSpawning==='function') window.startSpawning();
         },500);
       },2800);
     };
@@ -3178,22 +3166,10 @@ const MiniGames = {
     const closeGame=()=>{
       setTimeout(()=>{
         ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
-        setTimeout(()=>{ ov.remove(); if(style&&style.parentNode) style.remove();
-          // FORCE FULL RESUME
-          window.gamePaused=false; window.isPaused=false;
-          if(typeof window.setPaused==='function') window.setPaused(false);
-          if(typeof window.activeEarsCount!=='undefined') window.activeEarsCount=0;
-          // Clear any stale ear states
-          document.querySelectorAll('.ear').forEach(e=>{
-            if(!e.classList.contains('active')) { e.textContent=''; e.style.cssText=''; }
-          });
-          setTimeout(()=>{
-            if(typeof window.startSpawning==='function'){
-              window.startSpawning();
-              // Force-spawn 2 ears immediately
-              setTimeout(()=>{ if(typeof window.spawnEar==='function'){ window.spawnEar(); window.spawnEar(); }},150);
-            }
-          },100);
+        setTimeout(()=>{
+          ov.remove(); if(style&&style.parentNode) style.remove();
+          if(typeof window.ensureGameRunning==='function') window.ensureGameRunning();
+          else if(typeof window.startSpawning==='function') window.startSpawning();
         },500);
       },2800);
     };
@@ -3497,19 +3473,10 @@ const MiniGames = {
     const closeGame=()=>{
       setTimeout(()=>{
         ov.style.transition='opacity 0.5s'; ov.style.opacity='0';
-        setTimeout(()=>{ ov.remove(); if(style&&style.parentNode) style.remove();
-          window.gamePaused=false; window.isPaused=false;
-          if(typeof window.setPaused==='function') window.setPaused(false);
-          if(typeof window.activeEarsCount!=='undefined') window.activeEarsCount=0;
-          document.querySelectorAll('.ear').forEach(e=>{
-            if(!e.classList.contains('active')){ e.textContent=''; e.style.cssText=''; }
-          });
-          setTimeout(()=>{
-            if(typeof window.startSpawning==='function'){
-              window.startSpawning();
-              setTimeout(()=>{ if(typeof window.spawnEar==='function'){ window.spawnEar(); window.spawnEar(); }},150);
-            }
-          },100);
+        setTimeout(()=>{
+          ov.remove(); if(style&&style.parentNode) style.remove();
+          if(typeof window.ensureGameRunning==='function') window.ensureGameRunning();
+          else if(typeof window.startSpawning==='function') window.startSpawning();
         },500);
       },3000);
     };
