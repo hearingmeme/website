@@ -144,10 +144,8 @@ const MiniGames = {
         label.remove();
         counter.remove();
         
-        window.gamePaused = false;
-        if (window.startSpawning) {
-          setTimeout(() => window.startSpawning(), 100);
-        }
+        if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+        else if (window.startSpawning) window.startSpawning();
       }
     }, 5000);
   },
@@ -222,10 +220,8 @@ const MiniGames = {
       setTimeout(() => {
         result.remove();
         
-        window.gamePaused = false;
-        if (window.startSpawning) {
-          setTimeout(() => window.startSpawning(), 100);
-        }
+        if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+        else if (window.startSpawning) window.startSpawning();
       }, 2500);
       
       game.updateUI();
@@ -597,11 +593,8 @@ const MiniGames = {
     
     setTimeout(() => {
       overlay.remove();
-      window.gamePaused = false;
-      
-      if (window.startSpawning) {
-        setTimeout(() => window.startSpawning(), 100);
-      }
+      if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+      else { window.gamePaused = false; if (window.startSpawning) window.startSpawning(); }
     }, 3000);
   },
   
@@ -676,11 +669,8 @@ const MiniGames = {
     
     setTimeout(() => {
       overlay.remove();
-      window.gamePaused = false;
-      
-      if (window.startSpawning) {
-        setTimeout(() => window.startSpawning(), 100);
-      }
+      if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+      else { window.gamePaused = false; if (window.startSpawning) window.startSpawning(); }
     }, 3000);
   },
   
@@ -867,11 +857,8 @@ const MiniGames = {
       
       setTimeout(() => {
         overlay.remove();
-        window.gamePaused = false;
-        
-        if (window.startSpawning) {
-          setTimeout(() => window.startSpawning(), 100);
-        }
+        if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+        else { window.gamePaused = false; if (window.startSpawning) window.startSpawning(); }
       }, 3000);
     };
     
@@ -2054,53 +2041,14 @@ const MiniGames = {
             const styleEl = document.getElementById('bonneteauStyles');
             if (styleEl) styleEl.remove();
             
-            // 🔥 FIX ULTRA-BANGER: Redémarrage FORCÉ et garanti
-            console.log('🎪 Bonneteau closing...');
-            
-            // Étape 1: Force unpause MULTIPLE fois (paranoïa mode)
-            window.gamePaused = false;
-            window.isPaused = false;
-            
-            if (typeof window.setPaused === 'function') {
-              window.setPaused(false);
-            }
-            
-            // Étape 2: Clear activeEarsCount au cas où
-            if (typeof window.activeEarsCount !== 'undefined') {
-              window.activeEarsCount = 0;
-            }
-            
-            // Étape 3: Attendre propagation + restart GARANTI
+            // ✅ UNIFIED RESUME via ensureGameRunning (resets local activeEarsCount)
             setTimeout(() => {
-              // Triple-check unpause
-              window.gamePaused = false;
-              window.isPaused = false;
-              
-              // Restart spawning
-              if (typeof window.startSpawning === 'function') {
-                window.startSpawning();
-                console.log('✅ Bonneteau ended - Game resumed via startSpawning');
-              } else if (typeof window.spawnEar === 'function') {
-                // Fallback: spawn immédiatement + restart interval
-                window.spawnEar();
-                
-                if (typeof window.getSpawnInterval === 'function') {
-                  if (window.gameInterval) clearInterval(window.gameInterval);
-                  window.gameInterval = setInterval(window.spawnEar, window.getSpawnInterval());
-                  console.log('✅ Bonneteau ended - Game resumed via fallback');
-                }
+              if (typeof window.ensureGameRunning === 'function') {
+                window.ensureGameRunning();
+              } else {
+                window.gamePaused = false; window.isPaused = false;
+                if (window.startSpawning) window.startSpawning();
               }
-              
-              // Force spawn une ear immédiatement (emergency)
-              setTimeout(() => {
-                if (typeof window.activeEarsCount !== 'undefined' && window.activeEarsCount === 0) {
-                  if (typeof window.spawnEar === 'function') {
-                    console.log('🚨 Emergency spawn after Bonneteau');
-                    window.spawnEar();
-                  }
-                }
-              }, 500);
-              
             }, 250);
           }, 500);
         }, 3500);

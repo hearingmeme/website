@@ -1066,3 +1066,100 @@ button:focus {
 .icon, button {
   font-family: 'Luckiest Guy', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', cursive;
 }
+
+/* ===== OMEGA-5 MOBILE + PERF FIXES ===== */
+
+/* Intro ear bounce - was undefined 'bounceEar' */
+@keyframes earBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-12px) scale(1.15); }
+}
+
+/* Remove expensive drop-shadow on burning ears - use outline instead */
+.ear.burning {
+  outline: 3px solid #ff4500;
+  outline-offset: 2px;
+  background: rgba(255, 69, 0, 0.15);
+  border-radius: 4px;
+}
+
+/* Mobile: game-container no margin-top jitter */
+@media (max-width: 480px) {
+  .game-container {
+    margin-top: 0;
+    height: 100%;
+    height: 100dvh;
+  }
+
+  /* Prevent ANY fixed overlay from being too tall and unscrollable */
+  [id$="Ov"], [id$="Overlay"], #unicornSwapOv, #canPauseOv {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Troll tweets: smaller on mobile */
+  #trollTweetContainer > div {
+    max-width: 82vw !important;
+    font-size: 13px !important;
+  }
+
+  /* Rumor bubble: don't overlap play area */
+  .rumor-bubble {
+    font-size: clamp(11px, 2.8vw, 15px) !important;
+    max-width: 80% !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Level name display: smaller */
+  .level-name-display {
+    font-size: clamp(10px, 2.5vw, 14px) !important;
+  }
+
+  /* Score bar: compact */
+  .score-bar, #scoreBar {
+    font-size: clamp(12px, 3vw, 16px) !important;
+    gap: 6px !important;
+  }
+}
+
+/* Fix: will-change on frequently animated elements */
+.ear {
+  will-change: transform;
+  contain: layout style;
+}
+
+.hole {
+  contain: layout;
+}
+
+/* Remove expensive animations from game board background */
+.game-board {
+  contain: layout style;
+}
+
+/* Ephemeral notifications: never block clicks */
+.game-notification, .score-popup, .combo-popup {
+  pointer-events: none !important;
+  user-select: none;
+}
+
+/* Fix: intro overlay earPop on mobile should not jitter */
+@media (max-width: 480px) {
+  #gameIntroOverlay span[style*="earPop"] {
+    animation-duration: 1.2s !important; /* Slower = less jitter */
+  }
+}
+
+/* Touch targets: all buttons min 44x44px */
+button, [role="button"] {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Fix: overlays that appear mid-game, always scrollable */
+#coinFlipOverlay, #fortuneTellerOverlay, #grandpaOverlay {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

@@ -661,7 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
           margin: 0 0 10px 0;
           letter-spacing: -2px;
           font-family: 'Luckiest Guy', cursive;
-          animation: titleGlow 2s ease-in-out infinite;
+          animation: titleGlowGame 2s ease-in-out infinite;
           line-height: 0.85;
         ">WHACK<br>THE RUMORS</h1>
         
@@ -681,11 +681,11 @@ document.addEventListener("DOMContentLoaded", () => {
           justify-content: center;
           flex-wrap: wrap;
         ">
-          <span style="animation: bounceEar 1s ease-in-out infinite;">👂</span>
-          <span style="animation: bounceEar 1s ease-in-out infinite; animation-delay: 0.2s;">🦻</span>
-          <span style="animation: bounceEar 1s ease-in-out infinite; animation-delay: 0.4s;">👂</span>
-          <span style="animation: bounceEar 1s ease-in-out infinite; animation-delay: 0.6s;">🦻</span>
-          <span style="animation: bounceEar 1s ease-in-out infinite; animation-delay: 0.8s;">👂</span>
+          <span style="display:inline-block;animation: earPop 1s ease-in-out infinite;">👂</span>
+          <span style="display:inline-block;animation: earPop 1s ease-in-out infinite; animation-delay: 0.2s;">🦻</span>
+          <span style="display:inline-block;animation: earPop 1s ease-in-out infinite; animation-delay: 0.4s;">👂</span>
+          <span style="display:inline-block;animation: earPop 1s ease-in-out infinite; animation-delay: 0.6s;">🦻</span>
+          <span style="display:inline-block;animation: earPop 1s ease-in-out infinite; animation-delay: 0.8s;">👂</span>
         </div>
         
         <div style="
@@ -816,6 +816,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🐛 FIX CRITIQUE: Forcer le redémarrage même si déjà en cours
     isPaused = false;
     window.gamePaused = false;
+    // 🐛 FIX CRITIQUE #2: Sync activeEarsCount with actual DOM
+    // (minigames clear ears but can't reset this local var directly)
+    activeEarsCount = document.querySelectorAll('.ear.active').length;
     
     function adjustInterval() {
       clearInterval(gameInterval);
@@ -829,23 +832,27 @@ document.addEventListener("DOMContentLoaded", () => {
     isPaused = false;
     window.gamePaused = false;
     if (typeof window.setPaused === 'function') window.setPaused(false);
+    // Reset LOCAL activeEarsCount (critical - can't be set from outside closure)
+    activeEarsCount = 0;
     if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
-    // Clean stale ears
+    // Clean ALL ears - both active and stale
     document.querySelectorAll('.ear').forEach(e => {
-      if (!e.classList.contains('active')) { e.textContent = ''; e.style.cssText = ''; }
+      e.classList.remove('active', 'cabal', 'echo', 'power-up', 'burning');
+      e.textContent = ''; e.style.cssText = '';
     });
     startSpawning();
+    setTimeout(() => { spawnEar(); spawnEar(); }, 150);
+    // 2s safety net
     setTimeout(() => {
-      if (typeof spawnEar === 'function') { spawnEar(); spawnEar(); }
-    }, 200);
-    // 2s safety net: if still no ears, force spawn
-    setTimeout(() => {
-      if (!isPaused && !window.gamePaused && typeof window.activeEarsCount !== 'undefined' && window.activeEarsCount === 0) {
+      if (!isPaused && !window.gamePaused && activeEarsCount === 0) {
+        activeEarsCount = 0;
         startSpawning();
-        if (typeof spawnEar === 'function') { spawnEar(); spawnEar(); spawnEar(); }
+        spawnEar(); spawnEar(); spawnEar();
       }
     }, 2000);
   };
+  // Export spawnEar globally for emergency use
+  window.spawnEar = spawnEar;
 
     gameInterval = setInterval(spawnEar, getSpawnInterval());
     
@@ -1742,7 +1749,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ['L','R'].forEach((side, idx) => {
             const el = document.createElement('div');
             el.id = 'fireOverlay'+side;
-            el.style.cssText = `position:fixed;${idx===0?'left':'right'}:0;top:0;bottom:0;width:clamp(40px,8vw,80px);pointer-events:none;z-index:9998;overflow:hidden;`;
+            el.style.cssText = `position:fixed;${idx===0?'left':'right'}:0;top:0;bottom:0;width:clamp(28px,6vw,60px);pointer-events:none;z-index:9996;overflow:hidden;will-change:opacity;`;
             const isMob = window.innerWidth < 768;
             for (let i = 0; i < (isMob ? 5 : 9); i++) {
               const flame = document.createElement('div');
@@ -1795,7 +1802,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const setOnFire = (ear) => {
           if (!ear || burningEars.has(ear)) return;
           ear.classList.add('burning');
-          ear.style.filter = 'brightness(2) drop-shadow(0 0 20px #ff0000)';
+          ear.style.filter = 'brightness(1.5)'; // drop-shadow removed for mobile perf
           ear.dataset.firebonus = 'true';
           burningEars.add(ear);
         };
@@ -2204,8 +2211,9 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => resultNotif.remove(), 2000);
             
             invincibleMode = wasInvincible;
-            
-            if (!wasPaused) isPaused = false;
+            // ✅ FIX: Full resume
+            if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+            else { isPaused = false; window.gamePaused = false; activeEarsCount = 0; startSpawning(); }
           }, 10000); // 10 seconds
         }
       },
@@ -2739,12 +2747,9 @@ document.addEventListener("DOMContentLoaded", () => {
               grandpaOverlay.remove();
               style.remove();
               
-              // 🐛 FIX: Reprendre le jeu
-              if (!wasGamePaused) {
-                isPaused = false;
-                window.gamePaused = false;
-                if (typeof window.startSpawning === 'function') window.startSpawning();
-              }
+              // ✅ FIX: Full resume with activeEarsCount reset
+              if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+              else { isPaused = false; window.gamePaused = false; activeEarsCount = 0; startSpawning(); }
             }, 800);
             
             rumorBubble.textContent = "GRANDPA LEFT! BACK TO NORMAL! 🎯";
@@ -2944,7 +2949,7 @@ document.addEventListener("DOMContentLoaded", () => {
           justify-content: center;
           font-size: 100px;
           border: 8px solid #DAA520;
-          box-shadow: inset 0 0 30px rgba(0,0,0,0.3), 0 0 40px rgba(255,215,0,0.8);
+          box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
         `;
         
         // Coin back (TAILS)
@@ -3228,7 +3233,8 @@ document.addEventListener("DOMContentLoaded", () => {
               speak('OH MY GOD! IT LANDED ON THE EDGE! JACKPOT!');
               
               // Rain coins and celebration
-              for (let i = 0; i < 15; i++) {
+              const _rainCount = window.innerWidth < 768 ? 5 : 12;
+              for (let i = 0; i < _rainCount; i++) {
                 setTimeout(() => {
                   const rainCoin = document.createElement('div');
                   rainCoin.textContent = ['🪙', '💰', '💎', '✨'][Math.floor(Math.random() * 4)];
@@ -3346,9 +3352,12 @@ document.addEventListener("DOMContentLoaded", () => {
               overlay.remove();
               const styleEl = document.getElementById('coinFlipStyles');
               if (styleEl) styleEl.remove();
-              
-              if (!wasPaused) {
+              if (typeof window.ensureGameRunning === 'function') {
+                window.ensureGameRunning();
+              } else {
                 isPaused = false;
+                window.gamePaused = false;
+                activeEarsCount = 0;
                 startSpawning();
               }
             }, isEdge ? 5000 : 3000);
@@ -3603,15 +3612,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 overlay.remove();
                 style.remove();
                 
-                if (!wasPaused) {
-                  isPaused = false;
-                  window.gamePaused = false;
-                }
-                
-                // 🔮 FINALITÉ: Redémarrer le spawning normal
-                if (typeof window.startSpawning === 'function') {
-                  setTimeout(() => window.startSpawning(), 100);
-                }
+                // ✅ FIX: Full resume with activeEarsCount reset
+                setTimeout(() => {
+                  if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
+                  else { isPaused = false; window.gamePaused = false; activeEarsCount = 0; startSpawning(); }
+                }, 100);
                 
                 // Réinitialiser les trous après un court délai
                 setTimeout(() => {
@@ -3798,7 +3803,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const ov = document.createElement('div');
         ov.id = 'unicornSwapOv';
-        ov.style.cssText = `position:fixed;inset:0;z-index:100010;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(255,0,200,0.97),rgba(100,0,180,0.99));overflow:hidden;`;
+        ov.style.cssText = `position:fixed;inset:0;z-index:100010;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,rgba(255,0,200,0.97),rgba(100,0,180,0.99));overflow-y:auto;overflow-x:hidden;`;
 
         // Glitter background
         const glitter = document.createElement('div');
@@ -3809,7 +3814,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ov.appendChild(glitter);
 
         const box = document.createElement('div');
-        box.style.cssText = `position:relative;background:linear-gradient(135deg,#ff69b4,#9400d3,#ff1493);border:4px solid #fff;border-radius:24px;padding:30px 36px;text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:340px;width:90%;box-shadow:0 0 60px #ff00ff,0 0 120px #9400d3;`;
+        box.style.cssText = `position:relative;background:linear-gradient(135deg,#ff69b4,#9400d3,#ff1493);border:4px solid #fff;border-radius:24px;padding:clamp(16px,4vw,30px) clamp(18px,5vw,36px);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:340px;width:92%;box-shadow:0 0 40px #ff00ff;max-height:92vh;overflow-y:auto;`;
 
         const lifeToPoints = Math.min(lives - 1, 1) > 0 ? 750 : 0; // trade 1 life for pts
         const pointsToLife = score >= 500 ? 500 : 0; // trade 500 pts for life
@@ -3862,7 +3867,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const container = document.createElement('div');
         container.id = 'trollTweetContainer';
-        container.style.cssText = `position:fixed;inset:0;z-index:100010;pointer-events:none;`;
+        container.style.cssText = `position:fixed;inset:0;z-index:100010;pointer-events:none;overflow:hidden;`;
         document.body.appendChild(container);
 
         let closed = 0;
@@ -3871,7 +3876,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let totalPts = 0;
 
         const scoreBar = document.createElement('div');
-        scoreBar.style.cssText = `position:fixed;top:16px;left:50%;transform:translateX(-50%);font-size:clamp(18px,4vw,26px);color:#FFD700;font-family:'Luckiest Guy',cursive;z-index:100015;pointer-events:none;text-shadow:0 0 10px #FFD700;`;
+        scoreBar.style.cssText = `position:fixed;top:16px;left:50%;transform:translateX(-50%) translateZ(0);font-size:clamp(16px,3.5vw,22px);color:#FFD700;font-family:'Luckiest Guy',cursive;z-index:100015;pointer-events:none;text-shadow:0 0 10px #FFD700;background:rgba(0,0,0,0.7);padding:4px 12px;border-radius:8px;`;
         scoreBar.textContent = `💩 0/${total} FUD fermées — +0 pts`;
         document.body.appendChild(scoreBar);
 
@@ -3953,7 +3958,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <div style="font-size:clamp(24px,5vw,40px);color:#ff0066;margin-top:10px;animation:messagePulse 0.4s ease-out">❤️ +1 VIE!</div>
           <div style="font-size:clamp(14px,2.5vw,20px);color:#ffcc00;margin-top:8px">DOPAGE ACCEPTÉ PAR LA FDA</div>
         `;
-        syringe.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;z-index:100010;pointer-events:none;text-shadow:0 0 20px #ff0066;`;
+        syringe.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;z-index:100010;pointer-events:none;text-shadow:0 0 20px #ff0066;`;
         document.body.appendChild(syringe);
 
         // Inject keyframes if needed
@@ -3979,7 +3984,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let timeLeft = 10;
         const box = document.createElement('div');
-        box.style.cssText = `background:linear-gradient(135deg,#0a0a0a,#1a1a2a);border:4px solid #FFD700;border-radius:20px;padding:28px 36px;text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:360px;width:90%;box-shadow:0 0 50px rgba(255,215,0,0.4);`;
+        box.style.cssText = `background:linear-gradient(135deg,#0a0a0a,#1a1a2a);border:4px solid #FFD700;border-radius:20px;padding:clamp(16px,4vw,28px) clamp(18px,5vw,36px);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:360px;width:92%;box-shadow:0 0 40px rgba(255,215,0,0.4);max-height:92vh;overflow-y:auto;`;
 
         const render = () => {
           const h = document.querySelector('#canPauseOv .can-header');
