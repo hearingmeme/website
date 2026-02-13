@@ -2284,9 +2284,16 @@ const MiniGames = {
     
     const updateBtn = () => {
       const cost = selectedBalls * BALL_COST;
-      dropBtn.innerHTML = `👂 DROP ${selectedBalls} (-${cost}) 👂`;
-      dropBtn.disabled = currentScore < cost;
-      dropBtn.style.opacity = currentScore >= cost ? '1' : '0.5';
+      const broke = currentScore < BALL_COST; // can't afford even 1 ball
+      if (broke) {
+        dropBtn.innerHTML = `🎁 FREE BALL — DROP IT! 🎁`;
+        dropBtn.disabled = false;
+        dropBtn.style.opacity = '1';
+      } else {
+        dropBtn.innerHTML = `👂 DROP ${selectedBalls} (-${cost}) 👂`;
+        dropBtn.disabled = currentScore < cost;
+        dropBtn.style.opacity = currentScore >= cost ? '1' : '0.5';
+      }
     };
     updateBtn();
     
@@ -2556,11 +2563,15 @@ const MiniGames = {
     // Drop
     const drop = () => {
       const cost = selectedBalls * BALL_COST;
-      if (currentScore < cost) return;
-      
-      currentScore -= cost;
-      if (typeof window.score !== 'undefined') window.score = currentScore;
-      scoreDisplay.innerHTML = `💰 ${currentScore} PTS`;
+      const broke = currentScore < BALL_COST;
+      if (!broke && currentScore < cost) return;
+
+      // Only deduct if player can afford it (skip if free ball)
+      if (!broke) {
+        currentScore -= cost;
+        if (typeof window.score !== 'undefined') window.score = currentScore;
+      }
+      scoreDisplay.innerHTML = `💰 ${broke ? 'FREE BALL!' : currentScore + ' PTS'}`;
       
       dropBtn.disabled = true;
       resultDisplay.innerHTML = '';

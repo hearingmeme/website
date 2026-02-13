@@ -3849,9 +3849,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } else { score += 100; updateUI(); }
       },
 
-      // ================== 🦄 UNISWAP LSD — Swap vie ↔ points ==================
+      // ================== 🦄 EARSWAP LSD — Swap vie ↔ points ==================
       '🦄': () => {
-        rumorBubble.textContent = "🦄 UNISWAP LSD! SWAP YOUR STATS! WEN MOON? 🌈";
+        rumorBubble.textContent = "🦄 EARSWAP LSD! SWAP YOUR STATS! WEN MOON? 🌈";
         vibrate([50, 30, 80, 30, 120]);
         window.gamePaused = true; setPaused(true);
         // Clear ears so pending timeouts don't fire miss penalties or remove holes
@@ -3880,7 +3880,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const pointsToLife = score >= 500 ? 500 : 0; // trade 500 pts for life
 
         box.innerHTML = `
-          <div style="font-size:clamp(40px,10vw,60px);margin-bottom:10px">🦄 UNISWAP</div>
+          <div style="font-size:clamp(40px,10vw,60px);margin-bottom:10px">🦄 EARSWAP</div>
           <div style="font-size:clamp(14px,3vw,18px);color:#ffe0ff;margin-bottom:20px">SWAP YOUR STATS, DEGEN! NGMI IF YOU SKIP!</div>
           <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
             ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff00ff;">❤️ → 💰 Trade 1 life for +${lifeToPoints} pts</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">❤️ Need 2+ lives to trade</div>`}
@@ -3892,7 +3892,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ov.appendChild(box);
         document.body.appendChild(ov);
 
-        if (typeof this !== 'undefined' && this.speak) this.speak("Unicorn swap! Trade your stats! LFG!");
+        if (typeof this !== 'undefined' && this.speak) this.speak("EARSWAP! Trade your stats! LFG!");
 
         const closeUni = () => {
           ov.style.opacity = '0'; ov.style.transition = 'opacity 0.4s';
