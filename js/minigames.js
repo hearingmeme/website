@@ -2658,7 +2658,7 @@ const MiniGames = {
       <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(0deg,rgba(120,0,0,0.5) 0%,rgba(60,0,30,0.3) 60%,transparent 100%);animation:casinoFloor 3s ease-in-out infinite alternate;"></div>
       <div style="position:absolute;top:0;left:0;right:0;height:25%;background:linear-gradient(180deg,rgba(80,0,100,0.6),transparent);"></div>
       <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FFD700,#ff00ff,#00ffff,#FFD700);opacity:0.5;"></div>
-      ${Array.from({length:16},(_,i)=>`<div style="position:absolute;font-size:${14+Math.random()*22}px;opacity:0.07;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${3+Math.random()*5}s ${Math.random()*4}s ease-in-out infinite alternate;pointer-events:none;">${['🎡','🎰','⭕','🔴','⚫','💚','💰','🎲'][i%8]}</div>`).join('')}
+      ${Array.from({length:8},(_,i)=>`<div style="position:absolute;font-size:${14+Math.random()*22}px;opacity:0.05;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${3+Math.random()*5}s ${Math.random()*4}s ease-in-out infinite alternate;pointer-events:none;">${['🎡','🎰','⭕','🔴','⚫','💚','💰','🎲'][i%8]}</div>`).join('')}
     `;
     ov.appendChild(casinoBg);
 
@@ -2691,7 +2691,7 @@ const MiniGames = {
       const ks=document.createElement('style'); ks.id='casinoAnimStyles';
       ks.textContent=`
         @keyframes casinoFloor{0%{opacity:0.4}100%{opacity:0.7}}
-        @keyframes casinoFloat{0%{transform:translateY(0) rotate(0deg)}100%{transform:translateY(-20px) rotate(15deg)}}
+        @keyframes casinoFloat{0%{transform:translate3d(0,0,0) rotate(0deg)}100%{transform:translate3d(0,-20px,0) rotate(15deg)}}
       `;
       document.head.appendChild(ks);
     }
@@ -2992,7 +2992,7 @@ const MiniGames = {
       <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(0deg,rgba(0,80,20,0.5) 0%,rgba(0,40,10,0.3) 60%,transparent 100%);animation:casinoFloor 2.5s ease-in-out infinite alternate;"></div>
       <div style="position:absolute;top:0;left:0;right:0;height:25%;background:linear-gradient(180deg,rgba(0,60,80,0.5),transparent);"></div>
       <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00ff88,#FFD700,#ff6600,#00ff88);opacity:0.5;"></div>
-      ${Array.from({length:14},(_,i)=>`<div style="position:absolute;font-size:${12+Math.random()*24}px;opacity:0.07;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${3+Math.random()*5}s ${Math.random()*3}s ease-in-out infinite alternate;pointer-events:none;">${['🎲','⚄','⚅','⚂','⚃','💫','🎯','💥'][i%8]}</div>`).join('')}
+      ${Array.from({length:7},(_,i)=>`<div style="position:absolute;font-size:${12+Math.random()*24}px;opacity:0.05;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${3+Math.random()*5}s ${Math.random()*3}s ease-in-out infinite alternate;pointer-events:none;">${['🎲','⚄','⚅','⚂','⚃','💫','🎯','💥'][i%8]}</div>`).join('')}
     `;
     ov.appendChild(casinoBgCr);
 
@@ -3265,7 +3265,7 @@ const MiniGames = {
       <div style="position:absolute;bottom:0;left:0;right:0;height:50%;background:linear-gradient(0deg,rgba(0,100,30,0.45) 0%,rgba(0,50,15,0.3) 60%,transparent 100%);animation:casinoFloor 4s ease-in-out infinite alternate;"></div>
       <div style="position:absolute;top:0;left:0;right:0;height:25%;background:linear-gradient(180deg,rgba(0,40,20,0.5),transparent);"></div>
       <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00ff44,#00ffff,#00ff44);opacity:0.4;"></div>
-      ${Array.from({length:14},(_,i)=>`<div style="position:absolute;font-size:${12+Math.random()*24}px;opacity:0.07;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${4+Math.random()*4}s ${Math.random()*3}s ease-in-out infinite alternate;pointer-events:none;">${['🃏','♠️','♥️','♦️','♣️','🎴','💎','👑'][i%8]}</div>`).join('')}
+      ${Array.from({length:7},(_,i)=>`<div style="position:absolute;font-size:${12+Math.random()*24}px;opacity:0.05;left:${Math.random()*100}%;top:${Math.random()*100}%;animation:casinoFloat ${4+Math.random()*4}s ${Math.random()*3}s ease-in-out infinite alternate;pointer-events:none;">${['🃏','♠️','♥️','♦️','♣️','🎴','💎','👑'][i%8]}</div>`).join('')}
     `;
     ov.appendChild(casinoBgPk);
 

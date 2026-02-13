@@ -52,6 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let gameInterval = null;
   let activeEarsCount = 0;
   let powerUpActive = null;
+  let _particleCount = 0; // 🏎️ Global particle limiter
+  const MAX_PARTICLES = window.innerWidth < 768 ? 12 : 20;
   let isPaused = false;
   
   function setPaused(value) {
@@ -368,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
     celebration.appendChild(content);
     document.body.appendChild(celebration);
     
-    const pCount = window.innerWidth < 768 ? 6 : 10;
+    const pCount = window.innerWidth < 768 ? 4 : 8;
     for (let i = 0; i < pCount; i++) {
       const particle = document.createElement('div');
       particle.textContent = ['⭐','🎉','💫','✨','🔥'][Math.floor(Math.random()*5)];
@@ -808,6 +810,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 8000);
 
     window.gameIntervals = { powerUpInterval, eventsInterval };
+
+    // 🛡️ SPAWN WATCHDOG: every 3s, if game is running but no ears visible, force spawn
+    // This catches ANY edge case where spawn gets stuck after minigames/overlays
+    const spawnWatchdog = setInterval(() => {
+      const anyOverlay =
+        document.getElementById('rlOverlay') || document.getElementById('crOverlay') ||
+        document.getElementById('pkOverlay') || document.getElementById('bonneteauOverlay') ||
+        document.getElementById('coinFlipOverlay') || document.getElementById('fortuneTellerOverlay') ||
+        document.getElementById('grandpaOverlay') || document.getElementById('pachinkoOverlay') ||
+        document.getElementById('blackjackOverlay') || document.getElementById('unicornSwapOv') ||
+        document.getElementById('canPauseOv') || document.getElementById('trollTweetContainer') ||
+        document.getElementById('hearingMachineOverlay') || document.getElementById('gameIntroOverlay');
+      if (anyOverlay) return; // minigame running, leave it
+      if (isPaused || window.gamePaused) return; // intentionally paused
+      if (gameOverScreen && gameOverScreen.style.display === 'flex') return; // game over
+      if (startBtn && startBtn.style.display !== 'none') return; // not started
+
+      const activeEars = document.querySelectorAll('.ear.active').length;
+      if (activeEars === 0) {
+        // Game is running, no overlay, no pause, but ZERO ears → STUCK
+        activeEarsCount = 0;
+        startSpawning();
+        setTimeout(() => { spawnEar(); }, 50);
+      }
+    }, 3000);
+    window.gameIntervals.spawnWatchdog = spawnWatchdog;
   }
 
   function startSpawning() {
@@ -985,7 +1013,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('rlOverlay') ||      // Roulette
         document.getElementById('crOverlay') ||      // Craps
         document.getElementById('pkOverlay') ||      // Poker
-        document.getElementById('hearingMachineOverlay'); // Slots
+        document.getElementById('hearingMachineOverlay') || // Slots
+        document.getElementById('unicornSwapOv') ||  // Unicorn
+        document.getElementById('canPauseOv') ||     // Can pause
+        document.getElementById('trollTweetContainer'); // Poop tweets
       
       if (!ear.textContent || ear.textContent === '') {
         return; // Mini-jeu a démarré pendant l'exécution
@@ -3280,7 +3311,8 @@ document.addEventListener("DOMContentLoaded", () => {
               speak('Winner! Your stake has been doubled!');
               
               // Win celebration
-              for (let i = 0; i < 8; i++) {
+              const _maxSparkle = window.innerWidth < 768 ? 4 : 6;
+              for (let i = 0; i < _maxSparkle; i++) {
                 setTimeout(() => {
                   const sparkle = document.createElement('div');
                   sparkle.textContent = ['✨', '⭐', '💫', '🌟'][Math.floor(Math.random() * 4)];
@@ -3797,7 +3829,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // ================== 🦄 UNISWAP LSD — Swap vie ↔ points ==================
       '🦄': () => {
-        rumorBubble.textContent = "🦄 UNISWAP DEGEN! SWAP YOUR STATS! 🌈";
+        rumorBubble.textContent = "🦄 UNISWAP LSD! SWAP YOUR STATS! WEN MOON? 🌈";
         vibrate([50, 30, 80, 30, 120]);
         window.gamePaused = true; setPaused(true);
 
@@ -3821,13 +3853,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         box.innerHTML = `
           <div style="font-size:clamp(40px,10vw,60px);margin-bottom:10px">🦄 UNISWAP</div>
-          <div style="font-size:clamp(14px,3vw,18px);color:#ffe0ff;margin-bottom:20px">SWAPEZ VOS STATS, DEGEN!</div>
+          <div style="font-size:clamp(14px,3vw,18px);color:#ffe0ff;margin-bottom:20px">SWAP YOUR STATS, DEGEN! NGMI IF YOU SKIP!</div>
           <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
-            ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff00ff;">❤️ → 💰 Vie contre +${lifeToPoints} pts</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">❤️ Besoin de +2 vies pour swap</div>`}
-            ${pointsToLife > 0 ? `<button id="swapP2L" style="background:linear-gradient(90deg,#9400d3,#6a0dad);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #9400d3;">💰 → ❤️ -${pointsToLife} pts pour +1 vie</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">💰 Besoin de ${500-score} pts supplémentaires</div>`}
+            ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff00ff;">❤️ → 💰 Trade 1 life for +${lifeToPoints} pts</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">❤️ Need 2+ lives to trade</div>`}
+            ${pointsToLife > 0 ? `<button id="swapP2L" style="background:linear-gradient(90deg,#9400d3,#6a0dad);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #9400d3;">💰 → ❤️ Spend ${pointsToLife} pts for +1 life</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">💰 Need ${500-score} more pts to trade</div>`}
             <button id="swapBonus" style="background:linear-gradient(90deg,#ff6600,#ff0000);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff6600;">🌈 BONUS +500 PTS GRATUIT!</button>
           </div>
-          <button id="swapSkip" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:8px 24px;font-family:'Luckiest Guy',cursive;font-size:16px;color:#ffe0ff;cursor:pointer;">SKIP (auto ferme 8s)</button>
+          <button id="swapSkip" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:8px 24px;font-family:'Luckiest Guy',cursive;font-size:16px;color:#ffe0ff;cursor:pointer;">SKIP (auto-closes 8s)</button>
         `;
         ov.appendChild(box);
         document.body.appendChild(ov);
@@ -3937,7 +3969,7 @@ document.addEventListener("DOMContentLoaded", () => {
           score += pts;
           updateUI();
           const msg = document.createElement('div');
-          msg.innerHTML = `💉 Trop tôt! +${pts} pts consolation`;
+          msg.innerHTML = `💉 Not yet, bro! +${pts} pts consolation`;
           msg.style.cssText = `position:fixed;top:30%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4vw,32px);color:#ff9900;font-family:'Luckiest Guy',cursive;z-index:100010;pointer-events:none;animation:messagePulse 0.4s ease-out;text-shadow:0 0 15px #ff9900;`;
           document.body.appendChild(msg);
           setTimeout(() => msg.remove(), 1800);
@@ -3948,15 +3980,15 @@ document.addEventListener("DOMContentLoaded", () => {
         try { localStorage.setItem('lastSyringeLevel', level); } catch(e) {}
         lives++;
         updateUI();
-        rumorBubble.textContent = "💉 DOPING! +1 VIE! CHEATING IS BASED!";
+        rumorBubble.textContent = "💉 DOPING! +1 LIFE! CHEATING IS BASED! 🩸";
         vibrate([50, 30, 200]);
 
         // 🎬 Syringe animation
         const syringe = document.createElement('div');
         syringe.innerHTML = `
           <div style="font-size:clamp(60px,15vw,100px);animation:syringeInject 0.6s ease-in-out">💉</div>
-          <div style="font-size:clamp(24px,5vw,40px);color:#ff0066;margin-top:10px;animation:messagePulse 0.4s ease-out">❤️ +1 VIE!</div>
-          <div style="font-size:clamp(14px,2.5vw,20px);color:#ffcc00;margin-top:8px">DOPAGE ACCEPTÉ PAR LA FDA</div>
+          <div style="font-size:clamp(24px,5vw,40px);color:#ff0066;margin-top:10px;animation:messagePulse 0.4s ease-out">❤️ +1 LIFE! JUICED!</div>
+          <div style="font-size:clamp(14px,2.5vw,20px);color:#ffcc00;margin-top:8px">APPROVED BY THE FDA (probably)</div>
         `;
         syringe.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;z-index:100010;pointer-events:none;text-shadow:0 0 20px #ff0066;`;
         document.body.appendChild(syringe);
@@ -3976,7 +4008,7 @@ document.addEventListener("DOMContentLoaded", () => {
       '🥫': () => {
         if (window.gamePaused || isPaused) return; // Don't double-pause
         window.gamePaused = true; setPaused(true);
-        rumorBubble.textContent = "🥫 PAUSE! 10 SECONDES DE RÉPIT!";
+        rumorBubble.textContent = "🥫 TEN SECOND TIMEOUT! BREATHE, DEGEN! 🥫";
 
         const ov = document.createElement('div');
         ov.id = 'canPauseOv';
@@ -3991,7 +4023,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const s = document.querySelector('#canPauseOv .can-stats');
           const t = document.querySelector('#canPauseOv .can-timer');
           if (!h) return;
-          h.textContent = `🥫 PAUSE — ${timeLeft}s`;
+          h.textContent = `🥫 CANNED — ${timeLeft}s`;
           s.innerHTML = `
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0">
               <div style="background:rgba(255,215,0,0.1);border-radius:10px;padding:10px">
@@ -4002,7 +4034,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div style="background:rgba(255,0,0,0.1);border-radius:10px;padding:10px">
                 <div style="font-size:28px">❤️</div>
                 <div style="font-size:clamp(16px,3.5vw,22px);color:#ff4444">${lives}</div>
-                <div style="font-size:12px;color:#aaa">VIES</div>
+                <div style="font-size:12px;color:#aaa">LIVES</div>
               </div>
               <div style="background:rgba(0,255,255,0.1);border-radius:10px;padding:10px">
                 <div style="font-size:28px">🔥</div>
@@ -4012,15 +4044,15 @@ document.addEventListener("DOMContentLoaded", () => {
               <div style="background:rgba(0,255,0,0.1);border-radius:10px;padding:10px">
                 <div style="font-size:28px">📊</div>
                 <div style="font-size:clamp(16px,3.5vw,22px);color:#00ff88">NV.${level}</div>
-                <div style="font-size:12px;color:#aaa">NIVEAU</div>
+                <div style="font-size:12px;color:#aaa">LEVEL</div>
               </div>
             </div>`;
         };
 
         box.innerHTML = `
-          <div class="can-header" style="font-size:clamp(22px,5vw,34px);color:#FFD700;margin-bottom:6px">🥫 PAUSE — ${timeLeft}s</div>
+          <div class="can-header" style="font-size:clamp(22px,5vw,34px);color:#FFD700;margin-bottom:6px">🥫 CANNED — ${timeLeft}s</div>
           <div class="can-stats"></div>
-          <button id="canResume" style="background:linear-gradient(90deg,#00ff88,#00cc66);border:3px solid #fff;border-radius:12px;padding:12px 30px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#000;cursor:pointer;margin-top:10px;box-shadow:0 0 20px #00ff88;">▶️ REPRENDRE</button>
+          <button id="canResume" style="background:linear-gradient(90deg,#00ff88,#00cc66);border:3px solid #fff;border-radius:12px;padding:12px 30px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#000;cursor:pointer;margin-top:10px;box-shadow:0 0 20px #00ff88;">▶️ KEEP HUSTIN'</button>
         `;
         ov.appendChild(box);
         document.body.appendChild(ov);
@@ -4030,7 +4062,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const countdownInterval = setInterval(() => {
           timeLeft--;
           const h = document.querySelector('#canPauseOv .can-header');
-          if (h) h.textContent = `🥫 PAUSE — ${timeLeft}s`;
+          if (h) h.textContent = `🥫 CANNED — ${timeLeft}s`;
           if (timeLeft <= 0) {
             clearInterval(countdownInterval);
             closeCan();
@@ -4048,9 +4080,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // TTS summary
         if (typeof SoundSystem !== 'undefined' && SoundSystem.speak) {
-          setTimeout(() => SoundSystem.speak(`Pause! You have ${lives} lives and ${Math.round(score)} points! Level ${level}! Keep going!`), 300);
+          setTimeout(() => SoundSystem.speak(`Ten seconds! You have ${lives} lives and ${Math.round(score)} points! Level ${level}! LFG!`), 300);
         } else if (window.speechSynthesis) {
-          const utt = new SpeechSynthesisUtterance(`Pause! Level ${level}. Score ${Math.round(score)}. ${lives} lives. LFG!`);
+          const utt = new SpeechSynthesisUtterance(`Ten seconds! Level ${level}. Score ${Math.round(score)}. ${lives} lives. LFG!`);
           utt.rate = 1.1; window.speechSynthesis.speak(utt);
         }
       },
@@ -4159,6 +4191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.gameIntervals) {
       clearInterval(window.gameIntervals.powerUpInterval);
       clearInterval(window.gameIntervals.eventsInterval);
+      clearInterval(window.gameIntervals.spawnWatchdog);
       window.gameIntervals = null;
     }
     

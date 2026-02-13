@@ -1163,3 +1163,45 @@ button, [role="button"] {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* ===== OMEGA-6 PERF FIXES ===== */
+
+/* GPU compositing for frequently animated elements */
+.ear.active {
+  will-change: transform;
+}
+
+/* Remove expensive filter from echo ears - use outline instead */
+.ear.echo {
+  filter: none;
+  outline: 2px solid #0ff;
+  outline-offset: 2px;
+}
+
+/* Reduce casino ambient animation cost */
+@keyframes casinoFloor {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.7; }
+}
+
+/* Troll tweet: contain for layout perf */
+#trollTweetContainer > div {
+  contain: layout style;
+}
+
+/* Desktop: cap box-shadow complexity on game board */
+@media (min-width: 769px) {
+  .hole {
+    box-shadow: none;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .ear.active, .ear.echo, .ear.cabal {
+    animation: none !important;
+  }
+  .game-title {
+    animation: none !important;
+  }
+}
