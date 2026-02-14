@@ -1,0 +1,27 @@
+{
+  "name": "Hearing Things \u2014 Whack The Rumors",
+  "short_name": "HearingThings",
+  "description": "The most chaotic $HEARING meme game on Solana. Whack rumors, go degen, climb the leaderboard.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#FFD700",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "lang": "en"
+}

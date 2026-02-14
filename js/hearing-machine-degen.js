@@ -283,6 +283,21 @@ function createHearingMachine() {
     z-index: 100006;
   `;
   
+  // Mobile detection for responsive layout
+  const isMachineOnMobile = window.innerWidth < 768 || window.innerHeight < 700;
+  if (isMachineOnMobile) {
+    machine.style.minWidth = 'min(400px, 96vw)';
+    machine.style.maxWidth = '96vw';
+    machine.style.maxHeight = '92svh';
+    machine.style.overflowY = 'auto';
+    machine.style.padding = '14px';
+    machine.style.borderRadius = '16px';
+    machine.style.borderWidth = '4px';
+    overlay.style.alignItems = 'flex-start';
+    overlay.style.paddingTop = '8px';
+    overlay.style.overflowY = 'auto';
+  }
+
   machine.innerHTML = `
     <!-- Neon lights top -->
     <div style="

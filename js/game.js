@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let level = 1;
   let lives = 1; // Start with 1 life, others earned
   let highScore = StorageManager.getHighScore();
-  let nextLevelScore = 800; // Increased from 600 for better early game duration
+  let nextLevelScore = 600; // Absolute per-level targets
   let gameInterval = null;
   let activeEarsCount = 0;
   let powerUpActive = null;
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let gameOverLevel = 1; // Store level at game over for display
 
   let maxStreak = 7; // 7 misses for levels 1-10 (was 5)
-  const maxLevels = 45;
+  const maxLevels = 75;
   const maxSimultaneousEars = 4;
 
   let pointMultiplier = 1;
@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const regularBonuses = [
     '🐶', '🚀', '💎', '🤑', '🔥', '💀', '🕵️‍♂️', '🤡', '⚡', '💊', 
     '❄️', '🌙', '☄️', '🎯', '🎲', '🍀', '⭐', '🦻', '📺',
-    '💩', '💉', '🥫'  // Crypto troll | Syringe life | Pause can
+    '💩', '💉', '🥫', '🛡️'  // Crypto troll | Syringe life | Pause can | Shield
   ];
   
   const megaBonuses = [
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
   
   const rareBonuses = [
-    '🏴‍☠️', '🪙', '🎡', '🎲', '🃏'  // Treasure Chest + Coin Flip + Casino
+    '🏴‍☠️', '🪙', '🎡', '🎲', '🃏', '📈'  // Treasure Chest + Coin Flip + Casino + Trader
   ];
   
   // Ancienne array pour compatibilité (pas utilisée maintenant)
@@ -122,14 +122,29 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   const levelNames = [
-    "NO SIGNAL", "STATIC", "LOW VOLUME", "FIRST PING", "MISS HEARD", "AUDIO LAG",
-    "ECHO", "RUMOR SEED", "SIGNAL DRIFT", "NOISE", "FALSE PATTERN", "DATA COPE",
-    "LOOPED", "OVERHEARD", "HEARING CHECK", "MENTAL LAG", "FOCUS MODE", "PATTERNED",
-    "BRAIN HEAT", "RUMOR CORE", "BONK REFLEX", "DEGEN MODE", "HYPER FOCUS",
-    "SOUND COLLAPSE", "SIGNAL BREAK", "HEARING RUSH", "PERCEPTION", "RUMOR GOD",
-    "CHAOS STATE", "TOTAL NOISE", "MATRIX", "ENLIGHTENED", "TRANSCENDED",
-    "OMNISCIENT", "BEYOND", "QUANTUM", "SINGULARITY", "INFINITE", "COSMIC",
-    "GODLIKE", "ETHEREAL", "LEGENDARY", "MYTHICAL", "DIVINE", "ULTIMATE"
+    // 1-10: Learning
+    "NO SIGNAL", "STATIC", "LOW VOLUME", "FIRST PING", "MISS HEARD",
+    "AUDIO LAG", "ECHO", "RUMOR SEED", "SIGNAL DRIFT", "NOISE",
+    // 11-20: Warming up
+    "FALSE PATTERN", "DATA COPE", "LOOPED", "OVERHEARD", "HEARING CHECK",
+    "MENTAL LAG", "FOCUS MODE", "PATTERNED", "BRAIN HEAT", "RUMOR CORE",
+    // 21-30: Getting dangerous
+    "BONK REFLEX", "DEGEN MODE", "HYPER FOCUS", "SOUND COLLAPSE", "DEATH ZONE",
+    "SIGNAL BREAK", "HEARING RUSH", "PERCEPTION", "RUMOR GOD", "CHAOS STATE",
+    // 31-40: Deep end
+    "TOTAL NOISE", "MATRIX", "ENLIGHTENED", "TRANSCENDED", "OMNISCIENT",
+    "BEYOND", "QUANTUM", "SINGULARITY", "INFINITE", "COSMIC",
+    // 41-50: Legendary tier
+    "GODLIKE", "ETHEREAL", "LEGENDARY", "MYTHICAL", "DIVINE",
+    "ULTIMATE", "ASCENDED", "WARLORD", "APEX PREDATOR", "HEAR DEATH",
+    // 51-60: Nightmare tier
+    "TINNITUS", "SCHIZO MODE", "TERMINAL", "CORRUPTED", "VOID WALKER",
+    "NULL POINTER", "STACK OVERFLOW", "KERNEL PANIC", "SYSTEM FAILURE", "404 SANITY",
+    // 61-70: God tier
+    "BASILISK", "EIGENGRAU", "COGNITOHAZARD", "BASILISK II", "MEMETIC KILL",
+    "INFOHAZARD", "ROKO WAKER", "MIND BREAKER", "TRUTH SEEKER", "FINAL HEARING",
+    // 71-75: The End
+    "OMEGA", "OMEGA II", "OMEGA III", "OMEGA IV", "OMEGA FINAL"
   ];
 
   function randomInt(min, max) {
@@ -137,18 +152,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getSpawnInterval() {
+    // Ultra-hard tiers
+    if (level >= 60) return Math.max(500, 1000 - (level - 60) * 20); // 500ms at 75
+    if (level >= 50) return Math.max(600, 1100 - (level - 50) * 10); // 600ms at 60
+    if (level >= 40) return Math.max(700, 1200 - (level - 40) * 10); // 700ms at 50
+    if (level >= 30) return Math.max(750, 1300 - (level - 30) * 10); // 750ms at 40
     if (level <= 5) {
       return Math.max(1800 - level * 80, 1200);
     }
     if (level <= 15) {
       return Math.max(1200 - level * 40, 600);
     }
-    // Level 16-17: moderate
-    if (level <= 17) {
-      return Math.max(800 - level * 20, 400);
+    // Level 16-20: keep playable
+    if (level <= 20) {
+      return Math.max(900 - level * 15, 650);
     }
-    // Level 18+: CAPPED — never faster than 500ms to stay playable
-    let base = Math.max(900 - level * 15, 500);
+    // Level 21+: gentle curve, floor at 700ms for comfort
+    let base = Math.max(1200 - level * 10, 700);
     if (powerUpActive && powerUpActive.type === 'speed') {
       base = Math.max(400, base * 0.6);
     }
@@ -156,17 +176,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getEarUpTime() {
+    // High-level tiers — gets harder from 30+
+    if (level >= 65) return Math.max(700, 1100 - (level - 65) * 15) + randomInt(0, 150);
+    if (level >= 55) return Math.max(800, 1400 - (level - 55) * 30) + randomInt(0, 200);
+    if (level >= 45) return Math.max(900, 1700 - (level - 45) * 30) + randomInt(0, 200);
+    if (level >= 35) return Math.max(1000, 2000 - (level - 35) * 30) + randomInt(0, 250);
     if (level <= 5) {
       return Math.max(3000 - level * 80, 2200) + randomInt(0, 500);
     }
     if (level <= 15) {
       return Math.max(2200 - level * 60, 1200) + randomInt(0, 400);
     }
-    if (level <= 17) {
-      return Math.max(1200 - level * 30, 600) + randomInt(0, 300);
+    if (level <= 20) {
+      return Math.max(1800 - level * 30, 1200) + randomInt(0, 300);
     }
-    // Level 18+: ear stays visible longer — more time to react
-    return Math.max(1400 - level * 20, 700) + randomInt(0, 400);
+    // Level 21-35
+    return Math.max(1400, 2400 - level * 20) + randomInt(0, 400);
   }
 
   function getEarLifetime() {
@@ -213,10 +238,15 @@ document.addEventListener("DOMContentLoaded", () => {
     combo = 1;
     streak = 0;
     level = 1;
+    // Track games for achievements
+    if (typeof MetaGame !== 'undefined') {
+      MetaGame.data.stats.totalGamesPlayed = (MetaGame.data.stats.totalGamesPlayed || 0) + 1;
+      MetaGame.checkAchievement('three_games', MetaGame.data.stats);
+    }
     lives = 1; // Reset to 1 life
     permanentComboBonus = 0;
     starsThisLevel = 1;
-    nextLevelScore = 800;
+    nextLevelScore = 600;
     updateUI();
     
     const bossElements = document.querySelectorAll('#boss-ear, #boss-hp-text, #boss-hp');
@@ -235,8 +265,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateUI() {
     if (isNaN(score)) score = 0; // 🐛 NaN guard
+    const prevScore = parseInt(scoreEl.textContent) || 0;
     window.score = score;        // 🐛 Keep window.score in sync
     scoreEl.textContent = Math.round(score);
+    // Convert score to 👂 meta-currency every 250 pts milestone (silently)
+    if (typeof MetaGame !== 'undefined') {
+      const milestone = Math.floor(score / 250);
+      const prevMilestone = Math.floor(prevScore / 250);
+      if (milestone > prevMilestone && score > 0) {
+        const earGain = window._doubleEars ? 2 : 1;
+        MetaGame.data.currencies.ears = (MetaGame.data.currencies.ears || 0) + earGain;
+        MetaGame.updateEarsBadge();
+        MetaGame.save();
+      }
+    }
+    // Flash score on increase so early levels feel alive
+    if (Math.round(score) > prevScore) {
+      scoreEl.style.transform = 'scale(1.3)';
+      scoreEl.style.color = '#00ff88';
+      scoreEl.style.transition = 'transform 0.15s,color 0.15s';
+      setTimeout(() => {
+        scoreEl.style.transform = '';
+        scoreEl.style.color = '';
+      }, 150);
+    }
     comboEl.textContent = `x${(combo + permanentComboBonus).toFixed(1)}`;
     missesEl.textContent = `${streak}/${maxStreak}`;
     highScoreEl.textContent = formatNumber(highScore);
@@ -312,7 +364,217 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function triggerMiniBoss(bossLevel) {
+    window.gamePaused = true; setPaused(true); clearInterval(gameInterval);
+    if (typeof SoundSystem !== 'undefined') SoundSystem.boss();
+    
+    const bossData = {
+      10: { name: 'RUMOR SPREADER', emoji: '🗣️', hp: 8,  reward: 500,   color: '#ff6600' },  // Easy intro
+      20: { name: 'ECHO DEMON',     emoji: '👻', hp: 14, reward: 1000,  color: '#00ffff' },  // Getting real
+      30: { name: 'SIGNAL GHOST',   emoji: '📡', hp: 22, reward: 2000,  color: '#ff00ff' },  // Tight time
+      40: { name: 'NOISE LORD',     emoji: '📢', hp: 30, reward: 3500,  color: '#FFD700' },  // Fast fingers needed
+      50: { name: 'TINNITUS KING',  emoji: '🔊', hp: 40, reward: 5000,  color: '#ff0000' },  // Intense
+      60: { name: 'VOID HERALD',    emoji: '🌑', hp: 55, reward: 8000,  color: '#9400d3' },  // Brutal
+      70: { name: 'OMEGA HERALD',   emoji: '👁️', hp: 75, reward: 15000, color: '#00ff88' },  // Final test
+    };
+    const boss = bossData[bossLevel] || { name: 'BOSS', emoji: '💀', hp: 20, reward: 2000, color: '#ff0000' };
+    
+    let bossHp = boss.hp;
+    const overlay = document.createElement('div');
+    overlay.id = 'bossOverlay';
+    overlay.style.cssText = `position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(40,0,0,0.97),rgba(0,0,0,0.99));
+      z-index:100010;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-family:'Luckiest Guy',cursive;text-align:center;animation:fadeIn 0.3s;`;
+    
+    const updateBossUI = () => {
+      const pct = Math.max(0, bossHp / boss.hp * 100);
+      overlay.querySelector('#bossHpBar').style.width = pct + '%';
+      overlay.querySelector('#bossHpBar').style.background = pct > 50 ? boss.color : pct > 25 ? '#ff8800' : '#ff0000';
+      overlay.querySelector('#bossHpText').textContent = bossHp + ' / ' + boss.hp;
+      overlay.querySelector('#bossEmoji').textContent = bossHp <= 0 ? '💥' : boss.emoji;
+    };
+    
+    // Boss scales: faster time + more HP each tier
+    const bossTier = Math.floor(bossLevel / 10); // 1-7
+    const bossTimeLimit = Math.max(8, 28 - bossTier * 3); // 25s → 8s
+    let bossTimeLeft = bossTimeLimit;
+    let bossTimerInterval; // Declared early for cross-reference
+
+    overlay.innerHTML = `
+      <div style="font-size:clamp(18px,4vw,26px);color:#ff0000;letter-spacing:3px;margin-bottom:6px;animation:pulse 0.5s ease-in-out infinite">⚠️ MINI BOSS ⚠️</div>
+      <div id="bossEmoji" style="font-size:clamp(60px,15vw,100px);margin:6px 0;filter:drop-shadow(0 0 30px ${boss.color})">${boss.emoji}</div>
+      <div style="font-size:clamp(20px,4.5vw,36px);color:${boss.color};text-shadow:0 0 30px ${boss.color},3px 3px 0 #000;margin-bottom:10px">${boss.name}</div>
+      
+      <!-- HP Bar -->
+      <div style="width:min(320px,82vw);height:18px;background:#111;border:2px solid ${boss.color};border-radius:9px;overflow:hidden;margin-bottom:4px">
+        <div id="bossHpBar" style="height:100%;width:100%;background:${boss.color};border-radius:7px;transition:width 0.15s,background 0.2s"></div>
+      </div>
+      <div id="bossHpText" style="font-size:clamp(13px,2.5vw,16px);color:#aaa;margin-bottom:10px">${boss.hp} HP</div>
+      
+      <!-- Timer Bar -->
+      <div style="width:min(320px,82vw);height:10px;background:#111;border:2px solid #ff4444;border-radius:5px;overflow:hidden;margin-bottom:4px">
+        <div id="bossTimerBar" style="height:100%;width:100%;background:linear-gradient(90deg,#ff0000,#ff8800);border-radius:3px;transition:width 0.1s linear"></div>
+      </div>
+      <div id="bossTimerText" style="font-size:clamp(14px,3vw,20px);color:#ff4444;font-family:'Luckiest Guy',cursive;margin-bottom:12px">⏱ ${bossTimeLimit}s</div>
+      
+      <div style="font-size:clamp(14px,3vw,20px);color:#fff;margin-bottom:10px">TAP FAST TO DEFEAT!</div>
+      <div id="bossTarget" style="font-size:clamp(70px,18vw,120px);cursor:pointer;
+        filter:drop-shadow(0 0 20px ${boss.color});transition:transform 0.1s;
+        animation:bossBounce 0.6s ease-in-out infinite;user-select:none">${boss.emoji}</div>
+      <div style="font-size:clamp(11px,2.5vw,15px);color:#555;margin-top:10px">REWARD: +${boss.reward} 👂 — FAIL: -1 LIFE</div>
+    `;
+    
+    // Boss bounce animation
+    const style = document.createElement('style');
+    style.textContent = '@keyframes bossBounce{0%,100%{transform:scale(1) rotate(-3deg)}50%{transform:scale(1.1) rotate(3deg)}}';
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+    
+    const bossTarget = overlay.querySelector('#bossTarget');
+    bossTarget.addEventListener('click', () => {
+      bossHp -= 1;
+      bossTarget.style.transform = 'scale(0.85)';
+      setTimeout(() => bossTarget.style.transform = '', 100);
+      if (typeof SoundSystem !== 'undefined') SoundSystem.hit(bossHp % 5);
+      updateBossUI();
+      if (bossHp <= 0) {
+        score += boss.reward;
+        clearInterval(bossTimerInterval); // Stop timer on boss defeat
+        overlay.querySelector('#bossTarget').style.display = 'none';
+        setTimeout(() => {
+          overlay.remove(); if (style.parentNode) style.remove();
+          window.gamePaused = false; setPaused(false); startSpawning();
+          const win = document.createElement('div');
+          win.innerHTML = `💥 BOSS DEFEATED! +${boss.reward} 👂!`;
+          win.style.cssText = `position:fixed;top:20%;left:50%;transform:translateX(-50%);
+            font-family:'Luckiest Guy',cursive;font-size:clamp(22px,5vw,36px);
+            color:#FFD700;text-shadow:0 0 30px #FFD700,3px 3px 0 #000;z-index:100020;pointer-events:none;`;
+          document.body.appendChild(win);
+          setTimeout(() => win.remove(), 3000);
+          updateUI(); rainEmojis('special');
+          // Continue normal level-up flow
+          if (levelHits >= 35) starsThisLevel++;
+          if (levelMisses === 0) starsThisLevel = Math.min(3, starsThisLevel + 1);
+          if (starsThisLevel === 3) { permanentComboBonus += 0.15; score += 500; }
+          nextLevelScore = getLevelScoreTarget(level + 1);
+          if (typeof MetaGameSystem !== 'undefined') { MetaGameSystem.checkAchievement('level_10', level); MetaGameSystem.checkAchievement('level_25', level); }
+          levelHits = 0; levelMisses = 0; starsThisLevel = 1;
+        }, 800);
+      }
+    });
+    
+    // Touch support for mobile
+    bossTarget.addEventListener('touchstart', (e) => { e.preventDefault(); bossTarget.click(); }, { passive: false });
+    
+    // Boss timer countdown
+    bossTimerInterval = setInterval(() => {
+      if (!document.getElementById('bossOverlay')) { clearInterval(bossTimerInterval); return; }
+      bossTimeLeft--;
+      const pct = (bossTimeLeft / bossTimeLimit) * 100;
+      const timerBar = document.getElementById('bossTimerBar');
+      const timerText = document.getElementById('bossTimerText');
+      if (timerBar) {
+        timerBar.style.width = pct + '%';
+        timerBar.style.background = pct > 50
+          ? 'linear-gradient(90deg,#ff0000,#ff8800)'
+          : pct > 25 ? 'linear-gradient(90deg,#ff0000,#ff4400)' : '#ff0000';
+      }
+      if (timerText) timerText.textContent = `⏱ ${Math.max(0, bossTimeLeft)}s`;
+      
+      if (bossTimeLeft <= 5 && typeof SoundSystem !== 'undefined') {
+        SoundSystem._play(880, 0.08, 'square', 0.3); // Urgent beep
+      }
+      
+      if (bossTimeLeft <= 0) {
+        clearInterval(bossTimerInterval);
+        // BOSS WINS — player loses a life
+        overlay.remove(); if (style.parentNode) style.remove();
+        lives = Math.max(0, lives - 1);
+        window.gamePaused = false; setPaused(false);
+        if (typeof SoundSystem !== 'undefined') SoundSystem.miss();
+        const failMsg = document.createElement('div');
+        failMsg.innerHTML = `${boss.emoji} BOSS ESCAPED! -1 LIFE!`;
+        failMsg.style.cssText = `position:fixed;top:25%;left:50%;transform:translateX(-50%);
+          font-family:'Luckiest Guy',cursive;font-size:clamp(20px,4.5vw,36px);
+          color:#ff0000;text-shadow:0 0 25px #ff0000,3px 3px 0 #000;z-index:100020;pointer-events:none;`;
+        document.body.appendChild(failMsg);
+        setTimeout(() => failMsg.remove(), 2000);
+        updateUI();
+        if (lives <= 0) { setTimeout(() => actuallyEndGame(), 500); return; }
+        // Still do level progression even on boss fail
+        if (levelHits >= 35) starsThisLevel++;
+        nextLevelScore = getLevelScoreTarget(level + 1);
+        levelHits = 0; levelMisses = 0; starsThisLevel = 1;
+        startSpawning();
+      }
+    }, 1000);
+    
+    // Timer is cleared directly in the bossHp <= 0 branch above
+  }
+
+  function showVictoryScreen() {
+    window.gamePaused = true; setPaused(true); clearInterval(gameInterval);
+    if (typeof SoundSystem !== 'undefined') SoundSystem.victory();
+    const v = document.createElement('div');
+    v.style.cssText = `position:fixed;inset:0;background:radial-gradient(ellipse at center,#1a0040,#000);
+      z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      font-family:'Luckiest Guy',cursive;text-align:center;animation:fadeIn 0.5s;`;
+    v.innerHTML = `
+      <div style="font-size:clamp(60px,15vw,120px);animation:spin 2s linear infinite;line-height:1">👂</div>
+      <div style="font-size:clamp(32px,7vw,64px);color:#FFD700;text-shadow:0 0 40px #FFD700,4px 4px 0 #000;margin:16px 0;animation:pulse 1s ease-in-out infinite">
+        OMEGA ACHIEVED!
+      </div>
+      <div style="font-size:clamp(16px,3.5vw,24px);color:#00ff88;margin-bottom:8px">
+        YOU BEAT ALL 75 LEVELS
+      </div>
+      <div style="font-size:clamp(14px,3vw,20px);color:#aaa;margin-bottom:24px">
+        Score: ${Math.round(score).toLocaleString()} 👂
+      </div>
+      <div style="font-size:clamp(20px,4vw,32px);color:#ff00ff;text-shadow:0 0 20px #ff00ff;margin-bottom:20px">
+        YOU ARE THE HEARING THINGS
+      </div>
+      <button id="victoryPrestige" style="font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);
+        background:linear-gradient(135deg,#9400d3,#ff00ff);color:#fff;border:none;border-radius:16px;
+        padding:14px 32px;cursor:pointer;margin:6px;box-shadow:0 0 30px rgba(180,0,255,0.5)">
+        ⭐ PRESTIGE NOW
+      </button>
+      <button id="victoryKeepPlaying" style="font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);
+        background:linear-gradient(135deg,#FF8C00,#FFD700);color:#000;border:none;border-radius:16px;
+        padding:14px 32px;cursor:pointer;margin:6px">
+        🔥 KEEP GRINDING
+      </button>
+    `;
+    document.body.appendChild(v);
+    // Rain confetti
+    if (typeof rainEmojis !== 'undefined') { rainEmojis('special'); setTimeout(() => rainEmojis('special'), 800); }
+    document.getElementById('victoryKeepPlaying').onclick = () => {
+      v.remove(); window.gamePaused = false; setPaused(false); startSpawning();
+    };
+    document.getElementById('victoryPrestige').onclick = () => {
+      v.remove();
+      if (typeof MetaGame !== 'undefined') MetaGame.show();
+      window.gamePaused = false; setPaused(false);
+    };
+  }
+
   function showLevelUp() {
+    // Perfect level achievement (no misses this level)
+    if (levelMisses === 0 && level > 1 && typeof MetaGameSystem !== 'undefined') MetaGameSystem.checkAchievement('perfect_game', level);
+    // Hot start: reach level 5 with under 3 misses total
+    if (level === 5 && streak < 3 && typeof MetaGameSystem !== 'undefined') MetaGameSystem.checkAchievement('hot_start', level);
+    // Survivor: cleared a level with exactly 1 life
+    if (lives === 1 && typeof MetaGame !== 'undefined') {
+      MetaGame.data.stats = MetaGame.data.stats || {};
+      MetaGame.data.stats.wonWith1Life = true;
+      try { MetaGame.checkAchievements({...MetaGame.data.stats, levelReached: level, currentScore: Math.round(score)}); } catch(e) {}
+    }
+    // Immortal: reached level 20 with no lives lost
+    if (level >= 20 && typeof MetaGame !== 'undefined') {
+      MetaGame.data.stats = MetaGame.data.stats || {};
+      const livesLost = MetaGame.data.stats.livesUsed || 0;
+      if (livesLost === 0) try { MetaGame.checkAchievements({levelReached: level, livesUsed: 0, currentScore: Math.round(score)}); } catch(e) {}
+    }
+    levelMisses = 0; levelHits = 0;
     if (isPaused) return;
     setPaused(true);
     window.gamePaused = true; // CRITICAL: Prevent spawning during overlay
@@ -320,6 +582,16 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (typeof SoundSystem !== 'undefined') {
       SoundSystem.levelUp();
+    }
+    
+    // Mini-boss every 10 levels - fires even if level is skipped
+    const expectedBossTier = Math.floor(level / 10);
+    const lastBossTier = Math.floor(lastBossLevelTriggered / 10);
+    if (expectedBossTier > lastBossTier && level >= 10 && level < maxLevels) {
+      const bossLvl = expectedBossTier * 10; // e.g. 10, 20, 30...
+      lastBossLevelTriggered = bossLvl;
+      setTimeout(() => triggerMiniBoss(bossLvl), 600);
+      return; // Mini-boss handles resume
     }
 
     if (levelHits >= 35) starsThisLevel++;
@@ -332,6 +604,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateBackground();
     spiralConfetti();
+    // Progressive difficulty visual cues
+    if (level >= 35) {
+      // Flicker effect increases
+      document.documentElement.style.setProperty('--glitch-intensity', Math.min(1, (level - 35) / 20) + '');
+    }
+
+    // 🏆 Achievement checks on level up
+    if (typeof MetaGameSystem !== 'undefined') {
+      MetaGameSystem.checkAchievement('level_10', level);
+      MetaGameSystem.checkAchievement('level_25', level);
+      MetaGameSystem.checkAchievement('level_50', level);
+    }
+    // Score milestones
+    if (score >= 500 && typeof MetaGameSystem !== 'undefined') MetaGameSystem.checkAchievement('score_500', score);
+    if (score >= 10000 && typeof MetaGameSystem !== 'undefined') MetaGameSystem.checkAchievement('score_10k', score);
+    if (score >= 100000 && typeof MetaGameSystem !== 'undefined') MetaGameSystem.checkAchievement('score_100k', score);
+    // Speed demon: level 5 in under 3 minutes
+    if (level >= 5 && window._hotStartMs && !window._speedDemonDone) {
+      window._speedDemonDone = true;
+      if (Date.now() - window._hotStartMs < 180000) {
+        if (typeof MetaGameSystem !== 'undefined') MetaGameSystem.checkAchievement('speed_demon', level);
+      }
+    }
     
     if (typeof ProgressiveEffects !== 'undefined') {
       ProgressiveEffects.init(level);
@@ -402,11 +697,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     setTimeout(() => {
       rumorBubble.classList.remove("show");
-      if (level < 10) {
-        nextLevelScore = Math.round(nextLevelScore * 1.3);
-      } else {
-        nextLevelScore = Math.round(nextLevelScore * 1.5);
-      }
+      // Absolute score table - no compounding
+      nextLevelScore = getLevelScoreTarget(level + 1);
       levelHits = 0;
       levelMisses = 0;
       starsThisLevel = 1;
@@ -507,15 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       */
       
-      // LEVEL 10: HEARING TRADER - DÉSACTIVÉ (test seulement)
-      /*
-      if (level === 10) {
-        hasMinigame = true;
-        if (typeof MiniGames !== 'undefined') {
-          setTimeout(() => MiniGames.showMiniTrader({score, updateUI}), 1000);
-        }
-      }
-      */
+      // 📈 HEARING TRADER — triggered by 📈 ear click (see handleBonus)
       
       // LEVEL 12: HEARING SLOTS - DÉSACTIVÉ (test seulement)
       /*
@@ -611,6 +895,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function startGame() {
+    // Update daily streak
+    if (typeof MetaGame !== 'undefined' && MetaGame.checkAndUpdateStreak) {
+      MetaGame.checkAndUpdateStreak();
+    }
+    // Apply prestige multiplier
+    if (typeof MetaGame !== 'undefined' && MetaGame.data && MetaGame.data.prestige && MetaGame.data.prestige.multiplier > 1) {
+      pointMultiplier = MetaGame.data.prestige.multiplier;
+    }
+    // Shop perks applied in actuallyStartGame() after variable reset
     startBtn.style.display = "none";
     gameOverScreen.style.display = "none";
     
@@ -777,13 +1070,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
   }
   
+
+  // Absolute score targets per level (no compounding = no blocking)
+  function getLevelScoreTarget(lvl) {
+    const table = [
+      0,       // 0 (unused)
+      600,     // 1
+      900,     // 2
+      1300,    // 3
+      1800,    // 4
+      2400,    // 5
+      3200,    // 6
+      4200,    // 7
+      5500,    // 8
+      7000,    // 9
+      9000,    // 10
+      11500,   // 11
+      14500,   // 12
+      18000,   // 13
+      22000,   // 14
+      27000,   // 15
+      33000,   // 16
+      40000,   // 17
+      48000,   // 18
+      57000,   // 19
+      68000,   // 20
+      80000,   // 21
+      95000,   // 22
+      112000,  // 23
+      132000,  // 24
+      155000,  // 25
+      180000,  // 26
+      210000,  // 27
+      245000,  // 28
+      285000,  // 29
+      330000,  // 30
+    ];
+    if (lvl <= 30) return table[Math.max(1, lvl)] || 330000;
+    // Levels 31-75: geometric from 330k × 1.18/level
+    let val = 330000;
+    for (let i = 31; i <= lvl; i++) val = Math.round(val * 1.18);
+    return val;
+  }
+
   function actuallyStartGame() {
     score = 0;
     combo = 1;
     streak = 0;
     level = 1;
     lives = 1; // Reset to 1 life
-    nextLevelScore = 800;
+    nextLevelScore = getLevelScoreTarget(1);
     permanentComboBonus = 0;
     starsThisLevel = 1;
     levelHits = 0;
@@ -791,6 +1127,25 @@ document.addEventListener("DOMContentLoaded", () => {
     isPaused = false;
     powerUpActive = null;
     window.score = 0; // 🐛 FIX NaN: always initialize so minigames don't get undefined+n=NaN
+    window._missShield = false;
+    window._doubleEars = false;
+
+    // Apply shop perks NOW (after reset so they aren't overwritten)
+    if (typeof MetaGame !== 'undefined' && MetaGame.data && MetaGame.data.shop) {
+      const p = [...(MetaGame.data.shop.purchased || [])];
+      if (p.includes('extra_life')) {
+        lives = 2; // 1 + 1 bonus
+        MetaGame.data.shop.purchased = MetaGame.data.shop.purchased.filter(x => x !== 'extra_life');
+        MetaGame.save();
+      }
+      if (p.includes('shield')) { window._missShield = true; }
+      if (p.includes('hot_start')) { combo = 2; }
+      if (p.includes('double_ears')) { window._doubleEars = true; }
+    }
+    // Apply prestige score multiplier
+    if (typeof MetaGame !== 'undefined' && MetaGame.data && MetaGame.data.prestige && MetaGame.data.prestige.multiplier > 1) {
+      pointMultiplier = MetaGame.data.prestige.multiplier;
+    }
 
     if (typeof ProgressiveEffects !== 'undefined') {
       ProgressiveEffects.init(1);
@@ -843,7 +1198,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('grandpaOverlay') || document.getElementById('pachinkoOverlay') ||
         document.getElementById('blackjackOverlay') || document.getElementById('unicornSwapOv') ||
         document.getElementById('canPauseOv') || document.getElementById('trollTweetContainer') ||
-        document.getElementById('hearingMachineOverlay') || document.getElementById('gameIntroOverlay');
+        document.getElementById('hearingMachineOverlay') || document.getElementById('gameIntroOverlay') ||
+        document.getElementById('traderOverlay') || document.getElementById('mysteryBoxOverlay') ||
+        document.querySelector('.level-up-celebration');
       if (anyOverlay) return; // minigame running, leave it
       if (isPaused || window.gamePaused) return; // intentionally paused
       if (gameOverScreen && gameOverScreen.style.display === 'flex') return; // game over
@@ -878,7 +1235,26 @@ document.addEventListener("DOMContentLoaded", () => {
     window.startSpawning = startSpawning; // Expose globally for mini-games
 
   // 🛡️ WATCHDOG: ensure spawning never gets stuck after any minigame
-  window.ensureGameRunning = function() {
+  // Global safety: auto-cleanup ONLY true stuck states (not mystery box which has its own timer)
+setInterval(() => {
+  // Only clean up non-mystery stuck overlays (mystery box manages itself)
+  if (window.gamePaused) {
+    const stuckSince = window._gamePausedSince || 0;
+    if (!window._gamePausedSince) return;
+    if (Date.now() - stuckSince > 12000) {
+      // Game stuck for 12s with no mystery box = force resume
+      const mb = document.getElementById('mysteryBoxOverlay');
+      if (!mb && typeof window.ensureGameRunning === 'function') {
+        window.ensureGameRunning();
+        window._gamePausedSince = 0;
+      }
+    }
+  } else {
+    window._gamePausedSince = 0;
+  }
+}, 2000);
+
+window.ensureGameRunning = function() {
     isPaused = false;
     window.gamePaused = false;
     if (typeof window.setPaused === 'function') window.setPaused(false);
@@ -930,7 +1306,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let isCabal = false;
     let isEcho = false;
     
-    if (level >= 10 && Math.random() < 0.08) {
+    // SKULL spam increases dramatically from level 25+
+    const skullChance = level >= 50 ? 0.18 : level >= 40 ? 0.14 : level >= 35 ? 0.10 :
+                        level >= 30 ? 0.07 : level >= 25 ? 0.05 : 0;
+    // CURSED ears from level 30+ (worth less points, move faster)
+    const cursedChance = level >= 45 ? 0.12 : level >= 35 ? 0.08 : level >= 30 ? 0.04 : 0;
+
+    if (skullChance > 0 && Math.random() < skullChance) {
+      emoji = '💀';
+    } else if (cursedChance > 0 && Math.random() < cursedChance) {
+      emoji = '☠️'; // CURSED - instant death if not clicked in time
+    } else if (level >= 10 && Math.random() < 0.08) {
       isCabal = true;
       emoji = '🕵️‍♂️';
     } else if (level >= 15 && Math.random() < 0.10) {
@@ -957,6 +1343,8 @@ document.addEventListener("DOMContentLoaded", () => {
       emoji = '🎲'; // Craps
     } else if (level >= 12 && Math.random() < 0.05) {
       emoji = '🃏'; // Poker - increased from 0.02
+    } else if (level >= 14 && Math.random() < 0.025) {
+      emoji = '📈'; // Hearing Trader - dedicated spawn
     } else if (Math.random() < getBonusChance()) {
       // 🎯 SYSTÈME 2-TIERS (V6) - Distribution intelligente
       const roll = Math.random();
@@ -980,6 +1368,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ear.classList.add("active");
     if (isCabal) ear.classList.add("cabal");
     if (isEcho) ear.classList.add("echo");
+    if (emoji === '☠️') ear.dataset.cursed = '1';
+    else delete ear.dataset.cursed;
     
     const upTime = getEarUpTime();
     const spawnTime = Date.now();
@@ -1012,8 +1402,27 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       
+      // CURSED EAR missed = lose a life!
+      if (symbol === '☠️' && !isPaused && !window.gamePaused) {
+        ear.classList.remove("active", "cabal", "echo");
+        activeEarsCount--;
+        lives = Math.max(0, lives - 1);
+        const cursedMsg = document.createElement('div');
+        cursedMsg.innerHTML = '☠️ CURSED MISSED! -1 LIFE!';
+        cursedMsg.style.cssText = `position:fixed;top:30%;left:50%;transform:translateX(-50%);
+          font-family:'Luckiest Guy',cursive;font-size:clamp(20px,4vw,32px);
+          color:#ff0000;text-shadow:0 0 20px #ff0000,2px 2px 0 #000;z-index:100020;pointer-events:none;`;
+        document.body.appendChild(cursedMsg);
+        setTimeout(() => cursedMsg.remove(), 1500);
+        if (typeof SoundSystem !== 'undefined') SoundSystem.miss();
+        if (lives <= 0) { updateUI(); setTimeout(() => actuallyEndGame(), 300); return; }
+        updateUI();
+        return; // Don't count as regular miss
+      }
+
       // MAINTENANT on peut modifier l'ear
       ear.classList.remove("active", "cabal", "echo");
+      delete ear.dataset.cursed;
       activeEarsCount--;
       
       // 🐛 FIX #5: RE-vérifier gamePaused ET textContent JUSTE AVANT de compter miss
@@ -1247,7 +1656,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
       
-      const basePoints = 25;
+      // Scale base points with level so high levels don't take 3 hours
+      const lvlBase = level >= 50 ? 60 : level >= 35 ? 45 : level >= 20 ? 35 : 25;
+      const basePoints = (window.ghostMode || window.grandpaDouble) ? lvlBase * 2 : lvlBase;
       const earnedPoints = Math.round(basePoints * (combo + permanentComboBonus) * scoreMultiplier * perfectBonus * fireMultiplier);
       score += earnedPoints;
 
@@ -1295,6 +1706,13 @@ document.addEventListener("DOMContentLoaded", () => {
       
       combo += 0.5;
       levelHits++;
+    // Track for achievements
+    if (typeof MetaGame !== 'undefined') {
+      MetaGame.data.stats.totalEarsClicked = (MetaGame.data.stats.totalEarsClicked || 0) + 1;
+      if (combo > (MetaGame.data.stats.longestCombo || 0)) MetaGame.data.stats.longestCombo = combo;
+      MetaGame.checkAchievement('first_click', MetaGame.data.stats);
+      MetaGame.checkAchievement('combo_5', MetaGame.data.stats);
+    }
       
       // 💎 Track achievements with MetaGameSystem
       if (typeof MetaGameSystem !== 'undefined') {
@@ -1394,17 +1812,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateUI();
 
-    if (typeof MiniGames !== 'undefined') {
-      MiniGames.trySpawnMysteryBox({score, updateUI, streak, combo});
+    if (typeof MiniGames !== 'undefined' && score < nextLevelScore - 30) {
+      MiniGames.trySpawnMysteryBox({
+        score, updateUI, streak, combo,
+        addScore: (pts) => { score = Math.max(0, score + (isNaN(pts)?0:pts)); updateUI(); }
+      });
     }
 
     if (score >= nextLevelScore && level < maxLevels) {
       level++;
-      showLevelUp();
+      if (level >= maxLevels) {
+        // FINAL LEVEL REACHED - special celebration but game continues
+        setTimeout(() => showVictoryScreen(), 1500);
+      } else {
+        showLevelUp();
+      }
     }
   }
 
   let lastBonusSymbol = null;
+  let lastBossLevelTriggered = 0; // Track last boss level fired
   let lastBonusTime = 0;
   let recentBonuses = [];
   
@@ -1481,7 +1908,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ear.style.animation = 'dogBounce 0.5s ease-in-out infinite';
         });
         
-        const gameContainer = document.querySelector('.game-container');
+        const gameContainer = document.querySelector('.holes-grid') || document.querySelector('.game-grid') || document.querySelector('.holes');
         if (gameContainer) {
           gameContainer.style.filter = 'sepia(0.4) saturate(1.8) hue-rotate(10deg)';
           gameContainer.style.background = 'linear-gradient(145deg, #2a1810, #3d2415)';
@@ -1494,7 +1921,8 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         instruction.style.cssText = `
           position: fixed;
-          top: 80px;
+          top: unset;
+          bottom: 15%;;
           left: 50%;
           transform: translateX(-50%);
           color: #fff;
@@ -1660,29 +2088,43 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       '🚀': () => {
         score += 200 * combo;
-        rumorBubble.textContent = "TO THE MOON! 🚀🌙";
-        
-        if (typeof SoundSystem !== 'undefined') {
-          SoundSystem.rocket();
-        }
-        rainEmojis('rocket');
+        rumorBubble.textContent = "🚀 TO THE MOON! LAUNCHING! 🌙";
+        if (typeof SoundSystem !== 'undefined') SoundSystem.rocket();
         vibrate([100, 50, 150, 50, 200]);
         
+        // Launch animation: rocket flies up from clicked position
+        const rocket = document.createElement('div');
+        rocket.textContent = '🚀';
         const ears = document.querySelectorAll('.ear.active');
-        ears.forEach(ear => {
-          const hole = ear.parentElement;
-          hole.style.transition = 'transform 2s ease-out';
-          hole.style.transform = 'translateY(-500px) rotate(360deg)';
-          
-          ear.style.filter = 'drop-shadow(0 10px 20px #ff4500) drop-shadow(0 20px 30px #ff6600)';
-          
-          setTimeout(() => {
-            hole.style.transition = '';
-            hole.style.transform = '';
-            ear.style.filter = '';
-          }, 2000);
-        });
+        const randomEar = ears[Math.floor(Math.random() * ears.length)];
+        const startX = randomEar ? randomEar.getBoundingClientRect().left + 20 : window.innerWidth / 2;
+        const startY = randomEar ? randomEar.getBoundingClientRect().top : window.innerHeight / 2;
+        rocket.style.cssText = `position:fixed;left:${startX}px;top:${startY}px;font-size:48px;
+          z-index:100020;pointer-events:none;transition:all 2s cubic-bezier(0.2,0,0.8,-0.5);
+          filter:drop-shadow(0 0 20px #FF8C00);`;
+        document.body.appendChild(rocket);
+        setTimeout(() => {
+          rocket.style.top = '-200px';
+          rocket.style.left = `${startX + (Math.random()-0.5)*200}px`;
+          rocket.style.fontSize = '80px';
+          rocket.style.opacity = '0';
+        }, 50);
+        setTimeout(() => rocket.remove(), 2100);
+        
+        // Moon landing bonus text
+        const moonMsg = document.createElement('div');
+        moonMsg.innerHTML = `🌙 +${200 * Math.round(combo)} pts! TO THE MOON!`;
+        moonMsg.style.cssText = `position:fixed;top:20%;left:50%;transform:translateX(-50%);
+          font-family:'Luckiest Guy',cursive;font-size:clamp(20px,4vw,30px);
+          color:#FF8C00;text-shadow:0 0 20px #FF8C00;z-index:100021;pointer-events:none;
+          animation:messagePulse 0.4s ease-out;`;
+        document.body.appendChild(moonMsg);
+        setTimeout(() => moonMsg.remove(), 2000);
+        
+        rainEmojis('rocket');
+        updateUI();
       },
+
       '💎': () => {
         score += 100 * combo;
         permanentComboBonus += 0.2;
@@ -1697,7 +2139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         rumorBubble.textContent = "📺 HEARING ZAPPER! ZAP ZAP! 📺";
         
         const duration = 5000;
-        const gameContainer = document.querySelector('.game-container');
+        const gameContainer = document.querySelector('.holes-grid') || document.querySelector('.game-grid') || document.querySelector('.holes');
         
         if (gameContainer) {
           let switchCount = 0;
@@ -1747,7 +2189,7 @@ document.addEventListener("DOMContentLoaded", () => {
         rumorBubble.textContent = "MONEY PRINTER GO BRRRRR! 🤑💵";
         rainEmojis('money');
         
-        const gameContainer = document.querySelector('.game-container');
+        const gameContainer = document.querySelector('.holes-grid') || document.querySelector('.game-grid') || document.querySelector('.holes');
         if (gameContainer) {
           gameContainer.style.background = 'linear-gradient(145deg, #001a00, #003300)';
         }
@@ -1844,7 +2286,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        const gameContainer = document.querySelector('.game-container');
+        const gameContainer = document.querySelector('.holes-grid') || document.querySelector('.game-grid') || document.querySelector('.holes');
         if (gameContainer) {
           gameContainer.style.background = 'linear-gradient(145deg, #3d0000, #1a0000)';
         }
@@ -1886,409 +2328,47 @@ document.addEventListener("DOMContentLoaded", () => {
         }, duration);
       },
       '💀': () => {
-        rumorBubble.textContent = "💀 HEARING REAPER! DEATH OR GLORY! 💀⚔️";
-        vibrate([200, 100, 200, 100, 200]);
-        
-        if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.skullLastChance({
-            endGame: actuallyEndGame, 
-            score, 
-            streak,
-            powerUpActive,
-            updateUI,
-            setScore: (val) => { score = val; updateUI(); },
-            setStreak: (val) => { streak = val; }
-          });
-        } else {
-          score -= 500;
-          updateUI();
+        // INSTANT DEATH - no mercy!
+        rumorBubble.textContent = "💀 THE REAPER GOT YOU! 💀";
+        vibrate([300, 100, 300, 100, 500]);
+        if (typeof VisualEffects !== 'undefined') {
+          VisualEffects.flashScreen('#ff0000', 500);
+          VisualEffects.screenShake(20, 600);
         }
+        // Dramatic skull screen
+        const skullScreen = document.createElement('div');
+        skullScreen.style.cssText = `position:fixed;inset:0;background:#000;z-index:999999;
+          display:flex;flex-direction:column;align-items:center;justify-content:center;
+          animation:fadeIn 0.3s;`;
+        skullScreen.innerHTML = `
+          <div style="font-size:clamp(80px,20vw,160px);animation:shake 0.3s infinite;line-height:1">💀</div>
+          <div style="font-family:'Luckiest Guy',cursive;font-size:clamp(32px,7vw,60px);
+            color:#ff0000;text-shadow:0 0 40px #ff0000,3px 3px 0 #000;margin-top:16px">INSTANT DEATH</div>
+          <div style="font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3vw,24px);color:#888;margin-top:8px">no rugpull escapes...</div>
+        `;
+        document.body.appendChild(skullScreen);
+        setTimeout(() => { skullScreen.remove(); actuallyEndGame(); }, 1800);
       },
-      '🕵️‍♂️': () => {
-        level = Math.min(level + 2, maxLevels);
-        score += 400 * level;
-        nextLevelScore = Math.round(nextLevelScore * 2.0);
-        triggerLSDPsycho();
-        spiralConfetti();
-        rumorBubble.textContent = "🕵️‍♂️ HEARING DETECTIVE! THE TRUTH IS OUT THERE! 🕵️‍♂️👁️";
-        
-        if (typeof SoundSystem !== 'undefined') {
-          SoundSystem.powerUp();
-        }
-        
-        const ears = document.querySelectorAll('.ear.active');
-        const originalEmojis = [];
-        
-        ears.forEach(ear => {
-          originalEmojis.push(ear.textContent);
-          ear.textContent = '👁️';
-          ear.style.animation = 'eyeFollow 2s ease-in-out infinite';
-        });
-        
-        const gameContainer = document.querySelector('.game-container');
-        if (gameContainer) {
-          gameContainer.style.filter = 'hue-rotate(120deg) contrast(1.2)';
-          gameContainer.style.background = 'linear-gradient(180deg, #000 0%, #001a00 100%)';
-          
-          const matrix = document.createElement('div');
-          matrix.style.cssText = `
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 2px,
-              rgba(0, 255, 0, 0.05) 2px,
-              rgba(0, 255, 0, 0.05) 4px
-            );
-            pointer-events: none;
-            z-index: 1;
-            animation: matrixScroll 0.5s linear infinite;
-          `;
-          gameContainer.appendChild(matrix);
-          
-          for (let i = 0; i < 10; i++) {
-            const column = document.createElement('div');
-            column.textContent = '01010101';
-            column.style.cssText = `
-              position: fixed;
-              left: ${i * 10}%;
-              top: -100%;
-              color: #0f0;
-              font-family: monospace;
-              font-size: 14px;
-              opacity: 0.3;
-              pointer-events: none;
-              z-index: 2;
-              animation: matrixFall ${2 + Math.random() * 2}s linear infinite;
-              animation-delay: ${Math.random() * 2}s;
-            `;
-            gameContainer.appendChild(column);
-            setTimeout(() => column.remove(), 4000);
-          }
-          
-          setTimeout(() => {
-            matrix.remove();
-            gameContainer.style.filter = '';
-            gameContainer.style.background = '';
-            ears.forEach((ear, i) => {
-              if (ear.classList.contains('active')) {
-                ear.textContent = originalEmojis[i] || '👂';
-        if (typeof SoundSystem !== 'undefined') {
-          SoundSystem.clownHonk();
-        }
 
-                ear.style.animation = '';
-              }
-            });
-          }, 4000);
-        }
-        
-        showLevelUp();
-        vibrate([200, 100, 300]);
-      },
-      '🤡': () => {
-        rumorBubble.textContent = "🤡 HEARING CLOWN! YOU GOT PRANKED! 🤡";
-        
-        if (typeof SoundSystem !== 'undefined') {
-          SoundSystem.clownHonk();
-        }
-        
-        const penalties = [
-          {
-            name: 'SCORE DIVIDED BY 2!',
-            action: () => {
-              score = Math.floor(score / 2);
-              updateUI();
-            }
-          },
-          {
-            name: 'COMBO RESET TO 1!',
-            action: () => {
-              combo = 1;
-              permanentComboBonus = 0;
-              updateUI();
-            }
-          },
-          {
-            name: 'LEVEL DOWN!',
-            action: () => {
-              if (level > 1) level--;
-              updateUI();
-            }
-          },
-          {
-            name: 'ALL POINTS TO CLOWN!',
-            action: () => {
-              const stolen = score;
-              score = 0;
-              updateUI();
-              
-              const clownThief = document.createElement('div');
-              clownThief.innerHTML = `🤡<br>+${stolen}`;
-              clownThief.style.cssText = `
-                position: fixed;
-                bottom: 50%;
-                left: 50%;
-                transform: translateX(-50%);
-                font-size: 60px;
-                z-index: 10000;
-                font-family: 'Luckiest Guy', cursive;
-                color: #ff0000;
-                text-align: center;
-                pointer-events: none;
-                animation: clownFlyAway 3s ease-out forwards;
-              `;
-              document.body.appendChild(clownThief);
-              setTimeout(() => clownThief.remove(), 3000);
-            }
-          }
-        ];
-        
-        const penalty = penalties[Math.floor(Math.random() * penalties.length)];
-        penalty.action();
-        
-        const clown = document.createElement('div');
-        clown.textContent = '🤡';
-        clown.style.cssText = `
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 200px;
-          z-index: 9999;
-          animation: clownLaugh 2s ease-in-out;
-          pointer-events: none;
-          filter: drop-shadow(0 0 30px #ff00ff);
-        `;
-        document.body.appendChild(clown);
-        
-        const penaltyMsg = document.createElement('div');
-        penaltyMsg.textContent = penalty.name;
-        penaltyMsg.style.cssText = `
-          position: fixed;
-          top: 30%;
-          left: 50%;
-          transform: translateX(-50%);
-          font-size: 50px;
-          color: #ff0000;
-          font-family: 'Luckiest Guy', cursive;
-          z-index: 10000;
-          text-shadow: 0 0 20px #000;
-          animation: fadeOut 2s;
-          pointer-events: none;
-        `;
-        document.body.appendChild(penaltyMsg);
-        
-        setTimeout(() => {
-          clown.remove();
-          penaltyMsg.remove();
-        }, 2000);
-        
-        vibrate([100, 50, 100, 50, 300]);
-      },
-      '⚡': () => {
-        rumorBubble.textContent = "⚡ HEARING BOLT! LIGHTNING SPEED! 3X POINTS! ⚡";
-        
-        if (typeof SoundSystem !== 'undefined') {
-          SoundSystem.lightning();
-        }
-        
-        const wasPaused = isPaused;
-        isPaused = true;
-        window.gamePaused = true;
-        
-        // 🐛 FIX: Clear ALL ears to prevent deaths during Lightning Speed
-        document.querySelectorAll('.ear').forEach(ear => {
-          ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-          ear.textContent = '';
-        });
-        if (typeof window.activeEarsCount !== 'undefined') {
-          window.activeEarsCount = 0;
-        }
-        
-        const instructionOverlay = document.createElement('div');
-        instructionOverlay.style.cssText = `
-          position: fixed;
-          inset: 0;
-          background: rgba(0, 0, 0, 0.9);
-          z-index: 10000;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        `;
-        
-        instructionOverlay.innerHTML = `
-          <div style="font-size: 70px; color: #FFD700; font-family: 'Luckiest Guy', cursive; margin-bottom: 30px; text-shadow: 0 0 40px #FFD700;">⚡ LIGHTNING SPEED! ⚡</div>
-          <div style="font-size: 45px; color: #fff; font-family: 'Luckiest Guy', cursive; margin-bottom: 20px;">3X POINTS FOR 10 SECONDS!</div>
-          <div style="font-size: 35px; color: #00ff00; font-family: 'Luckiest Guy', cursive;">CLICK EVERYTHING AS FAST AS YOU CAN!</div>
-          <div id="lightningCountdown" style="font-size: 120px; color: #ff0000; font-family: 'Luckiest Guy', cursive; margin-top: 40px; text-shadow: 0 0 50px #ff0000;">3</div>
-        `;
-        
-        document.body.appendChild(instructionOverlay);
-        
-        let readyCount = 3;
-        const countdownEl = document.getElementById('lightningCountdown');
-        
-        const readyInterval = setInterval(() => {
-          readyCount--;
-          if (readyCount > 0) {
-            countdownEl.textContent = readyCount;
-          } else {
-            countdownEl.textContent = 'GO!';
-            countdownEl.style.color = '#00ff00';
-            clearInterval(readyInterval);
-            
-            setTimeout(() => {
-              instructionOverlay.remove();
-              startLightningGame();
-            }, 1000);
-          }
-        }, 1000);
-        
-        function startLightningGame() {
-          isPaused = false;
-          window.gamePaused = false;
-          
-          const wasInvincible = invincibleMode;
-          invincibleMode = true;
-          
-          const overlay = document.createElement('div');
-          overlay.style.cssText = `
-            position: fixed;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.15));
-            z-index: 9999;
-            pointer-events: none;
-            animation: lightningPulse 0.3s infinite;
-          `;
-          document.body.appendChild(overlay);
-          
-          let hitsGot = 0;
-          const counter = document.createElement('div');
-          counter.style.cssText = `
-            position: fixed;
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 100px;
-            color: #FFD700;
-            font-weight: bold;
-            z-index: 10000;
-            pointer-events: none;
-            font-family: 'Luckiest Guy', cursive;
-            text-shadow: 0 0 40px #FFD700;
-          `;
-          counter.textContent = `HITS: 0`;
-          document.body.appendChild(counter);
-          
-          let timeLeft = 10;
-          const timer = document.createElement('div');
-          timer.style.cssText = `
-            position: fixed;
-            top: 75%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 120px;
-            color: #ff0000;
-            font-weight: bold;
-            z-index: 10000;
-            pointer-events: none;
-            font-family: 'Luckiest Guy', cursive;
-            text-shadow: 0 0 40px #ff0000;
-          `;
-          timer.textContent = timeLeft;
-          document.body.appendChild(timer);
-          
-          const countdownInterval = setInterval(() => {
-            timeLeft--;
-            timer.textContent = timeLeft;
-            if (timeLeft <= 0) {
-              clearInterval(countdownInterval);
-            }
-          }, 1000);
-          
-          const originalHitEar = hitEar;
-          let bulletHitEar = function(ear) {
-            if (ear && ear.classList.contains('active')) {
-              hitsGot++;
-              counter.textContent = `HITS: ${hitsGot}`;
-              counter.style.animation = 'none';
-              setTimeout(() => { counter.style.animation = 'bulletTimePulse 0.3s'; }, 10);
-            }
-            originalHitEar.call(this, ear);
-          };
-          
-          const tempHitEar = hitEar;
-          hitEar = bulletHitEar;
-          
-          const spawnInterval = setInterval(() => {
-            if (!isPaused && !window.gamePaused) {
-              spawnEar();
-            }
-          }, 300); // Every 300ms
-          
-          setTimeout(() => {
-            clearInterval(spawnInterval);
-            clearInterval(countdownInterval);
-            hitEar = tempHitEar;
-            
-            overlay.remove();
-            counter.remove();
-            timer.remove();
-            
-            const bonus = hitsGot * 50; // 50 points per hit
-            score += bonus;
-            updateUI();
-            
-            const resultNotif = document.createElement('div');
-            resultNotif.textContent = `⚡ ${hitsGot} HITS! +${bonus} POINTS! ⚡`;
-            resultNotif.style.cssText = `
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(45deg, #000, #1a0033, #000);
-      border: 4px solid #ff00ff;
-      padding: 20px 40px;
-      font-size: 30px;
-      font-family: 'Luckiest Guy', cursive;
-      color: #fff;
-      text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff;
-      z-index: 10001;
-      border-radius: 10px;
-      box-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
-    `;
-            document.body.appendChild(resultNotif);
-            setTimeout(() => resultNotif.remove(), 2000);
-            
-            invincibleMode = wasInvincible;
-            // ✅ FIX: Full resume
-            if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
-            else { isPaused = false; window.gamePaused = false; activeEarsCount = 0; startSpawning(); }
-          }, 10000); // 10 seconds
-        }
-      },
       '💊': () => {
         streak = 0; // KEEP streak reset
         combo += 0.5;
         rumorBubble.textContent = "COPING HARD! 💊🌈";
         vibrate([80, 40, 120]);
         
-        const gameContainer = document.querySelector('.game-container');
-        if (gameContainer) {
-          gameContainer.style.animation = 'psychedelicWave 5s ease-in-out';
-          gameContainer.style.filter = 'hue-rotate(0deg) saturate(2)';
+        // Animate ONLY the holes grid, not the whole container (avoids right-side menu shift)
+        const holesGrid = document.querySelector('.holes-grid') || document.querySelector('.game-grid') || document.querySelector('.holes');
+        const pillTarget = holesGrid || document.querySelector('.hole')?.parentElement;
+        if (pillTarget) {
+          pillTarget.style.filter = 'hue-rotate(0deg) saturate(2)';
           
           let hue = 0;
           const hueInterval = setInterval(() => {
             hue += 10;
-            gameContainer.style.filter = `hue-rotate(${hue}deg) saturate(2)`;
+            pillTarget.style.filter = `hue-rotate(${hue}deg) saturate(2)`;
             if (hue >= 360) {
               clearInterval(hueInterval);
-              gameContainer.style.filter = '';
-              gameContainer.style.animation = '';
+              pillTarget.style.filter = '';
             }
           }, 80);
           
@@ -2309,97 +2389,67 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       },
       '❄️': () => {
-        rumorBubble.textContent = "❄️ HEARING FREEZE! BREAK THEM ALL! ❄️";
+        rumorBubble.textContent = "❄️ HEARING FREEZE! TIME STOPS! CLICK ALL! ❄️";
+        if (typeof SoundSystem !== 'undefined') SoundSystem.ghost();
+        if (typeof VisualEffects !== 'undefined') VisualEffects.flashScreen('#00ffff', 300);
+        vibrate([100, 50, 100]);
         
-        if (typeof SoundSystem !== 'undefined') {
-          SoundSystem.ghost(); // Using ghost sound for freeze effect
-        }
+        const duration = 6000; // 6 seconds
+        // Freeze ALL currently visible ears (they can't expire)
+        const activeEars = document.querySelectorAll('.ear.active');
+        const frozenTimers = [];
         
-        const duration = 5000;
-        const ears = document.querySelectorAll('.ear.active');
-        const frozenEars = [];
+        // Visual: blue tint overlay
+        const frozenBg = document.createElement('div');
+        frozenBg.style.cssText = `position:fixed;inset:0;background:rgba(0,200,255,0.08);
+          pointer-events:none;z-index:9999;border:4px solid rgba(0,200,255,0.5);
+          box-sizing:border-box;animation:pulse 0.5s ease-in-out infinite;`;
+        document.body.appendChild(frozenBg);
         
-        ears.forEach(ear => {
-          ear.classList.add('frozen');
-          ear.style.filter = 'brightness(1.5) hue-rotate(180deg) drop-shadow(0 0 20px #00ffff)';
-          ear.style.animation = 'iceCrystal 1s ease-in-out infinite';
-          ear.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ctext y=\'28\' font-size=\'28\'%3E🔨%3C/text%3E%3C/svg%3E") 16 16, auto';
-          frozenEars.push(ear);
+        // Freeze timer display
+        const timerEl = document.createElement('div');
+        let timeLeft = duration / 1000;
+        timerEl.textContent = `❄️ FROZEN ${timeLeft}s`;
+        timerEl.style.cssText = `position:fixed;top:10px;left:50%;transform:translateX(-50%);
+          font-family:'Luckiest Guy',cursive;font-size:clamp(18px,4vw,26px);
+          color:#00ffff;text-shadow:0 0 15px #00ffff;z-index:100020;pointer-events:none;`;
+        document.body.appendChild(timerEl);
+        const timerInterval = setInterval(() => {
+          timeLeft--;
+          timerEl.textContent = timeLeft > 0 ? `❄️ FROZEN ${timeLeft}s` : '❄️ THAWING!';
+        }, 1000);
+        
+        activeEars.forEach(ear => {
+          ear.style.filter = 'brightness(1.5) hue-rotate(180deg) drop-shadow(0 0 15px #00ffff)';
+          ear.style.animation = 'iceCrystal 0.8s ease-in-out infinite';
+          ear.style.transform = 'scale(1.2)';
+          // Clicking frozen ears gives 2x points
+          ear.dataset.frozenBonus = '1';
         });
         
-        document.body.style.cursor = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\' viewBox=\'0 0 32 32\'%3E%3Ctext y=\'28\' font-size=\'28\'%3E🔨%3C/text%3E%3C/svg%3E") 16 16, auto';
-        
-        let brokenCount = 0;
-        const totalEars = frozenEars.length;
-        
-        const originalHitEar = hitEar;
-        hitEar = function(ear) {
-          if (ear && ear.classList.contains('frozen')) {
-            brokenCount++;
-            score += 100; // Bonus for ice break
-            
-            if (typeof SoundSystem !== 'undefined') {
-              SoundSystem.iceBreak();
-            }
-            
-            const iceBreak = document.createElement('div');
-            iceBreak.textContent = '💎';
-            iceBreak.style.cssText = `
-              position: fixed;
-              left: ${Math.random() * 100}%;
-              top: ${Math.random() * 100}%;
-              font-size: 30px;
-              z-index: 9999;
-              pointer-events: none;
-              animation: iceShatter 0.5s ease-out;
-            `;
-            document.body.appendChild(iceBreak);
-            setTimeout(() => iceBreak.remove(), 500);
-            
-            ear.classList.remove('frozen');
-          }
-          originalHitEar.call(this, ear);
-        };
+        // Pause spawning during freeze
+        const prevPaused = window.gamePaused;
+        // Don't full pause - just slow spawning via interval multiplier
+        clearInterval(gameInterval);
+        gameInterval = setInterval(spawnEar, 2500); // Very slow during freeze
         
         setTimeout(() => {
-          hitEar = originalHitEar;
-          
-          document.querySelectorAll('.ear.frozen').forEach(ear => {
-            ear.classList.remove('frozen');
+          clearInterval(timerInterval);
+          document.querySelectorAll('.ear.active').forEach(ear => {
             ear.style.filter = '';
             ear.style.animation = '';
-            ear.style.cursor = '';
+            ear.style.transform = '';
+            delete ear.dataset.frozenBonus;
           });
-          
-          document.body.style.cursor = '';
-          
-          if (brokenCount >= totalEars && totalEars > 0) {
-            score += 1000;
-            const bonus = document.createElement('div');
-            bonus.textContent = '❄️ PERFECT BREAK! +1000 ❄️';
-            bonus.style.cssText = `
-              position: fixed;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              font-size: 50px;
-              color: #00ffff;
-              font-weight: bold;
-              z-index: 10000;
-              text-shadow: 0 0 30px #00ffff;
-              font-family: 'Luckiest Guy', cursive;
-              animation: fadeIn 0.3s, fadeOut 0.5s 2s;
-              pointer-events: none;
-            `;
-            document.body.appendChild(bonus);
-            setTimeout(() => bonus.remove(), 2500);
-          }
-          
-          updateUI();
+          frozenBg.remove();
+          timerEl.remove();
+          // Resume normal speed
+          clearInterval(gameInterval);
+          startSpawning();
         }, duration);
-        
-        streak = 0; // Reset misses
+        updateUI();
       },
+
       '🌙': () => {
         rumorBubble.textContent = "👻 HEARING GHOSTS! CATCH THE GHOSTS! 👻";
         
@@ -2408,11 +2458,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         const duration = 8000;
-        const gameContainer = document.querySelector('.game-container');
-        
-        if (gameContainer) {
-          gameContainer.style.background = 'linear-gradient(180deg, #0a0a1a, #1a1a2e)';
-          gameContainer.style.filter = 'contrast(1.3)';
+        const moonGrid = document.querySelector('.holes-grid') || document.querySelector('.game-grid') || document.querySelector('.holes');
+        if (moonGrid) {
+          moonGrid.style.background = 'linear-gradient(180deg, #0a0a1a, #1a1a2e)';
+          moonGrid.style.filter = 'contrast(1.3)';
         }
         
         const ears = document.querySelectorAll('.ear.active');
@@ -2494,10 +2543,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         setTimeout(() => {
-          if (gameContainer) {
-            gameContainer.style.background = '';
-            gameContainer.style.filter = '';
-          }
+          const moonGridClean = document.querySelector('.holes-grid') || document.querySelector('.game-grid');
+          if (moonGridClean) { moonGridClean.style.background = ''; moonGridClean.style.filter = ''; }
           document.querySelectorAll('[data-ghost-mode]').forEach(ear => {
             ear.style.opacity = '1';
             ear.style.filter = '';
@@ -2565,247 +2612,184 @@ document.addEventListener("DOMContentLoaded", () => {
         rainEmojis('special');
       },
       '🦻': () => {
-        // HEARING GRANDPA V2 - ULTRA DÉBILE avec OVERLAY COMPLET
-        rumorBubble.textContent = "🦻 HEARING GRANDPA! WHAT?! HUH?! 🦻";
-        
-        // 🐛 FIX: Pauser le jeu et nettoyer les ears
+        // 🦻 HEARING GRANDPA V3 — ULTRA DEGEN EDITION
+        rumorBubble.textContent = "🦻 GRANDPA HEARD SOMETHING! 🦻";
+
         const wasGamePaused = isPaused;
-        window.gamePaused = true;
-        isPaused = true;
-        
-        // 🐛 FIX: Clear ALL ears to prevent deaths during Grandpa
+        window.gamePaused = true; isPaused = true;
         document.querySelectorAll('.ear').forEach(ear => {
-          ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-          ear.textContent = '';
+          ear.classList.remove('active', 'cabal', 'echo', 'power-up'); ear.textContent = '';
         });
-        if (typeof window.activeEarsCount !== 'undefined') {
-          window.activeEarsCount = 0;
+        if (typeof window.activeEarsCount !== 'undefined') window.activeEarsCount = 0;
+
+        // Inject grandpa styles
+        if (!document.getElementById('grandpaStyles')) {
+          const gs = document.createElement('style'); gs.id = 'grandpaStyles';
+          gs.textContent = `
+            @keyframes gpScan{0%{background-position:0 -100%}100%{background-position:0 200%}}
+            @keyframes gpShake{0%,100%{transform:translate(0,0) rotate(0deg)}20%{transform:translate(-4px,2px) rotate(-1deg)}40%{transform:translate(4px,-2px) rotate(1deg)}60%{transform:translate(-3px,3px) rotate(-0.5deg)}80%{transform:translate(3px,-1px) rotate(0.5deg)}}
+            @keyframes gpFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-12px) scale(1.05)}}
+            @keyframes gpHearingAid{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.92)}}
+            @keyframes gpCRT{0%{opacity:0.05}50%{opacity:0.12}100%{opacity:0.05}}
+          `;
+          document.head.appendChild(gs);
         }
-        
-        // 🎭 OVERLAY COMPLET pour cacher le fond
-        const grandpaOverlay = document.createElement('div');
-        grandpaOverlay.id = 'grandpaOverlay';
-        grandpaOverlay.style.cssText = `
-          position: fixed;
-          inset: 0;
-          background: linear-gradient(45deg, #8B4513 0%, #D2691E 25%, #8B4513 50%, #D2691E 75%, #8B4513 100%);
-          background-size: 400% 400%;
-          z-index: 99999;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          animation: vintageBackground 5s ease infinite;
-          filter: sepia(0.8) contrast(1.2);
-        `;
-        
-        // Titre GRANDPA
-        const title = document.createElement('div');
-        title.textContent = '🦻 HEARING GRANDPA 🦻';
-        title.style.cssText = `
-          font-family: 'Luckiest Guy', cursive;
-          font-size: clamp(40px, 8vw, 80px);
-          color: #FFD700;
-          text-shadow: 
-            0 0 40px #FFD700,
-            5px 5px 0 #000,
-            10px 10px 0 rgba(0,0,0,0.5);
-          margin-bottom: 30px;
-          animation: shake 0.5s infinite;
-        `;
-        
-        // Message vintage
-        const message = document.createElement('div');
-        message.textContent = 'SPEAK UP SONNY!';
-        message.style.cssText = `
-          font-family: 'Luckiest Guy', cursive;
-          font-size: clamp(30px, 6vw, 60px);
-          color: #fff;
-          text-shadow: 3px 3px 0 #000;
-          margin-bottom: 40px;
-          animation: pulse 1s infinite;
-        `;
-        
-        // Container pour les popups
-        const popupContainer = document.createElement('div');
-        popupContainer.style.cssText = `
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          overflow: hidden;
-        `;
-        
-        grandpaOverlay.appendChild(title);
-        grandpaOverlay.appendChild(message);
-        grandpaOverlay.appendChild(popupContainer);
-        document.body.appendChild(grandpaOverlay);
-        
-        // Ajouter animation vintage au CSS inline
-        const style = document.createElement('style');
-        style.textContent = `
-          @keyframes vintageBackground {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          @keyframes slowShake {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(-3px, 3px) rotate(-1deg); }
-            50% { transform: translate(3px, -3px) rotate(1deg); }
-            75% { transform: translate(-3px, -3px) rotate(-1deg); }
-          }
-        `;
-        document.head.appendChild(style);
-        
-        // 🔊 TEXT-TO-SPEECH débile
-        if ('speechSynthesis' in window) {
-          const phrases = [
-            "What's that you say?",
-            "Speak up sonny!",
-            "I can't hear you!",
-            "My hearing aid is broken!",
-            "Back in my day...",
-            "Huh? What?!"
-          ];
-          
-          let phraseIndex = 0;
-          const speakInterval = setInterval(() => {
-            const utterance = new SpeechSynthesisUtterance(phrases[phraseIndex]);
-            utterance.rate = 0.7; // Très lent
-            utterance.pitch = 0.7; // Voix grave
-            utterance.volume = 0.8;
-            window.speechSynthesis.speak(utterance);
-            
-            phraseIndex = (phraseIndex + 1) % phrases.length;
-          }, 2000);
-          
-          setTimeout(() => clearInterval(speakInterval), 10000);
-        }
-        
-        // 💬 Popups aléatoires DÉBILES
-        const whatPhrases = [
-          'WHAT?!', 'HUH?!', 'EH?!', 'SPEAK UP!', 
-          'CANT HEAR!', 'MY EARS!', 'TOO LOUD!', 'TOO QUIET!',
-          'BACK IN MY DAY...', 'WHIPPERSNAPPER!', 
-          'GET OFF MY LAWN!', 'WHERE ARE MY GLASSES?!',
-          '🦻', '👴', '🧓', '📢'
+
+        const GRANDPA_PHRASES = [
+          "WHAT'S THAT NOISE?!", "I CAN'T HEAR YOU SER!", "IS THIS THE INTERNET?",
+          "SPEAK INTO MY HEARING AID!", "IN MY DAY WE HAD REAL EARS!",
+          "GET OFF MY LAWN!", "HOLD ON LET ME ADJUST MY DEVICE...",
+          "WHAT DID YOU SAY?!", "CAN YOU REPEAT THAT?",
+          "THIS IS WORSE THAN MY TINNITUS!", "NGMI LIKE MY HEARING!",
+          "BACK IN 1929...", "I PUT ALL MY SAVINGS INTO THIS?!",
+          "THE NURSE SAID NOT TO PLAY THIS GAME!", "BINGO? NO? BINGO?",
+          "💊 WHERE ARE MY PILLS?!", "ONE MORE SPIN... JUST ONE MORE..."
         ];
-        
-        let whatCount = 0;
-        const whatInterval = setInterval(() => {
-          const whatPopup = document.createElement('div');
-          whatPopup.textContent = whatPhrases[Math.floor(Math.random() * whatPhrases.length)];
-          whatPopup.style.cssText = `
-            position: fixed;
-            left: ${Math.random() * 90 + 5}%;
-            top: ${Math.random() * 90 + 5}%;
-            font-size: ${30 + Math.random() * 50}px;
-            color: ${['#FFD700', '#fff', '#FF6B00', '#00ffff'][Math.floor(Math.random() * 4)]};
-            font-family: 'Luckiest Guy', cursive;
-            text-shadow: 3px 3px 0 #000;
-            z-index: 100000;
-            pointer-events: none;
-            animation: fadeOut 2s forwards, slowShake 0.5s infinite;
-            transform-origin: center;
-          `;
-          popupContainer.appendChild(whatPopup);
-          
-          setTimeout(() => whatPopup.remove(), 2000);
-          
-          whatCount++;
-          if (whatCount >= 20) clearInterval(whatInterval);
-        }, 600);
-        
-        // 🎵 Musique vintage (optionnel)
-        const playVintageSound = () => {
-          try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            oscillator.frequency.value = 220; // A3
-            oscillator.type = 'sine';
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
-            
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 1);
-          } catch(e) {}
-        };
-        
-        playVintageSound();
-        
-        // 💰 Bonus points
-        score += 300;
-        
-        // 🔙 Retour normal après 5 secondes (réduit de 10s)
+        const GRANDPA_EMOJIS = ['🦻','👴','🧓','📢','📣','🔊','👂','💊','🏥','📺','🎰'];
+
+        const gOv = document.createElement('div');
+        gOv.id = 'grandpaOverlay';
+        gOv.style.cssText = `position:fixed;inset:0;z-index:100010;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+          background:linear-gradient(160deg,#0a0600 0%,#1a0e00 50%,#0a0600 100%);`;
+
+        // CRT scanline effect
+        const crt = document.createElement('div');
+        crt.style.cssText = `position:absolute;inset:0;pointer-events:none;z-index:100;
+          background:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0px,rgba(0,0,0,0.12) 1px,transparent 1px,transparent 4px);
+          animation:gpCRT 3s ease-in-out infinite;`;
+        gOv.appendChild(crt);
+
+        // Scan line
+        const scan = document.createElement('div');
+        scan.style.cssText = `position:absolute;left:0;right:0;height:3px;z-index:101;pointer-events:none;
+          background:linear-gradient(90deg,transparent,rgba(180,130,0,0.4),transparent);
+          animation:gpScan 3s linear infinite;background-size:100% 300%;`;
+        gOv.appendChild(scan);
+
+        // Floating emojis background
+        const floatBg = document.createElement('div');
+        floatBg.style.cssText = `position:absolute;inset:0;pointer-events:none;overflow:hidden;`;
+        for (let i = 0; i < 12; i++) {
+          const fe = document.createElement('div');
+          fe.textContent = GRANDPA_EMOJIS[i % GRANDPA_EMOJIS.length];
+          fe.style.cssText = `position:absolute;font-size:${20+Math.random()*30}px;opacity:0.06;
+            left:${Math.random()*90+5}%;top:${Math.random()*90+5}%;
+            animation:gpFloat ${4+Math.random()*4}s ${Math.random()*3}s ease-in-out infinite;`;
+          floatBg.appendChild(fe);
+        }
+        gOv.appendChild(floatBg);
+
+        // Main content box
+        const gBox = document.createElement('div');
+        gBox.style.cssText = `position:relative;z-index:10;text-align:center;padding:clamp(20px,5vw,40px);max-width:420px;width:92%;`;
+
+        // Giant grandpa emoji (shaking)
+        const gEmoji = document.createElement('div');
+        gEmoji.textContent = '👴';
+        gEmoji.style.cssText = `font-size:clamp(80px,20vw,140px);animation:gpShake 0.3s infinite;
+          display:block;line-height:1;margin-bottom:16px;filter:drop-shadow(0 0 30px rgba(255,180,0,0.5));`;
+        gBox.appendChild(gEmoji);
+
+        // Title
+        const gTitle = document.createElement('div');
+        gTitle.innerHTML = '🦴 GRANDPA 🦴';
+        gTitle.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(22px,5vw,40px);white-space:nowrap;
+          color:#FF8C00;text-shadow:0 0 30px #FF8C00,0 0 60px rgba(255,140,0,0.4),3px 3px 0 #000;
+          margin-bottom:8px;letter-spacing:1px;animation:gpShake 0.5s infinite;`;
+        gBox.appendChild(gTitle);
+
+        // Hearing aid meter
+        const meterWrap = document.createElement('div');
+        meterWrap.style.cssText = `background:rgba(0,0,0,0.5);border:2px solid rgba(255,140,0,0.4);
+          border-radius:20px;padding:8px 20px;margin:10px auto;max-width:280px;`;
+        meterWrap.innerHTML = `
+          <div style="font-family:'Luckiest Guy',cursive;font-size:12px;color:#888;letter-spacing:2px;margin-bottom:4px">HEARING AID SIGNAL</div>
+          <div style="display:flex;gap:3px;justify-content:center" id="gpMeter">
+            ${Array.from({length:8},(_,i)=>`<div style="width:14px;height:${8+i*3}px;border-radius:3px;background:${i<3?'#ff4444':i<6?'#FF8C00':'#00ff88'};opacity:0.3;animation:gpHearingAid ${0.5+i*0.1}s ${i*0.05}s ease-in-out infinite" id="gpm${i}"></div>`).join('')}
+          </div>
+        `;
+        gBox.appendChild(meterWrap);
+
+        // Speech bubble
+        const gBubble = document.createElement('div');
+        gBubble.style.cssText = `background:rgba(255,140,0,0.1);border:3px solid rgba(255,140,0,0.5);
+          border-radius:16px;padding:12px 20px;margin:12px 0;
+          font-family:'Luckiest Guy',cursive;font-size:clamp(16px,4vw,24px);
+          color:#FFD700;text-shadow:2px 2px 0 #000;min-height:48px;
+          animation:gpShake 0.8s infinite;`;
+        gBubble.textContent = GRANDPA_PHRASES[0];
+        gBox.appendChild(gBubble);
+
+        // Goodus display
+        const gBonus = document.createElement('div');
+        gBonus.style.cssText = `font-family:'Luckiest Guy',cursive;font-size:clamp(20px,5vw,32px);
+          color:#00ff88;text-shadow:0 0 20px #00ff88,2px 2px 0 #000;margin-top:12px;`;
+        // Grandpa bonus variety
+        const grandpaBonuses = [
+          { icon:'👂', text:'+500 SCORE', action: () => { score += 500; } },
+          { icon:'❤️', text:'+1 EXTRA LIFE', action: () => { lives++; } },
+          { icon:'⚡', text:'COMBO BOOST! +5x', action: () => { combo = Math.min(combo + 5, 50); } },
+          { icon:'💎', text:'+1000 SCORE', action: () => { score += 1000; } },
+          { icon:'🌀', text:'2× POINTS 5s', action: () => { window.grandpaDouble = true; setTimeout(() => { window.grandpaDouble = false; }, 5000); } },
+          { icon:'💊', text:'ALL LIVES RESTORED', action: () => { lives = Math.max(lives, 3); } },
+          { icon:'🎰', text:'RANDOM: +200 to +2000', action: () => { const r = (Math.floor(Math.random()*10)+1)*200; score += r; gBonus.textContent = `🎰 JACKPOT +${r}!`; } },
+          { icon:'⭐', text:'PERMANENT +0.2 COMBO', action: () => { permanentComboBonus += 0.2; } },
+        ];
+        const gPick = grandpaBonuses[Math.floor(Math.random() * grandpaBonuses.length)];
+        gPick.action();
+        updateUI();
+        gBonus.textContent = `${gPick.icon} ${gPick.text} ${gPick.icon}`;
+        gBox.appendChild(gBonus);
+
+        gOv.appendChild(gBox);
+        document.body.appendChild(gOv);
+
+        // Animate hearing aid meter
+        let meterTick = 0;
+        const meterInterval = setInterval(() => {
+          meterTick++;
+          const bars = document.querySelectorAll('[id^="gpm"]');
+          const activeCount = Math.floor(Math.random() * 8) + 1;
+          bars.forEach((b, i) => { b.style.opacity = i < activeCount ? '1' : '0.15'; });
+        }, 150);
+
+        // Cycle phrases
+        let phraseIdx = 0;
+        const phraseInterval = setInterval(() => {
+          phraseIdx = (phraseIdx + 1) % GRANDPA_PHRASES.length;
+          gBubble.textContent = GRANDPA_PHRASES[phraseIdx];
+        }, 800);
+
+        // TTS
+        if ('speechSynthesis' in window) {
+          const ttsInterval = setInterval(() => {
+            const utt = new SpeechSynthesisUtterance(GRANDPA_PHRASES[Math.floor(Math.random()*GRANDPA_PHRASES.length)]);
+            utt.rate = 0.65; utt.pitch = 0.6; utt.volume = 0.7;
+            window.speechSynthesis.speak(utt);
+          }, 2200);
+          setTimeout(() => clearInterval(ttsInterval), 8000);
+        }
+
+        score += 300; updateUI();
+
+        // Cleanup after 6s
         setTimeout(() => {
-          // Ending screen propre
-          grandpaOverlay.innerHTML = '';
-          grandpaOverlay.style.animation = 'none';
-          grandpaOverlay.style.filter = 'none';
-          grandpaOverlay.style.background = 'rgba(0,0,0,0.95)';
-          grandpaOverlay.style.flexDirection = 'column';
-          grandpaOverlay.style.alignItems = 'center';
-          grandpaOverlay.style.justifyContent = 'center';
-          
-          const endTitle = document.createElement('div');
-          endTitle.textContent = '👴 GRANDPA WENT HOME! 👴';
-          endTitle.style.cssText = `
-            font-family: 'Luckiest Guy', cursive;
-            font-size: clamp(30px, 7vw, 60px);
-            color: #FFD700;
-            text-shadow: 3px 3px 0 #000, 0 0 30px #FFD700;
-            margin-bottom: 20px;
-            text-align: center;
-          `;
-          
-          const endBonus = document.createElement('div');
-          endBonus.textContent = '💰 +300 BONUS POINTS! 💰';
-          endBonus.style.cssText = `
-            font-family: 'Luckiest Guy', cursive;
-            font-size: clamp(22px, 5vw, 40px);
-            color: #00ff00;
-            text-shadow: 0 0 20px #00ff00, 2px 2px 0 #000;
-            margin-bottom: 15px;
-            text-align: center;
-            animation: pulse 0.5s ease-in-out infinite;
-          `;
-          
-          const endScore = document.createElement('div');
-          endScore.textContent = `🎯 SCORE: ${Math.round(score)}`;
-          endScore.style.cssText = `
-            font-family: 'Luckiest Guy', cursive;
-            font-size: clamp(18px, 4vw, 30px);
-            color: #fff;
-            text-shadow: 2px 2px 0 #000;
-            text-align: center;
-          `;
-          
-          grandpaOverlay.appendChild(endTitle);
-          grandpaOverlay.appendChild(endBonus);
-          grandpaOverlay.appendChild(endScore);
-          
-          updateUI();
-          
-          // Disparaître après 2s
+          clearInterval(meterInterval); clearInterval(phraseInterval);
+          window.speechSynthesis?.cancel();
+
+          gBubble.textContent = '👋 GRANDPA WENT HOME!';
+          gEmoji.textContent = '🏠';
+          gEmoji.style.animation = 'none';
+          gTitle.style.animation = 'none';
+
           setTimeout(() => {
-            grandpaOverlay.style.transition = 'opacity 0.8s';
-            grandpaOverlay.style.opacity = '0';
-            
+            gOv.style.transition = 'opacity 0.6s'; gOv.style.opacity = '0';
             setTimeout(() => {
-              grandpaOverlay.remove();
-              style.remove();
-              
-              // ✅ FIX: Full resume with activeEarsCount reset
+              gOv.remove();
               if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
               else { isPaused = false; window.gamePaused = false; activeEarsCount = 0; startSpawning(); }
-            }, 800);
-            
-            rumorBubble.textContent = "GRANDPA LEFT! BACK TO NORMAL! 🎯";
+            }, 600);
+            rumorBubble.textContent = "GRANDPA LEFT! 300 BONUS EARS! 🦻";
             rumorBubble.classList.add("show");
             setTimeout(() => rumorBubble.classList.remove("show"), 1500);
           }, 2000);
@@ -2837,14 +2821,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // 🔊 TTS
         if ('speechSynthesis' in window) {
           const utterance = new SpeechSynthesisUtterance("Hearing Flip! Double or nothing! Choose wisely!");
-          utterance.rate = 1.1;
-          utterance.pitch = 1.0;
-          utterance.volume = 1.0;
+          utterance.rate = 1.1; utterance.pitch = 1.0; utterance.volume = 1.0;
           window.speechSynthesis.speak(utterance);
         }
         
         const wasPaused = isPaused;
         isPaused = true;
+        window.gamePaused = true; // FIX: prevent watchdog from restarting spawns during flip
         clearInterval(gameInterval);
         
         // 🐛 FIX: Clear ALL ears (pas juste .active) to prevent deaths during mini-game
@@ -2903,7 +2886,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Subtitle with current score
         const subtitle = document.createElement('div');
-        subtitle.innerHTML = `💰 YOUR SCORE: <span style="color: #00ff00;">${Math.round(score)}</span> 💰`;
+        subtitle.innerHTML = `👂 YOUR SCORE: <span style="color: #00ff00;">${Math.round(score)}</span> 👂`;
         subtitle.style.cssText = `
           font-size: clamp(18px, 4vw, 28px);
           color: #fff;
@@ -3424,351 +3407,135 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       
       '🔮': () => {
-        // 🔮 FORTUNE TELLER V2 - ULTRA MYSTIQUE ET DEGEN
-        rumorBubble.textContent = "🔮✨ THE CRYSTAL REVEALS YOUR DESTINY ✨🔮";
-        
-        const wasPaused = isPaused;
-        isPaused = true;
-        window.gamePaused = true;
-        
-        // 🐛 FIX: Clear ALL ears to prevent deaths during Fortune Teller
-        document.querySelectorAll('.ear').forEach(ear => {
-          ear.classList.remove('active', 'cabal', 'echo', 'power-up');
-          ear.textContent = '';
+        // 🔮 FORTUNE TELLER — Simple & Fun
+        // Shows 3-5 holes → countdown 3-2-1 → ears spawn exactly there!
+        if (typeof SoundSystem !== 'undefined') SoundSystem.bonus();
+        rumorBubble.textContent = '🔮 THE CRYSTAL REVEALS ALL!';
+
+        isPaused = true; window.gamePaused = true;
+        document.querySelectorAll('.ear').forEach(e => {
+          e.classList.remove('active','cabal','echo','power-up'); e.textContent = '';
         });
-        if (typeof window.activeEarsCount !== 'undefined') {
-          window.activeEarsCount = 0;
-        }
-        
-        // Overlay mystique complet
-        const overlay = document.createElement('div');
-        overlay.id = 'fortuneTellerOverlay';
-        overlay.style.cssText = `
-          position: fixed;
-          inset: 0;
-          background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #1a0033 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 100005;
-          animation: fadeIn 0.3s, mysticPulse 3s infinite;
-          overflow: hidden;
-        `;
-        
-        // Ajouter CSS animations
-        const style = document.createElement('style');
-        style.id = 'fortuneTellerStyles';
-        style.innerHTML = `
-          @keyframes mysticPulse {
-            0%, 100% { background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #1a0033 100%); }
-            50% { background: linear-gradient(135deg, #330066 0%, #660099 50%, #330066 100%); }
-          }
-          @keyframes mysticFloat {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
-            50% { transform: translateY(-30px) rotate(180deg); opacity: 1; }
-          }
-          @keyframes crystalGlow {
-            0%, 100% { 
-              text-shadow: 0 0 40px #9d4edd, 0 0 80px #c77dff, 0 0 120px #e0aaff, 5px 5px 0 #000;
-              transform: scale(1);
-            }
-            50% { 
-              text-shadow: 0 0 60px #9d4edd, 0 0 120px #c77dff, 0 0 180px #e0aaff, 5px 5px 0 #000;
-              transform: scale(1.05);
-            }
-          }
-          @keyframes countdownSpin {
-            0% { transform: scale(1) rotate(0deg); opacity: 1; }
-            50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
-            100% { transform: scale(1) rotate(360deg); opacity: 1; }
-          }
-          @keyframes holePrediction {
-            0%, 100% {
-              box-shadow: 0 0 30px #9d4edd, inset 0 0 30px #c77dff !important;
-              border-color: #e0aaff !important;
-            }
-            50% {
-              box-shadow: 0 0 60px #9d4edd, inset 0 0 60px #c77dff, 0 0 90px #e0aaff !important;
-              border-color: #9d4edd !important;
-            }
-          }
-        `;
-        document.head.appendChild(style);
-        
-        // Particules mystiques (réduit sur mobile)
-        const isMobile = window.innerWidth < 768;
-        const particleCount = isMobile ? 8 : 15;
-        
-        for (let i = 0; i < particleCount; i++) {
-          const particle = document.createElement('div');
-          particle.textContent = ['🔮', '✨', '🌟', '💫', '⭐', '🌙'][Math.floor(Math.random() * 6)];
-          particle.style.cssText = `
-            position: absolute;
-            font-size: ${20 + Math.random() * 40}px;
-            left: ${Math.random() * 100}%;
-            top: ${Math.random() * 100}%;
-            animation: mysticFloat ${3 + Math.random() * 4}s ease-in-out infinite;
-            animation-delay: ${Math.random() * 2}s;
-            pointer-events: none;
-            opacity: 0.6;
+        activeEarsCount = 0;
+
+        // Pick 3-5 random holes
+        const allHoles = Array.from(document.querySelectorAll('.hole'));
+        const pickCount = Math.min(3 + Math.floor(level / 10), 5, allHoles.length);
+        const picked = [...allHoles].sort(() => Math.random()-0.5).slice(0, pickCount);
+
+        // Inject CSS once
+        if (!document.getElementById('ftStyle')) {
+          const s = document.createElement('style'); s.id = 'ftStyle';
+          s.textContent = `
+            @keyframes ftPulse{0%,100%{box-shadow:0 0 0 4px #c77dff,0 0 20px #9d4edd}50%{box-shadow:0 0 0 8px #e0aaff,0 0 40px #c77dff}}
+            @keyframes ftIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.6)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+            @keyframes ftCountdown{0%{transform:translate(-50%,-50%) scale(0.5);opacity:0.3}50%{transform:translate(-50%,-50%) scale(1.2)}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
           `;
-          overlay.appendChild(particle);
+          document.head.appendChild(s);
         }
+
+        // Big crystal ball banner
+        const banner = document.createElement('div');
+        banner.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+          font-family:'Luckiest Guy',cursive;text-align:center;
+          background:rgba(0,0,0,0.95);border:4px solid #c77dff;border-radius:24px;
+          padding:24px 40px;z-index:100020;animation:ftIn 0.35s ease-out;`;
         
-        // Container central
-        const container = document.createElement('div');
-        container.style.cssText = `
-          background: rgba(0, 0, 0, 0.9);
-          padding: 50px;
-          border-radius: 30px;
-          border: 5px solid #9d4edd;
-          box-shadow: 0 0 60px #9d4edd, inset 0 0 40px rgba(157, 78, 221, 0.3);
-          text-align: center;
-          max-width: 90vw;
-        `;
-        
-        // Titre mystique
-        const title = document.createElement('div');
-        title.innerHTML = '🔮 FORTUNE TELLER 🔮';
-        title.style.cssText = `
-          font-size: clamp(40px, 8vw, 70px);
-          color: #e0aaff;
-          font-family: 'Luckiest Guy', cursive;
-          margin-bottom: 20px;
-          animation: crystalGlow 2s ease-in-out infinite;
-        `;
-        container.appendChild(title);
-        
-        // Message mystique
-        const message = document.createElement('div');
-        message.innerHTML = '✨ THE CRYSTAL REVEALS 5 FUTURE SPAWNS ✨';
-        message.style.cssText = `
-          font-size: clamp(18px, 4vw, 28px);
-          color: #c77dff;
-          font-family: 'Luckiest Guy', cursive;
-          margin-bottom: 30px;
-          text-shadow: 0 0 20px #c77dff, 3px 3px 0 #000;
-        `;
-        container.appendChild(message);
-        
-        // Countdown crystal ball
-        const countdown = document.createElement('div');
-        countdown.id = 'fortuneCountdown';
-        countdown.textContent = '3';
-        countdown.style.cssText = `
-          font-size: clamp(80px, 15vw, 140px);
-          color: #FFD700;
-          font-family: 'Luckiest Guy', cursive;
-          margin: 30px 0;
-          text-shadow: 
-            0 0 40px #FFD700,
-            0 0 80px #9d4edd,
-            5px 5px 0 #000;
-          animation: countdownSpin 1s ease-in-out;
-        `;
-        container.appendChild(countdown);
-        
-        overlay.appendChild(container);
-        document.body.appendChild(overlay);
-        
-        // Sélectionner et illuminer les trous
-        const holes = Array.from(document.querySelectorAll('.hole'));
-        const predictedHoles = [];
-        
-        // Sélectionner 5 trous aléatoires uniques
-        const availableHoles = [...holes];
-        for (let i = 0; i < 5 && availableHoles.length > 0; i++) {
-          const randomIndex = Math.floor(Math.random() * availableHoles.length);
-          const randomHole = availableHoles[randomIndex];
-          availableHoles.splice(randomIndex, 1); // Éviter les doublons
-          
-          predictedHoles.push(randomHole);
-          randomHole.style.animation = 'holePrediction 1s ease-in-out infinite';
-          randomHole.style.border = '5px solid #e0aaff';
-          randomHole.style.boxShadow = '0 0 30px #9d4edd, inset 0 0 30px #c77dff';
-          
-          // Numéro dans le trou
-          const number = document.createElement('div');
-          number.textContent = i + 1;
-          number.className = 'fortune-number';
-          number.style.cssText = `
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            background: #9d4edd;
-            color: #fff;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: bold;
-            font-family: 'Luckiest Guy', cursive;
-            z-index: 10;
-            box-shadow: 0 0 15px #9d4edd;
-          `;
-          randomHole.appendChild(number);
-        }
-        
-        // Son mystique (Web Audio API)
-        const playMysticSound = () => {
-          try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            [523, 659, 784].forEach((freq, i) => {
-              setTimeout(() => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = freq;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 0.8);
-              }, i * 200);
+        const updateBanner = (html) => { banner.innerHTML = html; };
+        updateBanner(`<div style="font-size:70px;line-height:1">🔮</div>
+          <div style="font-size:clamp(22px,5vw,38px);color:#fff;text-shadow:0 0 20px #c77dff,3px 3px 0 #000">
+            WATCH THESE ${pickCount} HOLES!</div>
+          <div style="font-size:clamp(12px,2.5vw,18px);color:#c77dff;margin-top:8px">
+            EARS SPAWN THERE IN...</div>`);
+        document.body.appendChild(banner);
+
+        // Glow the chosen holes immediately
+        picked.forEach((hole, i) => {
+          hole.style.animation = 'ftPulse 0.6s ease-in-out infinite';
+          hole.style.outline = '4px solid #c77dff';
+          const badge = document.createElement('div');
+          badge.className = 'ft-badge';
+          badge.textContent = i + 1;
+          badge.style.cssText = `position:absolute;top:-10px;right:-10px;background:#9d4edd;
+            color:#fff;font-family:'Luckiest Guy',cursive;font-size:15px;
+            width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+            justify-content:center;z-index:5;box-shadow:0 0 10px #9d4edd;pointer-events:none;`;
+          hole.style.position = 'relative';
+          hole.appendChild(badge);
+        });
+
+        // Countdown 3-2-1
+        let cd = 3;
+        const tick = setInterval(() => {
+          if (typeof SoundSystem !== 'undefined') SoundSystem.miss();
+          updateBanner(`<div style="font-size:clamp(60px,15vw,120px);color:#FFD700;
+            font-family:'Luckiest Guy',cursive;text-shadow:0 0 40px #FFD700,4px 4px 0 #000;
+            animation:ftCountdown 0.7s ease-out;line-height:1">${cd}</div>
+            <div style="font-size:clamp(14px,3vw,22px);color:#c77dff;margin-top:8px">GET READY!</div>`);
+          cd--;
+          if (cd < 0) {
+            clearInterval(tick);
+            updateBanner(`<div style="font-size:clamp(30px,7vw,60px);color:#00ff88;
+              font-family:'Luckiest Guy',cursive;text-shadow:0 0 30px #00ff88,3px 3px 0 #000;
+              animation:ftCountdown 0.4s ease-out">👂 GO GO GO! 👂</div>`);
+            banner.style.borderColor = '#00ff88';
+            if (typeof SoundSystem !== 'undefined') SoundSystem.levelUp();
+            setTimeout(() => banner.remove(), 700);
+
+            // Clean badges, keep glow briefly
+            picked.forEach(h => {
+              h.querySelector('.ft-badge')?.remove();
+              setTimeout(() => { h.style.animation = ''; h.style.outline = ''; }, 2000);
             });
-          } catch(e) {}
-        };
-        
-        playMysticSound();
-        
-        // Countdown
-        let count = 3;
-        const countdownEl = document.getElementById('fortuneCountdown');
-        
-        const countInterval = setInterval(() => {
-          count--;
-          
-          if (countdownEl) {
-            if (count > 0) {
-              countdownEl.textContent = count;
-              countdownEl.style.animation = 'none';
-              setTimeout(() => countdownEl.style.animation = 'countdownSpin 1s ease-in-out', 10);
-              playMysticSound();
-            } else {
-              countdownEl.textContent = '🔮';
-              countdownEl.style.animation = 'crystalGlow 0.5s ease-in-out infinite';
-            }
-          }
-          
-          if (count <= 0) {
-            clearInterval(countInterval);
-            
-            // Disparition overlay
-            setTimeout(() => {
-              overlay.style.transition = 'opacity 0.5s';
-              overlay.style.opacity = '0';
-              
+
+            // Spawn ears in predicted holes
+            isPaused = false; window.gamePaused = false;
+            picked.forEach((hole, i) => {
               setTimeout(() => {
-                overlay.remove();
-                style.remove();
-                
-                // ✅ FIX: Full resume with activeEarsCount reset
+                const ear = hole.querySelector('.ear');
+                if (!ear || ear.classList.contains('active')) return;
+                ear.classList.add('active');
+                ear.textContent = '👂';
+                ear.style.filter = 'drop-shadow(0 0 12px #e0aaff)';
+                activeEarsCount++;
+
+                const spawnTime = Date.now();
+                ear.dataset.spawnTime = spawnTime;
+                const lifeMs = Math.max(getEarUpTime(), 4500);
+
                 setTimeout(() => {
-                  if (typeof window.ensureGameRunning === 'function') window.ensureGameRunning();
-                  else { isPaused = false; window.gamePaused = false; activeEarsCount = 0; startSpawning(); }
-                }, 100);
-                
-                // Réinitialiser les trous après un court délai
-                setTimeout(() => {
-                  predictedHoles.forEach(hole => {
-                    hole.style.animation = '';
-                    hole.style.boxShadow = '';
-                    hole.style.border = '';
-                    const fortuneNum = hole.querySelector('.fortune-number');
-                    if (fortuneNum) fortuneNum.remove();
-                  });
-                }, 200);
-                
-                // Spawner les oreilles prédites
-                predictedHoles.forEach((hole, i) => {
-                  setTimeout(() => {
-                    const ear = hole.querySelector('.ear');
-                    if (!ear.classList.contains('active')) {
-                      ear.classList.add('active');
-                      ear.textContent = '👂';
-                      
-                      // Flash prediction glow
-                      hole.style.animation = 'holePrediction 0.3s ease-in-out 3';
-                      setTimeout(() => hole.style.animation = '', 900);
-                      
-                      activeEarsCount++;
-                      
-                      // 🐛 FIX: Sauvegarder le spawnTime pour vérification
-                      const fortuneSpawnTime = Date.now();
-                      ear.dataset.spawnTime = fortuneSpawnTime;
-                      ear.dataset.lifetime = getEarUpTime();
-                      
-                      setTimeout(() => {
-                        // 🐛 FIX #1: Vérifier si nettoyé par mini-jeu
-                        if (!ear.textContent || ear.textContent === '') {
-                          return;
-                        }
-                        
-                        // 🐛 FIX #2: Vérifier que c'est le même ear
-                        const currentSpawnTime = parseInt(ear.dataset.spawnTime);
-                        if (currentSpawnTime !== fortuneSpawnTime) {
-                          return;
-                        }
-                        
-                        // 🐛 FIX #3: Vérifier classList
-                        if (!ear.classList.contains('active') || ear.classList.contains('power-up')) {
-                          return;
-                        }
-                        
-                        const symbol = ear.textContent;
-                        
-                        // 🐛 FIX #4: Re-vérifier textContent
-                        if (!ear.textContent || ear.textContent === '') {
-                          return;
-                        }
-                        
-                        // Modifier l'ear
-                        ear.classList.remove('active');
-                        activeEarsCount--;
-                        
-                        // 🐛 FIX #5: Re-vérifier gamePaused + textContent + overlays
-                        const wasGamePaused = window.gamePaused || isPaused;
-                        
-                        // Check si un overlay de mini-jeu existe
-                        const anyMiniGameActive = 
-                          document.getElementById('pachinkoOverlay') || 
-                          document.getElementById('mysteryBoxOverlay') ||
-                          document.getElementById('blackjackOverlay') ||
-                          document.getElementById('bonneteauOverlay') ||
-                          document.getElementById('memoryOverlay') ||
-                          document.getElementById('hearingChestOverlay') ||  // FIX: bon nom !
-                          document.getElementById('traderOverlay') ||
-                          document.getElementById('grandpaOverlay') ||
-                          document.getElementById('fortuneTellerOverlay') ||
-                          document.getElementById('coinFlipOverlay');
-                        
-                        if (!ear.textContent || ear.textContent === '') {
-                          return;
-                        }
-                        
-                        // Compter miss seulement si pas en pause ET aucun mini-jeu
-                        if (!wasGamePaused && !anyMiniGameActive && !invincibleMode && !(powerUpActive && powerUpActive.type === 'invincible' && Date.now() < powerUpActive.endTime)) {
-                          streak++;
-                          if (streak >= maxStreak) endGame();
-                        }
-                      }, getEarUpTime());
-                    }
-                  }, i * 2000);
-                });
-              }, 500);
-            }, 500);
+                  ear.style.filter = '';
+                  if (ear.classList.contains('active') &&
+                      parseInt(ear.dataset.spawnTime) === spawnTime &&
+                      !window.gamePaused && !isPaused) {
+                    ear.classList.remove('active');
+                    ear.textContent = '';
+                    activeEarsCount = Math.max(0, activeEarsCount - 1);
+                    streak++;
+                    if (streak >= maxStreak) endGame();
+                  }
+                }, lifeMs);
+              }, i * 350);
+            });
+
+            // Resume normal spawning after all fortune ears are planted
+            setTimeout(() => startSpawning(), pickCount * 350 + 600);
           }
         }, 1000);
       },
+
       
-      '🌪️': () => {
-        if (typeof MegaBonusEffects !== 'undefined') {
-          MegaBonusEffects.tornado({score, level, updateUI, hitEar: hitEar.bind(this), addScore: (pts) => { score += pts; updateUI(); }});
-        }
+            '🌪️': () => {
+        try { if(typeof SoundSystem!=='undefined') SoundSystem.lightning(); } catch(e) {}
+        rumorBubble.textContent='🌪️ TORNADO! ULTRA SPAWNING 4s!';
+        document.querySelectorAll('.hole').forEach((h,i)=>{ h.style.transition='transform 0.3s'; h.style.transform='rotate(720deg) scale(0.8)'; setTimeout(()=>{ h.style.transform=''; h.style.transition=''; },700+i*80); });
+        if(!document.getElementById('tornadoStyle')){const ts=document.createElement('style');ts.id='tornadoStyle';ts.textContent='@keyframes tornadoSpin{from{transform:translate(-50%,-50%)rotate(0)}to{transform:translate(-50%,-50%)rotate(360deg)}}';document.head.appendChild(ts);}
+        const tMsg=document.createElement('div'); tMsg.textContent='🌪️';
+        tMsg.style.cssText='position:fixed;top:50%;left:50%;font-size:120px;z-index:100015;pointer-events:none;animation:tornadoSpin 0.5s linear infinite;';
+        document.body.appendChild(tMsg);
+        clearInterval(gameInterval);
+        const ti=setInterval(()=>{ if(!isPaused&&!window.gamePaused&&typeof spawnEar==='function') try{spawnEar();}catch(e){} },300);
+        setTimeout(()=>{ clearInterval(ti); tMsg.remove(); score+=800; updateUI(); startSpawning(); },4000);
       },
       
       '🎰': () => {
@@ -3876,18 +3643,28 @@ document.addEventListener("DOMContentLoaded", () => {
         const box = document.createElement('div');
         box.style.cssText = `position:relative;background:linear-gradient(135deg,#ff69b4,#9400d3,#ff1493);border:4px solid #fff;border-radius:24px;padding:clamp(16px,4vw,30px) clamp(18px,5vw,36px);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;max-width:340px;width:92%;box-shadow:0 0 40px #ff00ff;max-height:92vh;overflow-y:auto;`;
 
-        const lifeToPoints = Math.min(lives - 1, 1) > 0 ? 750 : 0; // trade 1 life for pts
-        const pointsToLife = score >= 500 ? 500 : 0; // trade 500 pts for life
+        const metaEars = typeof MetaGame !== 'undefined' ? MetaGame.getCurrency('ears') : 0;
+        const lifeToPoints = Math.min(lives - 1, 1) > 0 ? 750 : 0;
+        const pointsToLife = score >= 500 ? 500 : 0;
+        const earShopCost = 200; // spend 200 meta 👂 for +1 life
+        const canBuyLife = metaEars >= earShopCost;
 
         box.innerHTML = `
-          <div style="font-size:clamp(40px,10vw,60px);margin-bottom:10px">🦄 EARSWAP</div>
-          <div style="font-size:clamp(14px,3vw,18px);color:#ffe0ff;margin-bottom:20px">SWAP YOUR STATS, DEGEN! NGMI IF YOU SKIP!</div>
-          <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px">
-            ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff00ff;">❤️ → 💰 Trade 1 life for +${lifeToPoints} pts</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">❤️ Need 2+ lives to trade</div>`}
-            ${pointsToLife > 0 ? `<button id="swapP2L" style="background:linear-gradient(90deg,#9400d3,#6a0dad);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #9400d3;">💰 → ❤️ Spend ${pointsToLife} pts for +1 life</button>` : `<div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:10px;font-size:14px;color:#ddd;">💰 Need ${500-score} more pts to trade</div>`}
-            <button id="swapBonus" style="background:linear-gradient(90deg,#ff6600,#ff0000);border:3px solid #fff;border-radius:12px;padding:12px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#fff;cursor:pointer;box-shadow:0 0 20px #ff6600;">🌈 🌈 FREE +500 PTS BONUS!</button>
+          <div style="font-size:clamp(36px,9vw,54px);margin-bottom:4px;line-height:1">🦄 EARSWAP</div>
+          <div style="font-size:clamp(11px,2.5vw,14px);color:#ffe0ff;margin-bottom:12px;opacity:0.8">SWAP YOUR STATS — NGMI IF YOU SKIP</div>
+          <div style="background:rgba(255,255,255,0.1);border-radius:10px;padding:8px 16px;margin-bottom:14px;font-size:clamp(14px,3vw,18px);color:#FFD700;display:flex;justify-content:space-between;align-items:center">
+            <span>💰 Score</span><span style="color:#00ff88">${Math.round(score)} pts</span>
           </div>
-          <button id="swapSkip" style="background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.4);border-radius:8px;padding:8px 24px;font-family:'Luckiest Guy',cursive;font-size:16px;color:#ffe0ff;cursor:pointer;">SKIP (auto-closes 8s)</button>
+          <div style="background:rgba(255,215,0,0.15);border:2px solid rgba(255,215,0,0.4);border-radius:10px;padding:8px 16px;margin-bottom:18px;font-size:clamp(14px,3vw,18px);color:#FFD700;display:flex;justify-content:space-between;align-items:center">
+            <span>👂 Ear Bank</span><span style="color:#FFD700;font-weight:bold">${metaEars} 👂</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+            ${lifeToPoints > 0 ? `<button id="swapL2P" style="background:linear-gradient(90deg,#ff0080,#ff00ff);border:2px solid #fff;border-radius:12px;padding:10px;font-family:'Luckiest Guy',cursive;font-size:clamp(14px,3vw,18px);color:#fff;cursor:pointer;touch-action:manipulation">❤️ → +${lifeToPoints} pts  <span style="font-size:0.8em;opacity:0.8">(lose 1 life)</span></button>` : `<div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;font-size:13px;color:#aaa">❤️ Need 2+ lives to sell</div>`}
+            ${pointsToLife > 0 ? `<button id="swapP2L" style="background:linear-gradient(90deg,#9400d3,#6a0dad);border:2px solid #fff;border-radius:12px;padding:10px;font-family:'Luckiest Guy',cursive;font-size:clamp(14px,3vw,18px);color:#fff;cursor:pointer;touch-action:manipulation">−${pointsToLife} pts → ❤️ +1 life</button>` : `<div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:8px;font-size:13px;color:#aaa">Need ${500-score} more pts for a life</div>`}
+            ${canBuyLife ? `<button id="swapEarLife" style="background:linear-gradient(90deg,#ff8c00,#FFD700);border:2px solid #fff;border-radius:12px;padding:10px;font-family:'Luckiest Guy',cursive;font-size:clamp(14px,3vw,18px);color:#000;cursor:pointer;touch-action:manipulation">−${earShopCost} 👂 → ❤️ +1 life</button>` : `<div style="background:rgba(255,215,0,0.08);border-radius:12px;padding:8px;font-size:13px;color:#aaa">Need ${earShopCost} 👂 to buy a life</div>`}
+            <button id="swapBonus" style="background:linear-gradient(90deg,#00cc44,#00ff88);border:2px solid #fff;border-radius:12px;padding:10px;font-family:'Luckiest Guy',cursive;font-size:clamp(14px,3vw,18px);color:#000;cursor:pointer;touch-action:manipulation">🌈 FREE +500 pts BONUS!</button>
+          </div>
+          <button id="swapSkip" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:6px 20px;font-family:'Luckiest Guy',cursive;font-size:14px;color:#ffe0ff;cursor:pointer;touch-action:manipulation">SKIP (closes in 8s)</button>
         `;
         ov.appendChild(box);
         document.body.appendChild(ov);
@@ -3903,6 +3680,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (l2pBtn) l2pBtn.onclick = () => { lives = Math.max(1, lives - 1); score += lifeToPoints; updateUI(); closeUni(); };
         const p2lBtn = document.getElementById('swapP2L');
         if (p2lBtn) p2lBtn.onclick = () => { score = Math.max(0, score - pointsToLife); lives++; updateUI(); closeUni(); };
+        // Buy life with meta 👂
+        const earLifeBtn = document.getElementById('swapEarLife');
+        if (earLifeBtn) earLifeBtn.onclick = () => {
+          if (typeof MetaGame !== 'undefined' && MetaGame.spendCurrency('ears', earShopCost)) {
+            lives++; updateUI();
+            if (typeof MetaGame !== 'undefined') MetaGame.updateEarsBadge();
+          }
+          closeUni();
+        };
         document.getElementById('swapBonus').onclick = () => { score += 500; updateUI(); closeUni(); };
         document.getElementById('swapSkip').onclick = closeUni;
         setTimeout(closeUni, 8000);
@@ -3989,50 +3775,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // ================== 💉 SYRINGE — +1 VIE ==================
       '💉': () => {
-        // Max 1x par 10 niveaux
+        // Max 1x per 8 levels
         const lastLifeLevel = parseInt(localStorage.getItem('lastSyringeLevel') || '0');
-        if (level - lastLifeLevel < 10 && lastLifeLevel > 0) {
-          // Too soon — consolation points instead
-          const pts = 300;
+        if (level - lastLifeLevel < 8 && lastLifeLevel > 0) {
+          // Too soon - consolation prize
+          const pts = 250;
           score += pts;
+          if (typeof MetaGame !== 'undefined') MetaGame.data.currencies.ears = (MetaGame.data.currencies.ears||0)+2;
+          MetaGame?.save?.();
           updateUI();
           const msg = document.createElement('div');
-          msg.innerHTML = `💉 Not yet, ser! +${pts} pts. Touch grass first.`;
-          msg.style.cssText = `position:fixed;top:30%;left:50%;transform:translateX(-50%);font-size:clamp(22px,4vw,32px);color:#ff9900;font-family:'Luckiest Guy',cursive;z-index:100010;pointer-events:none;animation:messagePulse 0.4s ease-out;text-shadow:0 0 15px #ff9900;`;
+          msg.innerHTML = `💉 Too soon! +${pts} pts & +2 👂 instead.`;
+          msg.style.cssText = `position:fixed;top:30%;left:50%;transform:translateX(-50%);
+            font-size:clamp(18px,3.5vw,26px);color:#ff9900;font-family:'Luckiest Guy',cursive;
+            z-index:100010;pointer-events:none;text-shadow:0 0 15px #ff9900;`;
           document.body.appendChild(msg);
-          setTimeout(() => msg.remove(), 1800);
-          rumorBubble.textContent = "💉 Already juiced! Take the +300 pts and walk it off.";
+          setTimeout(() => msg.remove(), 2000);
           return;
         }
-
-        try { localStorage.setItem('lastSyringeLevel', level); } catch(e) {}
-        lives++;
+        localStorage.setItem('lastSyringeLevel', level);
+        
+        // Random reward from pool!
+        const rewardPool = [
+          { type: 'life', chance: 0.40, apply: () => { lives++; return '❤️ +1 LIFE!'; } },
+          { type: 'ears', chance: 0.25, apply: () => { const n=50+Math.floor(Math.random()*100); if(typeof MetaGame!=='undefined'){MetaGame.data.currencies.ears=(MetaGame.data.currencies.ears||0)+n;MetaGame.save();} return `👂 +${n} EARS!`; } },
+          { type: 'gems', chance: 0.10, apply: () => { if(typeof MetaGame!=='undefined'){MetaGame.data.currencies.gems=(MetaGame.data.currencies.gems||0)+1;MetaGame.save();} return '💎 +1 GEM!'; } },
+          { type: 'score', chance: 0.20, apply: () => { const n=500+Math.floor(score*0.1); score+=n; return `⭐ +${n} POINTS!`; } },
+          { type: 'wild', chance: 0.05, apply: () => { lives++; score+=300; const n=20; if(typeof MetaGame!=='undefined'){MetaGame.data.currencies.ears=(MetaGame.data.currencies.ears||0)+n;MetaGame.save();} return '🎉 WILD SHOT! EVERYTHING!'; } },
+        ];
+        
+        const roll = Math.random();
+        let cumulative = 0;
+        let reward = rewardPool[0];
+        for (const r of rewardPool) { cumulative += r.chance; if (roll <= cumulative) { reward = r; break; } }
+        const rewardText = reward.apply();
         updateUI();
-        rumorBubble.textContent = "💉 DOPING! +1 LIFE! CHEATING IS BASED! 🩸";
-        vibrate([50, 30, 200]);
-
-        // 🎬 Syringe animation
-        const syringe = document.createElement('div');
-        syringe.innerHTML = `
-          <div style="font-size:clamp(60px,15vw,100px);animation:syringeInject 0.6s ease-in-out">💉</div>
-          <div style="font-size:clamp(24px,5vw,40px);color:#ff0066;margin-top:10px;animation:messagePulse 0.4s ease-out">❤️ +1 LIFE! JUICED!</div>
-          <div style="font-size:clamp(14px,2.5vw,20px);color:#ffcc00;margin-top:8px">APPROVED BY THE FDA (probably)</div>
-        `;
-        syringe.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(0);text-align:center;font-family:'Luckiest Guy',cursive;color:#fff;z-index:100010;pointer-events:none;text-shadow:0 0 20px #ff0066;`;
-        document.body.appendChild(syringe);
-
-        // Inject keyframes if needed
-        if (!document.getElementById('syringeKF')) {
-          const ks = document.createElement('style'); ks.id='syringeKF';
-          ks.textContent = `@keyframes syringeInject{0%{transform:scale(0.5) rotate(-45deg)}50%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0)}}`;
-          document.head.appendChild(ks);
-        }
-
-        if (typeof SoundSystem !== 'undefined') SoundSystem.bonus();
-        setTimeout(() => syringe.remove(), 2000);
+        
+        // Dramatic syringe animation
+        const msg = document.createElement('div');
+        msg.innerHTML = `<span style="font-size:0.7em;display:block;letter-spacing:2px;color:#aaa;margin-bottom:4px">💉 SYRINGE REWARD</span>${rewardText}`;
+        msg.style.cssText = `position:fixed;top:25%;left:50%;transform:translateX(-50%) scale(0);
+          font-family:'Luckiest Guy',cursive;font-size:clamp(22px,4.5vw,38px);
+          color:#00ff88;
+          background:rgba(0,0,0,0.85);
+          border:3px solid #00ff88;
+          border-radius:16px;
+          box-shadow:0 0 30px rgba(0,255,136,0.4),inset 0 0 20px rgba(0,255,136,0.05);
+          padding:16px 28px;
+          text-align:center;
+          text-shadow:0 0 20px #00ff88,2px 2px 0 #000;
+          z-index:100010;pointer-events:none;
+          transition:transform 0.3s cubic-bezier(0.68,-0.55,0.27,1.55);`;
+        document.body.appendChild(msg);
+        setTimeout(() => { msg.style.transform = 'translateX(-50%) scale(1)'; }, 50);
+        setTimeout(() => msg.remove(), 3000);
+        
+        if (typeof SoundSystem !== 'undefined') SoundSystem.powerUp();
+        rainEmojis('special');
       },
 
-      // ================== 🥫 CAN — PAUSE 10s avec stats ==================
       '🥫': () => {
         if (window.gamePaused || isPaused) return; // Don't double-pause
         window.gamePaused = true; setPaused(true);
@@ -4049,38 +3850,39 @@ document.addEventListener("DOMContentLoaded", () => {
         const render = () => {
           const h = document.querySelector('#canPauseOv .can-header');
           const s = document.querySelector('#canPauseOv .can-stats');
-          const t = document.querySelector('#canPauseOv .can-timer');
           if (!h) return;
-          h.textContent = `🥫 CANNED — ${timeLeft}s`;
+          h.innerHTML = `🥫 CANNED <span style="color:#00ff88;font-size:0.85em">${timeLeft}s</span>`;
           s.innerHTML = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0">
-              <div style="background:rgba(255,215,0,0.1);border-radius:10px;padding:10px">
-                <div style="font-size:28px">🏆</div>
-                <div style="font-size:clamp(16px,3.5vw,22px);color:#FFD700">${Math.round(score)}</div>
-                <div style="font-size:12px;color:#aaa">SCORE</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">
+              <div style="background:rgba(255,215,0,0.12);border:2px solid rgba(255,215,0,0.3);border-radius:12px;padding:10px 6px">
+                <div style="font-size:clamp(22px,5vw,30px)">👂</div>
+                <div style="font-size:clamp(18px,4vw,26px);color:#FFD700;font-family:'Luckiest Guy',cursive">${Math.round(score)}</div>
+                <div style="font-size:11px;color:#aaa;letter-spacing:1px">EARS</div>
               </div>
-              <div style="background:rgba(255,0,0,0.1);border-radius:10px;padding:10px">
-                <div style="font-size:28px">❤️</div>
-                <div style="font-size:clamp(16px,3.5vw,22px);color:#ff4444">${lives}</div>
-                <div style="font-size:12px;color:#aaa">LIVES</div>
+              <div style="background:rgba(255,60,60,0.12);border:2px solid rgba(255,60,60,0.3);border-radius:12px;padding:10px 6px">
+                <div style="font-size:clamp(22px,5vw,30px)">❤️</div>
+                <div style="font-size:clamp(18px,4vw,26px);color:#ff6666;font-family:'Luckiest Guy',cursive">${lives}</div>
+                <div style="font-size:11px;color:#aaa;letter-spacing:1px">LIVES</div>
               </div>
-              <div style="background:rgba(0,255,255,0.1);border-radius:10px;padding:10px">
-                <div style="font-size:28px">🔥</div>
-                <div style="font-size:clamp(16px,3.5vw,22px);color:#00ffff">${combo.toFixed(1)}x</div>
-                <div style="font-size:12px;color:#aaa">COMBO</div>
+              <div style="background:rgba(255,100,0,0.12);border:2px solid rgba(255,100,0,0.3);border-radius:12px;padding:10px 6px">
+                <div style="font-size:clamp(22px,5vw,30px)">🔥</div>
+                <div style="font-size:clamp(18px,4vw,26px);color:#ff6600;font-family:'Luckiest Guy',cursive">${(combo+permanentComboBonus).toFixed(1)}x</div>
+                <div style="font-size:11px;color:#aaa;letter-spacing:1px">COMBO</div>
               </div>
-              <div style="background:rgba(0,255,0,0.1);border-radius:10px;padding:10px">
-                <div style="font-size:28px">📊</div>
-                <div style="font-size:clamp(16px,3.5vw,22px);color:#00ff88">LVL ${level}</div>
-                <div style="font-size:12px;color:#aaa">LEVEL</div>
+              <div style="background:rgba(0,255,136,0.12);border:2px solid rgba(0,255,136,0.3);border-radius:12px;padding:10px 6px">
+                <div style="font-size:clamp(22px,5vw,30px)">📡</div>
+                <div style="font-size:clamp(18px,4vw,26px);color:#00ff88;font-family:'Luckiest Guy',cursive">LVL ${level}</div>
+                <div style="font-size:11px;color:#aaa;letter-spacing:1px">LEVEL</div>
               </div>
-            </div>`;
+            </div>
+            <div style="font-size:clamp(11px,2vw,13px);color:#888;margin-top:4px">HIGH SCORE: <span style="color:#FFD700">${formatNumber(highScore)}</span> 👂</div>`;
         };
 
         box.innerHTML = `
-          <div class="can-header" style="font-size:clamp(22px,5vw,34px);color:#FFD700;margin-bottom:6px">🥫 CANNED — ${timeLeft}s</div>
+          <div class="can-header" style="font-size:clamp(24px,5.5vw,36px);color:#FFD700;margin-bottom:4px;font-family:'Luckiest Guy',cursive;text-shadow:0 0 20px #FFD700,2px 2px 0 #000">🥫 CANNED <span style="color:#00ff88;font-size:0.85em">${timeLeft}s</span></div>
+          <div style="font-size:clamp(12px,2.5vw,15px);color:#aaa;margin-bottom:8px">breathe degen, you got this</div>
           <div class="can-stats"></div>
-          <button id="canResume" style="background:linear-gradient(90deg,#00ff88,#00cc66);border:3px solid #fff;border-radius:12px;padding:12px 30px;font-family:'Luckiest Guy',cursive;font-size:clamp(16px,3.5vw,22px);color:#000;cursor:pointer;margin-top:10px;box-shadow:0 0 20px #00ff88;">▶️ KEEP HUSTIN'</button>
+          <button id="canResume" style="background:linear-gradient(135deg,#00ff88,#00cc44);border:3px solid #fff;border-radius:14px;padding:14px 36px;font-family:'Luckiest Guy',cursive;font-size:clamp(18px,4vw,24px);color:#000;cursor:pointer;margin-top:12px;box-shadow:0 0 25px #00ff88,0 4px 0 #009944;text-shadow:none;touch-action:manipulation;">▶️ KEEP HUSTIN'</button>
         `;
         ov.appendChild(box);
         document.body.appendChild(ov);
@@ -4115,7 +3917,106 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       },
 
-    };
+            '🛡️': () => {
+        try { if(typeof SoundSystem!=='undefined') SoundSystem.powerUp(); } catch(e) {}
+        invincibleMode=true; window.shieldActive=true;
+        rumorBubble.textContent='🛡️ SHIELD! 10s INVINCIBILITY!';
+        if(!document.getElementById('shieldStyle')){const ss=document.createElement('style');ss.id='shieldStyle';ss.textContent='@keyframes shieldPulse{0%,100%{box-shadow:inset 0 0 60px rgba(0,200,255,0.15),0 0 40px rgba(0,200,255,0.3)}50%{box-shadow:inset 0 0 100px rgba(0,200,255,0.3),0 0 80px rgba(0,200,255,0.6)}}@keyframes shieldBreak{0%{opacity:1}100%{opacity:0;transform:scale(1.3)}}';document.head.appendChild(ss);}
+        const ring=document.createElement('div'); ring.id='shieldRing';
+        ring.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:100;border:4px solid rgba(0,200,255,0.6);box-shadow:inset 0 0 60px rgba(0,200,255,0.15),0 0 40px rgba(0,200,255,0.3);border-radius:8px;animation:shieldPulse 1s ease-in-out infinite;';
+        const timer=document.createElement('div'); timer.id='shieldTimer';
+        timer.style.cssText='position:fixed;top:14%;left:50%;transform:translateX(-50%);font-family:"Luckiest Guy",cursive;font-size:clamp(14px,3vw,20px);color:#00c8ff;text-shadow:0 0 15px #00c8ff;z-index:200;pointer-events:none;';
+        timer.textContent='🛡️ 10s'; document.body.appendChild(ring); document.body.appendChild(timer);
+        let s=10; const si=setInterval(()=>{ s--; if(timer) timer.textContent=`🛡️ ${s}s`;
+          if(s<=0){ clearInterval(si); invincibleMode=false; window.shieldActive=false;
+            ring.style.animation='shieldBreak 0.4s ease-out forwards';
+            setTimeout(()=>{ ring.remove(); timer.remove(); },400);
+            rumorBubble.textContent='🛡️ SHIELD BROKEN!';
+            try { if(typeof SoundSystem!=='undefined') SoundSystem.miss(); } catch(e) {}
+          }},1000);
+        updateUI();
+      },
+      // Previously missing handlers
+            '👻': () => {
+        try { if(typeof SoundSystem!=='undefined') SoundSystem.ghost(); } catch(e) {}
+        combo=Math.min(combo+2,50); rumorBubble.textContent='👻 GHOST MODE! 2× POINTS 4s!';
+        document.querySelectorAll('.ear.active').forEach(e=>{
+          const o=e.style.filter; e.style.filter='drop-shadow(0 0 20px #c77dff) brightness(1.5)'; e.style.transform='scale(1.2)';
+          setTimeout(()=>{ e.style.filter=o; e.style.transform=''; },800);
+        });
+        window.ghostMode=true;
+        const msg=document.createElement('div'); msg.innerHTML='👻 GHOST MODE! 2× POINTS 👻';
+        msg.style.cssText='position:fixed;top:15%;left:50%;transform:translateX(-50%);font-family:"Luckiest Guy",cursive;font-size:clamp(18px,4vw,28px);color:#c77dff;text-shadow:0 0 25px #c77dff,3px 3px 0 #000;z-index:100020;pointer-events:none;';
+        document.body.appendChild(msg); setTimeout(()=>{ window.ghostMode=false; msg.remove(); },4000); updateUI();
+      },
+            '☠️': () => {
+        score+=400*combo; rumorBubble.textContent='☠️ DEFUSED! +'+Math.round(400*combo)+'!';
+        try { if(typeof SoundSystem!=='undefined') SoundSystem.diamond(); } catch(e) {}
+        if(typeof VisualEffects!=='undefined') VisualEffects.flashScreen('#9400d3',200);
+        const msg=document.createElement('div'); msg.innerHTML=`☠️ DEFUSED! +${Math.round(400*combo)}`;
+        msg.style.cssText='position:fixed;top:25%;left:50%;transform:translateX(-50%);font-family:"Luckiest Guy",cursive;font-size:clamp(22px,5vw,38px);color:#9400d3;text-shadow:0 0 25px #9400d3,3px 3px 0 #000;z-index:100020;pointer-events:none;';
+        document.body.appendChild(msg); setTimeout(()=>msg.remove(),1500); updateUI();
+      },
+      '🕵️‍♂️': () => {
+        // CABAL BOOSTER: skip ahead levels
+        const levelsToSkip = Math.floor(Math.random() * 2) + 1; // 1-2 levels
+        const oldLevel = level;
+        level = Math.min(level + levelsToSkip, maxLevels - 1);
+        // Proper score target for new level
+        nextLevelScore = getLevelScoreTarget(level + 1);
+        score = nextLevelScore - 1; // Just below next threshold
+        rumorBubble.textContent = `🕵️ CABAL ACTIVATED! SKIPPING ${levelsToSkip} LEVELS! 🕵️`;
+        if (typeof SoundSystem !== 'undefined') SoundSystem.levelUp();
+        if (typeof VisualEffects !== 'undefined') {
+          VisualEffects.flashScreen('#9400d3', 400);
+          VisualEffects.screenShake(12, 400);
+        }
+        // Dramatic notification
+        const cabalMsg = document.createElement('div');
+        cabalMsg.innerHTML = `🕵️ CABAL! +${level - oldLevel} LEVELS!`;
+        cabalMsg.style.cssText = `position:fixed;top:20%;left:50%;transform:translateX(-50%);
+          font-family:'Luckiest Guy',cursive;font-size:clamp(26px,5vw,44px);
+          color:#9400d3;text-shadow:0 0 30px #9400d3,0 0 60px #ff00ff,3px 3px 0 #000;
+          z-index:100020;pointer-events:none;animation:messagePulse 0.5s ease-out;`;
+        document.body.appendChild(cabalMsg);
+        setTimeout(() => cabalMsg.remove(), 2500);
+        updateUI();
+        setTimeout(() => showLevelUp(), 800);
+      },
+            '🤡': () => {
+        try { if (typeof SoundSystem!=='undefined') SoundSystem.bark(); } catch(e) {}
+        const allEars=Array.from(document.querySelectorAll('.ear'));
+        const prevTxt=allEars.map(e=>e.textContent), prevAct=allEars.map(e=>e.classList.contains('active'));
+        allEars.forEach(e=>{ e.textContent='😂'; e.classList.add('active'); e.style.animation='earPop 0.3s ease-in-out infinite'; });
+        document.querySelectorAll('.hole').forEach(h=>{ h.style.filter='hue-rotate(120deg) saturate(3)'; });
+        const fx=[
+          {txt:'🤡 HONK HONK! +1500!',col:'#FF6600',fn:()=>{score+=1500;updateUI();}},
+          {txt:'🤡 STOLE A LIFE!',col:'#ff0000',fn:()=>{lives=Math.max(1,lives-1);updateUI();}},
+          {txt:'🤡 MEGA COMBO +3!',col:'#FFD700',fn:()=>{combo+=3;updateUI();}},
+          {txt:'🤡 CHAOS -500!',col:'#ff4444',fn:()=>{score=Math.max(0,score-500);updateUI();}},
+          {txt:'🤡 TRIPLE HONK +2500!',col:'#00ff88',fn:()=>{score+=2500;updateUI();}},
+        ];
+        const p=fx[Math.floor(Math.random()*fx.length)]; p.fn();
+        if(!document.getElementById('clownStyle')){const s=document.createElement('style');s.id='clownStyle';s.textContent='@keyframes clownBounce{0%,100%{transform:scale(1)rotate(-8deg)}50%{transform:scale(1.15)rotate(8deg)}}';document.head.appendChild(s);}
+        const ov=document.createElement('div');
+        ov.style.cssText='position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:100015;pointer-events:none;background:radial-gradient(ellipse,rgba(255,80,0,0.15) 0%,transparent 70%);';
+        ov.innerHTML=`<div style="font-size:clamp(100px,25vw,160px);animation:clownBounce 0.4s ease-in-out infinite">🤡</div><div style="font-family:'Luckiest Guy',cursive;font-size:clamp(18px,4vw,32px);color:${p.col};text-shadow:0 0 20px ${p.col},4px 4px 0 #000;text-align:center;padding:0 16px">${p.txt}</div>`;
+        document.body.appendChild(ov); rumorBubble.textContent=p.txt;
+        setTimeout(()=>{ allEars.forEach((e,i)=>{ e.textContent=prevTxt[i]||''; e.style.animation=''; if(!prevAct[i]) e.classList.remove('active'); }); document.querySelectorAll('.hole').forEach(h=>h.style.filter=''); ov.remove(); },2000);
+      },
+
+      '📈': () => {
+        rumorBubble.textContent = '📈 HEARING TRADER! DEGEN MODE ACTIVATED!';
+        if (typeof SoundSystem !== 'undefined') try { SoundSystem.bonus(); } catch(e) {}
+        if (typeof MiniGames !== 'undefined' && MiniGames.showMiniTrader) {
+          const game = { score, updateUI, addScore: (pts) => { score += pts; updateUI(); }, level };
+          setTimeout(() => MiniGames.showMiniTrader(game), 400);
+        }
+      },
+
+    }; // close bonusActions
+
+
 
     // Export trigger for external use (level events)
     window.triggerBonusSymbol = (sym) => {
@@ -4129,6 +4030,16 @@ document.addEventListener("DOMContentLoaded", () => {
       rumorBubble.classList.add("show");
       setTimeout(() => rumorBubble.classList.remove("show"), 1800);
       vibrate([100, 50, 150]);
+      // Track unique bonuses for bonus_collector achievement
+      if (typeof MetaGame !== 'undefined') {
+        MetaGame.data.stats = MetaGame.data.stats || {};
+        MetaGame.data.stats.uniqueBonusSet = MetaGame.data.stats.uniqueBonusSet || {};
+        MetaGame.data.stats.uniqueBonusSet[symbol] = true;
+        MetaGame.data.stats.uniqueBonusCount = Object.keys(MetaGame.data.stats.uniqueBonusSet).length;
+        if (MetaGame.data.stats.uniqueBonusCount >= 34) {
+          try { MetaGame.checkAchievements({...MetaGame.data.stats, uniqueBonuses: MetaGame.data.stats.uniqueBonusCount}); } catch(e) {}
+        }
+      }
     }
 
     if (Math.random() < 0.03 && symbol !== '💀') {
@@ -4137,6 +4048,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function endGame() {
+    // 🛡️ Miss Shield shop perk: absorb first miss
+    if (window._missShield) {
+      window._missShield = false;
+      const shieldNotif = document.createElement('div');
+      shieldNotif.textContent = '🛡️ SHIELD ABSORBED!';
+      shieldNotif.style.cssText = `position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);
+        font-family:'Luckiest Guy',cursive;font-size:clamp(24px,5vw,36px);color:#00ffff;
+        text-shadow:0 0 20px #00ffff;z-index:100020;pointer-events:none;animation:fadeOut 1.5s forwards`;
+      document.body.appendChild(shieldNotif);
+      setTimeout(() => shieldNotif.remove(), 1500);
+      return; // Block the miss entirely
+    }
     if (lives > 1) {
       lives--;
       
@@ -4236,7 +4159,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Store the level at game over for accurate display
     gameOverLevel = level;
-    finalLevelEl.textContent = `LEVEL ${gameOverLevel}`;
+    if (finalLevelEl) finalLevelEl.textContent = `Level ${level}`; // Use level directly
     
     // 🔥 CRITICAL: Afficher le game over screen AVANT tout le reste
     gameOverScreen.style.display = "flex";
@@ -4247,7 +4170,26 @@ document.addEventListener("DOMContentLoaded", () => {
     
     nameInputSection.style.display = 'block';
     
-    // 💎 V7: Convert score to ears currency (APRÈS game over display)
+    // 💎 Convert score to 👂 meta-currency at game over
+    try {
+      if (typeof MetaGame !== 'undefined') {
+        const earnedEars = Math.floor(score / 100);
+        if (earnedEars > 0) {
+          MetaGame.data.currencies.ears = (MetaGame.data.currencies.ears||0) + earnedEars;
+          MetaGame.updateEarsBadge(); MetaGame.save();
+          MetaGame.checkAchievements({
+            currentScore: Math.round(score), levelReached: level, currentCombo: Math.floor(combo),
+            wonWith1Life: lives <= 1, livesUsed: (MetaGame.data.stats && MetaGame.data.stats.livesUsed) || 0,
+            uniqueBonuses: (MetaGame.data.stats && MetaGame.data.stats.uniqueBonusCount) || 0,
+            uniqueMiniGames: (MetaGame.data.stats && MetaGame.data.stats.uniqueMiniGamesCount) || 0
+          });
+          const n = document.createElement('div');
+          n.style.cssText = `position:fixed;top:20px;right:20px;background:linear-gradient(145deg,#FFD700,#FFA000);color:#000;font-family:'Luckiest Guy',cursive;font-size:20px;padding:14px 22px;border-radius:12px;z-index:100001;box-shadow:0 0 25px rgba(255,215,0,0.6)`;
+          n.textContent = `+${earnedEars} 👂 EARNED!`;
+          document.body.appendChild(n); setTimeout(() => n.remove(), 3000);
+        }
+      }
+    } catch(e2) {}
     try {
       if (typeof MetaGameSystem !== 'undefined' && window.convertScoreToEars) {
         const earnedEars = window.convertScoreToEars(score);
@@ -4372,16 +4314,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   shareBtn.addEventListener("click", () => {
+    const shareLevel = gameOverLevel || level; // Fallback to live level
     const messages = [
-      `Just whacked ${Math.round(score)} RUMORS! 👂💀🔥\n\nLevel ${gameOverLevel} | Combo x${(combo + permanentComboBonus).toFixed(1)}\n\n@hearingmeme game is TOO ADDICTIVE!\n\nBeat my score:\nhttps://hearingthings.meme/\n\n#HEARING #Solana`,
+      `Just whacked ${Math.round(score)} RUMORS! 👂💀🔥\n\nLevel ${shareLevel} | Combo x${(combo + permanentComboBonus).toFixed(1)}\n\n@hearingmeme game is TOO ADDICTIVE!\n\nBeat my score:\nhttps://hearingthings.meme/\n\n#HEARING #Solana`,
       
-      `Absolutely DEMOLISHED ${Math.round(score)} rumors! 💎⚡\n\nLevel ${gameOverLevel} (${levelNames[gameOverLevel-1] || 'ULTIMATE'})\n\n@hearingmeme is pure chaos! 🔥\n\nYour turn:\nhttps://hearingthings.meme/\n\n#HEARING #DegenGaming`,
+      `Absolutely DEMOLISHED ${Math.round(score)} rumors! 💎⚡\n\nLevel ${shareLevel} (${levelNames[gameOverLevel-1] || 'ULTIMATE'})\n\n@hearingmeme is pure chaos! 🔥\n\nYour turn:\nhttps://hearingthings.meme/\n\n#HEARING #DegenGaming`,
       
-      `BIG IF TRUE: Just scored ${Math.round(score)} on @hearingmeme! 👂🚀\n\nLevel ${gameOverLevel} | High Score: ${formatNumber(highScore)}\n\nCan you beat me?\nhttps://hearingthings.meme/\n\n#HEARING #Solana #Crypto`,
+      `BIG IF TRUE: Just scored ${Math.round(score)} on @hearingmeme! 👂🚀\n\nLevel ${shareLevel} | High Score: ${formatNumber(highScore)}\n\nCan you beat me?\nhttps://hearingthings.meme/\n\n#HEARING #Solana #Crypto`,
       
-      `I've been HEARING THINGS... 👂💀\n\nAnd whacking them into oblivion!\n\nScore: ${Math.round(score)} | Level ${gameOverLevel}\n\n@hearingmeme\nhttps://hearingthings.meme/\n\n#HEARING #MemeGaming`,
+      `I've been HEARING THINGS... 👂💀\n\nAnd whacking them into oblivion!\n\nScore: ${Math.round(score)} | Level ${shareLevel}\n\n@hearingmeme\nhttps://hearingthings.meme/\n\n#HEARING #MemeGaming`,
       
-      `SAW IT ON BIZ: @hearingmeme's game is INSANE! 🎮💥\n\nJust hit ${Math.round(score)} points, level ${gameOverLevel}!\n\nPlay now:\nhttps://hearingthings.meme/\n\n#HEARING #Solana #Degen`
+      `SAW IT ON BIZ: @hearingmeme's game is INSANE! 🎮💥\n\nJust hit ${Math.round(score)} points, level ${shareLevel}!\n\nPlay now:\nhttps://hearingthings.meme/\n\n#HEARING #Solana #Degen`
     ];
     
     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
